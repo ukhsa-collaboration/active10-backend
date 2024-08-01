@@ -70,7 +70,7 @@ jobs:
           IMAGE_TAG: latest
         run: |
           aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'development' }}-private-key --query SecretString --output text | base64 -d > private_key.pem
-          aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'development' }}-pds-private-key --query SecretString --output text | base64 -d > pds_private_key.pem
+          #aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'development' }}-pds-private-key --query SecretString --output text | base64 -d > pds_private_key.pem
           ls
           docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
