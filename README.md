@@ -59,7 +59,7 @@
     ```bash
    uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-certfile cert/cert.pem --ssl-keyfile cert/key.pem
    ```
-
+   The above is applicable only when running in a local development environment.
 6. **Access the application:**
 
    Open your browser and navigate to https://localhost:8000.
