@@ -55,7 +55,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-            role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/active10-backend-github-actions-role
+            #role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/active10-backend-github-actions-role
+            role-to-assume: arn:aws:iam::636728427214:role/active10-backend-github-actions-role
             role-session-name: dev-deploy
             aws-region: ${{ env.AWS_REGION }}
           
