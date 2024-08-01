@@ -41,7 +41,7 @@ jobs:
         run: |
           INPUT_ENVIRONMENT=${{ github.event.inputs.environment || 'development' }} >> $GITHUB_ENV
           case $INPUT_ENVIRONMENT in
-            "dev")
+            "development")
               echo "aws_account_id=636728427214" >> $GITHUB_ENV
               ;;
             "uat")
@@ -55,8 +55,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-            #role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/active10-backend-github-actions-role
-            role-to-assume: arn:aws:iam::636728427214:role/active10-backend-github-actions-role
+            role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/active10-backend-github-actions-role
+            #role-to-assume: arn:aws:iam::636728427214:role/active10-backend-github-actions-role
             role-session-name: dev-deploy
             aws-region: ${{ env.AWS_REGION }}
           
@@ -73,7 +73,6 @@ jobs:
           #aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'dev' }}-private-key --query SecretString --output text | base64 -d > private_key.pem
           #aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'dev' }}-pds-private-key --query SecretString --output text | base64 -d > pds_private_key.pem
           ls
-          ls app/
           docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
