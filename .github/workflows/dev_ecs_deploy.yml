@@ -39,7 +39,7 @@ jobs:
 
       - name: Set up AWS account
         run: |
-          INPUT_ENVIRONMENT=${{ github.event.inputs.environment || 'integration' }} >> $GITHUB_ENV
+          INPUT_ENVIRONMENT=${{ github.event.inputs.environment || 'development' }} >> $GITHUB_ENV
           case $INPUT_ENVIRONMENT in
             "dev")
               echo "aws_account_id=636728427214" >> $GITHUB_ENV
