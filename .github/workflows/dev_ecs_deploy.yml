@@ -76,5 +76,5 @@ jobs:
 
       - name: ECS Deployment
         run: |
-          aws ecs update-service --cluster active10-dev --service active10-dev-ecs-service --force-new-deployment
+          aws ecs update-service --cluster active10-dev --service active10-dev-backend-ecs-service --force-new-deployment
 
