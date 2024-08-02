@@ -7,7 +7,7 @@ on:
     branches: [ "development" ]
 
   pull_request:
-    branches: [ "development" ]
+    branches: [ "" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
