@@ -2,13 +2,11 @@
 
 set -e
 
-#echo "Waiting for MySQL to be ready..."
-#while ! nc -z $DB_HOST $DB_PORT; do
-#  sleep 1
-#done
+echo "Waiting for MySQL to be ready..."
+while ! nc -z $DB_HOST $DB_PORT; do
+  sleep 1
+done
 
-echo "Creating database tables..."
-sleep 10
 
 echo "Running database migrations..."
 alembic upgrade head
