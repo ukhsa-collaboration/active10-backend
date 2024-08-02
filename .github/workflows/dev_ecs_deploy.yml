@@ -4,14 +4,14 @@ name: ECS Integration Deploy
 on:
   # Triggers the workflow on push or pull request events but only for the "dev" branch
   push:
-    branches: [ "feature/dev" ]
+    branches: [ "development" ]
 
   pull_request:
-    branches: [ "feature/dev" ]
+    branches: [ "development" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-    branches: [ "feature/dev" ]
+    branches: [ "development" ]
     inputs:
       environment:
         type: choice
