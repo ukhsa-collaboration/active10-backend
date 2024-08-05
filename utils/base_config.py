@@ -18,6 +18,9 @@ class Config(BaseSettings):
     db_name: str
     db_root_pass: str
     app_uri: str
+    key_id: str
+    prv_key: str
+    issuer_id: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
