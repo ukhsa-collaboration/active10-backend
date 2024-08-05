@@ -17,9 +17,9 @@ router = APIRouter(dependencies=[Depends(get_authenticated_user_data)], tags=["G
 
 
 client = GoJauntlyApi(
-    key_id=config.key_id,
-    secret_key=config.prv_key,
-    issuer_id=config.issuer_id
+    key_id=config.gojauntly_key_id,
+    secret_key=config.gojauntly_private_key,
+    issuer_id=config.gojauntly_issuer_id
 )
 
 
