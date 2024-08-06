@@ -38,7 +38,7 @@ def get_url():
     port = settings.db_port
     db = settings.db_name
 
-    url = f"postgresql+psycopg2://{user}:{password}@{server}:{port}/{db}"
+    url = f"postgresql+psycopg://{user}:{password}@{server}:{port}/{db}"
     return url
 
 
