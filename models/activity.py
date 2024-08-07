@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, ForeignKey, DATE
+from sqlalchemy import Integer, Column, ForeignKey, DATE, UUID
 
 from db.session import Base
 
@@ -10,4 +10,4 @@ class Activity(Base):
     mins_walking = Column(Integer)
     steps = Column(Integer)
     activity_date = Column(DATE)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
