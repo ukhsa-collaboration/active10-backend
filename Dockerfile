@@ -6,7 +6,6 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y \
     python3-dev \
-    default-libmysqlclient-dev \
     pkg-config \
     build-essential \
     netcat-openbsd \
