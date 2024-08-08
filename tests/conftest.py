@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import pytest
 import jwt
 import time
@@ -25,6 +27,8 @@ engine = create_engine(
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+user_uuid_pk = uuid4()
+
 
 @pytest.fixture(scope="module")
 def db_engine():
@@ -41,7 +45,7 @@ def db_session(db_engine):
 
     user_crud = UserCRUD(session)
     default_user = User(
-        id=99999999,
+        id=user_uuid_pk,
         unique_id="3a8d2869-0b2e-485a-9e67-8a906e6194ce",
         nhs_number="1234567890",
         first_name="Default",

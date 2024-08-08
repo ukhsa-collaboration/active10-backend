@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from tests.conftest import authenticated_user_token
+from tests.conftest import authenticated_user_token, user_uuid_pk
 
 
 def test_create_activities(client):
@@ -8,7 +8,7 @@ def test_create_activities(client):
     response = client.post(
         "/v1/activities/",
         json={
-            "user_id": 99999999,
+            "user_id": str(user_uuid_pk),
             "mins_brisk": 30,
             "mins_walking": 30,
             "steps": 5000,
