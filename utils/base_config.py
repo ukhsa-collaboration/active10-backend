@@ -16,7 +16,6 @@ class Config(BaseSettings):
     db_user: str
     db_pass: str
     db_name: str
-    db_root_pass: str
     app_uri: str
     gojauntly_key_id: str
     gojauntly_private_key: str
