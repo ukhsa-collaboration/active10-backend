@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr
@@ -11,6 +12,15 @@ class User(BaseModel):
     age_range: str
     location: str
     postcode: str
+
+
+class UserOut(BaseModel):
+    id: str
+    first_name: str
+    email: str
+    gender: str
+    age_range: str
+    postcode: Optional[str]
 
 
 class NHSUser(BaseModel):
