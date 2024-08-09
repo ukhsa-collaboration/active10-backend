@@ -1,4 +1,11 @@
-from tests.conftest import authenticated_user_token, unauthenticated_user_token
+from tests.conftest import authenticated_user_token, unauthenticated_user_token, expired_user_token
+
+
+def test_auth_token_expiry(client):
+    token = expired_user_token()
+    response = client.get("/v1/users/", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 403
 
 
 def test_read_user_with_token(client):
