@@ -1,11 +1,21 @@
-from uuid import UUID
-
 from pydantic import BaseModel
+from typing import List, Optional
+
+
+class Reward(BaseModel):
+    earned: int
+    slug: str
 
 
 class Activity(BaseModel):
-    user_id: UUID
-    date: int
-    mins_brisk: int
-    mins_walking: int
+    minsBrisk: int
+    minsWalking: int
     steps: int
+
+
+class UserActivityRequestSchema(BaseModel):
+    date: int
+    user_postcode: str
+    user_age_range: str
+    rewards: Optional[List[Reward]] = []
+    activity: Activity

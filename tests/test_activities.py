@@ -1,38 +1,97 @@
 from datetime import datetime
+from unittest.mock import patch
 
+from service.activity_service import load_activity_data
 from tests.conftest import authenticated_user_token, user_uuid_pk
 
 
 def test_create_activities(client):
-    token = authenticated_user_token()
-    response = client.post(
-        "/v1/activities/",
-        json={
-            "user_id": str(user_uuid_pk),
-            "mins_brisk": 30,
-            "mins_walking": 30,
-            "steps": 5000,
-            "date": int(datetime.timestamp(datetime.now())),
-        },
-        headers={"Authorization": f"Bearer {token}"},
-    )
+    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+        token = authenticated_user_token()
+        activity_payload = {
+            "date": 1714637586,
+            "user_postcode": "HD81",
+            "user_age_range": "23-39",
+            "rewards": [
+                {
+                    "earned": 63,
+                    "slug": "high_five"
+                }
+            ],
+            "activity": {
+                "minsBrisk": 109,
+                "minsWalking": 30,
+                "steps": 1867
+            }
+        }
 
-    assert response.status_code == 201
-    created_data = response.json()
-    assert created_data["mins_brisk"] == 30
-    assert created_data["mins_walking"] == 30
-    assert created_data["steps"] == 5000
+        response = client.post(
+            "/v1/activities/",
+            json=activity_payload,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 201
+        created_data = response.json()
+        assert created_data == {"message": "Success"}
+
+        mock_add_task.assert_called_once()
+        args, kwargs = mock_add_task.call_args
+        assert str(args[2].id) == str(user_uuid_pk)
+        assert args[0] == load_activity_data
+
+
+def test_create_activities_without_rewards(client):
+    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+        token = authenticated_user_token()
+        activity_payload = {
+            "date": 1714637586,
+            "user_postcode": "HD81",
+            "user_age_range": "23-39",
+            "activity": {
+                "minsBrisk": 109,
+                "minsWalking": 30,
+                "steps": 1867
+            }
+        }
+
+        response = client.post(
+            "/v1/activities/",
+            json=activity_payload,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 201
+        created_data = response.json()
+        assert created_data == {"message": "Success"}
+
+        mock_add_task.assert_called_once()
+        args, kwargs = mock_add_task.call_args
+        assert str(args[2].id) == str(user_uuid_pk)
+        assert args[0] == load_activity_data
 
 
 def test_create_activities_missing_fields(client):
     token = authenticated_user_token()
+
+    activity_payload = {
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "rewards": [
+            {
+                "earned": 63,
+                "slug": "high_five"
+            }
+        ],
+        "activity": {
+            "minsBrisk": 109,
+            "steps": 1867
+        }
+    }
+
     response = client.post(
         "/v1/activities/",
-        json={
-            "mins_brisk": 30,
-            "mins_walking": 30,
-            "steps": 5000,
-        },
+        json=activity_payload,
         headers={"Authorization": f"Bearer {token}"},
     )
 
@@ -41,14 +100,27 @@ def test_create_activities_missing_fields(client):
 
 def test_create_activities_invalid_data_types(client):
     token = authenticated_user_token()
+
+    activity_payload = {
+        "date": datetime.now().isoformat(),
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "rewards": [
+            {
+                "earned": 63,
+                "slug": "high_five"
+            }
+        ],
+        "activity": {
+            "minsBrisk": "ten",
+            "minsWalking": 30,
+            "steps": 1867
+        }
+    }
+
     response = client.post(
         "/v1/activities/",
-        json={
-            "mins_brisk": "thirty",  # Invalid type
-            "mins_walking": 30,
-            "steps": 5000,
-            "date": "2021-01-01"
-        },
+        json=activity_payload,
         headers={"Authorization": f"Bearer {token}"}
     )
 
