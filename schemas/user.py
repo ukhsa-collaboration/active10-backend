@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl, BaseModel, EmailStr
 
 
 class UserResponse(BaseModel):
-    id: str
+    id: UUID
     first_name: str
     email: str
     gender: str
