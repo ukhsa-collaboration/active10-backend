@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from starlette.responses import JSONResponse
 
 from models.user import User
-from schemas.user import UserOut
+from schemas.user import UserResponse
 from service.auth_service import get_authenticated_user_data
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -16,7 +16,7 @@ async def get_user(user: Annotated[User, Depends(get_authenticated_user_data)]):
     # return user
     age_range = get_age_range(user.date_of_birth)
     anony_email = anonymize_email(user.email)
-    return UserOut(
+    return UserResponse(
         id=str(user.id),
         first_name=user.first_name,
         email=anony_email,

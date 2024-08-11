@@ -4,17 +4,7 @@ from uuid import UUID
 from pydantic import AnyHttpUrl, BaseModel, EmailStr
 
 
-class User(BaseModel):
-    unique_id: str
-    first_name: str
-    email: str
-    gender: str
-    age_range: str
-    location: str
-    postcode: str
-
-
-class UserOut(BaseModel):
+class UserResponse(BaseModel):
     id: str
     first_name: str
     email: str
