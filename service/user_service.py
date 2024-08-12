@@ -29,6 +29,7 @@ class UserService:
             - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
         )
         age_ranges = {
+            (0, 20): "under 20",
             (20, 30): "20-30",
             (30, 40): "30-40",
             (40, 50): "40-50",
