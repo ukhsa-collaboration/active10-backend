@@ -1,0 +1,79 @@
+name: ECS Integration Deploy
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "dev" branch
+  push:
+    branches: [ "development" ]
+
+  pull_request:
+    branches: [ "" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    branches: [ "development" ]
+    inputs:
+      environment:
+        type: choice
+        options:
+          - development
+          - uat
+          - prod
+        required: true
+    
+env:
+  AWS_REGION: "eu-west-2"
+  
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for the actions/checkout
+  
+jobs:
+  build:
+    name: Docker build and ECS deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up AWS account
+        run: |
+          INPUT_ENVIRONMENT=${{ github.event.inputs.environment || 'development' }} >> $GITHUB_ENV
+          case $INPUT_ENVIRONMENT in
+            "development")
+              echo "aws_account_id=636728427214" >> $GITHUB_ENV
+              ;;
+            "uat")
+              echo "aws_account_id=422072214762" >> $GITHUB_ENV
+              ;;
+            "prod")
+              echo "aws_account_id=116851924324" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+            role-to-assume: arn:aws:iam::${{ env.aws_account_id }}:role/active10-backend-github-actions-role
+            role-session-name: dev-deploy
+            aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: active10-backend
+          IMAGE_TAG: latest
+        run: |
+          aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'development' }}-private-key --query SecretString --output text | base64 -d > private_key.pem
+          ls
+          docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: ECS Deployment
+        run: |
+          aws ecs update-service --cluster active10-dev --service active10-backend-dev-ecs-service --force-new-deployment
