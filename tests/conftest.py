@@ -96,12 +96,12 @@ def client(db_session):
 
 JWT_ALGORITHM = "HS256"
 JWT_SECRET = settings.secret
-TOKEN_EXPIRY_30_DAY_AS_SEC = 2592000
+TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
 def authenticated_user_token():
     user_id = "3a8d2869-0b2e-485a-9e67-8a906e6194ce"
-    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_30_DAY_AS_SEC}
+    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return token
@@ -109,7 +109,15 @@ def authenticated_user_token():
 
 def unauthenticated_user_token():
     user_id = "99999999asdfa"
-    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_30_DAY_AS_SEC}
+    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+    return token
+
+
+def expired_user_token():
+    user_id = "3a8d2869-0b2e-485a-9e67-8a906e6194ce"
+    payload = {"user_id": user_id, "expires": time.time() - TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return token
