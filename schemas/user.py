@@ -1,16 +1,16 @@
+from typing import Optional
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr
 
 
-class User(BaseModel):
-    unique_id: str
+class UserResponse(BaseModel):
+    id: UUID
     first_name: str
     email: str
     gender: str
     age_range: str
-    location: str
-    postcode: str
+    postcode: Optional[str]
 
 
 class NHSUser(BaseModel):

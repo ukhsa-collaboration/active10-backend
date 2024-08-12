@@ -33,7 +33,8 @@ class NHSLoginService:
         url = auth_nhs.get_authorization_url(state=state)
         return url
 
-    def __create_state(self, app_name: str, app_internal_id: str) -> str:
+    @staticmethod
+    def __create_state(app_name: str, app_internal_id: str) -> str:
         """
         Create a state for NHS Login Service using the app name and app internal ID.
 
@@ -45,7 +46,8 @@ class NHSLoginService:
 
     def process_callback(self, req_args: dict) -> str:
         """
-        Process callback from NHS Login Service.It stores the user information in DB and return deeplink URL for mobile app.
+        Process callback from NHS Login Service.It stores the user information
+        in DB and return deeplink URL for mobile app.
 
         :param req_args: The request arguments from the NHS login callback.
         :return: A deeplink URL containing a signed JWT token.
@@ -57,10 +59,13 @@ class NHSLoginService:
             # to use app without NHS login
             if error == "access_denied":
                 return f"{config.app_uri}nhs_noconsent"
+
         # Extract logged-in user information from NHS
         user_info = self.get_user_info(req_args)
-        # Store user information to database
-        # TODO: Check if the user is None
+
+        if not user_info:
+            raise ValueError("Failed to retrieve user information from NHS Login.")
+
         user = User(
             unique_id=user_info["sub"],
             nhs_number=user_info["nhs_number"],
@@ -72,8 +77,24 @@ class NHSLoginService:
             identity_level=user_info["identity_proofing_level"],
         )
 
-        self.userCRUD.upsert_user(user)
-        redirect_url = self.generate_redirect_url(user_info)
+        # Check if the user already exists
+        existing_user = self.userCRUD.get_user_by_sub(user.unique_id)
+
+        if existing_user:
+            # Update the existing user's information
+            existing_user.first_name = user.first_name
+            existing_user.email = user.email
+            existing_user.date_of_birth = user.date_of_birth
+            existing_user.gender = user.gender
+            existing_user.postcode = user.postcode
+            existing_user.identity_level = user.identity_level
+            result = self.userCRUD.update_user(existing_user)
+        else:
+            # Insert the new user
+            result = self.userCRUD.create_user(user)
+
+        # Generate and return new redirect URL for mobile app
+        redirect_url = self.generate_redirect_url(result)
 
         return redirect_url
 
@@ -97,7 +118,8 @@ class NHSLoginService:
 
         return user_info
 
-    def generate_redirect_url(self, user_info: NHSUser) -> str:
+    @staticmethod
+    def generate_redirect_url(user_info: User) -> str:
         """
         Generate a redirect URL for the user after successful login.
         This URL is consumed by the mobile app.
@@ -105,6 +127,6 @@ class NHSLoginService:
         :param user_info: An NHSUser instance with user information.
         :return: A redirect URL containing a signed JWT token.
         """
-        token = sign_jwt(user_info["sub"])
+        token = sign_jwt(str(user_info.id))
         redirect_url = f"{config.app_uri}nhs_user_logged_in?token={token}"
         return redirect_url
