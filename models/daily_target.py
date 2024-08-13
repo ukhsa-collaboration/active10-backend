@@ -1,0 +1,13 @@
+from uuid import uuid4
+
+from sqlalchemy import UUID, Column, Integer, ForeignKey
+
+from db.session import Base
+
+
+class UserDailyTarget(Base):
+    __tablename__ = "user_daily_target"
+
+    id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
+    daily_target = Column(Integer, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True, index=True)
