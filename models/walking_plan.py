@@ -10,4 +10,4 @@ class UserWalkingPlan(Base):
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
     walking_plan_data = Column(JSON, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, unique=True, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
