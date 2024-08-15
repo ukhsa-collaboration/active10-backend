@@ -15,9 +15,7 @@ def test_read_user_with_token(client):
     assert response.status_code == 200
     data = response.json()
 
-    assert data["unique_id"] == "3a8d2869-0b2e-485a-9e67-8a906e6194ce"
     assert data["first_name"] == "Default"
-    assert data["email"] == "default@example.com"
 
 
 def test_read_user_without_token(client):

@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from crud.user_crud import UserCRUD
 from main import app
@@ -15,13 +16,23 @@ from models import User
 from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
 
-DATABASE_URL = "sqlite:///:memory:"
+
+def get_test_database_url():
+    db_host = settings.db_host
+    db_port = settings.db_port
+    db_user = settings.db_user
+    db_password = settings.db_pass
+
+    database_url = f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/test-db"
+
+    if not database_exists(database_url):
+        create_database(database_url)
+
+    return database_url
+
 
 engine = create_engine(
-    DATABASE_URL,
-    connect_args={
-        "check_same_thread": False,
-    },
+    get_test_database_url(),
     poolclass=StaticPool,
 )
 
@@ -30,11 +41,12 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 user_uuid_pk = uuid4()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def db_engine():
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
+    drop_database(get_test_database_url())
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +64,8 @@ def db_session(db_engine):
         email="default@example.com",
         gender="male",
         postcode="12345",
-        identity_level="1"
+        identity_level="1",
+        date_of_birth="1990-01-01"
     )
     _ = user_crud.create_user(default_user)
 
@@ -100,7 +113,7 @@ TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
 def authenticated_user_token():
-    user_id = "3a8d2869-0b2e-485a-9e67-8a906e6194ce"
+    user_id = str(user_uuid_pk)
     payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -108,7 +121,7 @@ def authenticated_user_token():
 
 
 def unauthenticated_user_token():
-    user_id = "99999999asdfa"
+    user_id = str(uuid4())
     payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -116,7 +129,7 @@ def unauthenticated_user_token():
 
 
 def expired_user_token():
-    user_id = "3a8d2869-0b2e-485a-9e67-8a906e6194ce"
+    user_id = str(user_uuid_pk)
     payload = {"user_id": user_id, "expires": time.time() - TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
