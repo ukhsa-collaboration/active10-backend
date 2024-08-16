@@ -43,6 +43,56 @@ def test_post_activities_migrations(client):
         assert args[0] == load_bulk_activities_data
 
 
+def test_post_activities_migrations_with_out_of_range_activities(client):
+    token = authenticated_user_token()
+    activity_migration_payload = {
+        "month": 1714637586,
+        "activities": [
+            {
+                "date": 1714637586,
+                "user_postcode": "HD81",
+                "user_age_range": "23-39",
+                "rewards": [
+                    {
+                        "earned": 63,
+                        "slug": "high_five"
+                    }
+                ],
+                "activity": {
+                    "minsBrisk": 109,
+                    "minsWalking": 30,
+                    "steps": 1867
+                }
+            },
+            {
+                "date": 1717229586,
+                "user_postcode": "HD82",
+                "user_age_range": "23-39",
+                "rewards": [
+                    {
+                        "earned": 100,
+                        "slug": "gold_star"
+                    }
+                ],
+                "activity": {
+                    "minsBrisk": 200,
+                    "minsWalking": 50,
+                    "steps": 3000
+                }
+            }
+        ]
+    }
+
+    response = client.post(
+        "/v1/migrations/activities/",
+        json=activity_migration_payload,
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Some activities are out of the month range"}
+
+
 def test_post_activities_migrations_with_empty_activities(client):
     token = authenticated_user_token()
     activity_migration_payload = {
