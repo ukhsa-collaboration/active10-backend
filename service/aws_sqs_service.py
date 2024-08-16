@@ -10,22 +10,23 @@ sqs = boto3.client(
 )
 
 
-def send_message_to_sqs_queue(record) -> None:
+def send_message_to_sqs_queue(sqs_target_url, record) -> None:
     """
-    Send message to SQS queue.
+    Send message to target SQS queue.
 
     :param record: Data to be sent to the SQS queue.
+    :param sqs_target_url: SQS queue URL.
 
     return None
     """
     try:
         response = sqs.send_message(
-            QueueUrl=settings.aws_sqs_queue_url,
+            QueueUrl=sqs_target_url,
             MessageBody=json.dumps(record),
             MessageGroupId='Active10-Data',
         )
 
-        logger.info(f"Message sent to SQS queue: {settings.aws_sqs_queue_url} => response: {response}")
+        logger.info(f"Message sent to SQS queue: {sqs_target_url} => response: {response}")
 
     except Exception as e:
         logger.error(f"Error occurred while sending message to SQS queue: {e}")
