@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path
 
+from auth.auth_bearer import get_authenticated_user_data
 from gojauntly.gojauntly import GoJauntlyApi
-from service.auth_service import get_authenticated_user_data
 from utils.base_config import config
 
 from schemas.gojauntly import (

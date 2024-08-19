@@ -1,8 +1,12 @@
+from datetime import datetime
+from typing import Dict
+
 from fastapi import Depends
 from pydantic import HttpUrl
 
 from auth.jwt_handler import sign_jwt
 from crud.user_crud import UserCRUD
+from models import UserStatus
 from models.user import User
 from nhs.authenticator import Authenticator
 from nhs.pds import PDSClient
@@ -88,15 +92,18 @@ class NHSLoginService:
             existing_user.gender = user.gender
             existing_user.postcode = user.postcode
             existing_user.identity_level = user.identity_level
+            existing_user.status = UserStatus.LOGIN.value
+            existing_user.status_updated_at = datetime.utcnow()
             result = self.userCRUD.update_user(existing_user)
         else:
             # Insert the new user
             result = self.userCRUD.create_user(user)
 
         # Generate and return new redirect URL for mobile app
-        redirect_url = self.generate_redirect_url(result)
+        generated_data = self.generate_redirect_url(result)
+        self.userCRUD.update_current_token(str(result.id), generated_data.get("token"))
 
-        return redirect_url
+        return generated_data.get("redirect_url")
 
     def get_user_info(self, req_args: dict) -> NHSUser:
         """
@@ -119,14 +126,14 @@ class NHSLoginService:
         return user_info
 
     @staticmethod
-    def generate_redirect_url(user_info: User) -> str:
+    def generate_redirect_url(user_info: User) -> Dict[str, str]:
         """
         Generate a redirect URL for the user after successful login.
         This URL is consumed by the mobile app.
 
         :param user_info: An NHSUser instance with user information.
-        :return: A redirect URL containing a signed JWT token.
+        :return: A dict of redirect URL containing a signed JWT token and token as string.
         """
         token = sign_jwt(str(user_info.id))
         redirect_url = f"{config.app_uri}nhs_user_logged_in?token={token}"
-        return redirect_url
+        return {"redirect_url": redirect_url, "token": token}

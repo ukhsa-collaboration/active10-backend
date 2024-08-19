@@ -2,12 +2,11 @@ from datetime import datetime
 from unittest.mock import patch
 
 from service.activity_service import load_activity_data
-from tests.conftest import authenticated_user_token, user_uuid_pk
+from tests.conftest import user_uuid_pk, authenticated_user
 
 
-def test_create_activities(client):
+def test_create_activities(client, authenticated_user):
     with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
-        token = authenticated_user_token()
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
@@ -28,7 +27,7 @@ def test_create_activities(client):
         response = client.post(
             "/v1/activities/",
             json=activity_payload,
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
         )
 
         assert response.status_code == 201
@@ -41,9 +40,8 @@ def test_create_activities(client):
         assert args[0] == load_activity_data
 
 
-def test_create_activities_without_rewards(client):
+def test_create_activities_without_rewards(client, authenticated_user):
     with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
-        token = authenticated_user_token()
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
@@ -58,7 +56,7 @@ def test_create_activities_without_rewards(client):
         response = client.post(
             "/v1/activities/",
             json=activity_payload,
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
         )
 
         assert response.status_code == 201
@@ -71,9 +69,7 @@ def test_create_activities_without_rewards(client):
         assert args[0] == load_activity_data
 
 
-def test_create_activities_missing_fields(client):
-    token = authenticated_user_token()
-
+def test_create_activities_missing_fields(client, authenticated_user):
     activity_payload = {
         "user_postcode": "HD81",
         "user_age_range": "23-39",
@@ -92,15 +88,13 @@ def test_create_activities_missing_fields(client):
     response = client.post(
         "/v1/activities/",
         json=activity_payload,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
     )
 
     assert response.status_code == 422
 
 
-def test_create_activities_invalid_data_types(client):
-    token = authenticated_user_token()
-
+def test_create_activities_invalid_data_types(client, authenticated_user):
     activity_payload = {
         "date": datetime.now().isoformat(),
         "user_postcode": "HD81",
@@ -121,7 +115,7 @@ def test_create_activities_invalid_data_types(client):
     response = client.post(
         "/v1/activities/",
         json=activity_payload,
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
     )
 
     assert response.status_code == 422
