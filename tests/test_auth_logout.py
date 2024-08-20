@@ -11,7 +11,7 @@ def test_logout_with_unauthenticated_user(client, unauthenticated_user):
 
     response = client.get(
         "/v1/auth/logout/",
-        headers = {"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+        headers = {"Authorization": f"Bearer {unauthenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -22,7 +22,7 @@ def test_logout_with_authenticated_user(client, authenticated_user):
 
     response = client.get(
         "/v1/auth/logout/",
-        headers = {"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers = {"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 200

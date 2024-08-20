@@ -27,7 +27,7 @@ def test_create_activities(client, authenticated_user):
         response = client.post(
             "/v1/activities/",
             json=activity_payload,
-            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
         assert response.status_code == 201
@@ -56,7 +56,7 @@ def test_create_activities_without_rewards(client, authenticated_user):
         response = client.post(
             "/v1/activities/",
             json=activity_payload,
-            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
         assert response.status_code == 201
@@ -88,7 +88,7 @@ def test_create_activities_missing_fields(client, authenticated_user):
     response = client.post(
         "/v1/activities/",
         json=activity_payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 422
@@ -115,7 +115,7 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
     response = client.post(
         "/v1/activities/",
         json=activity_payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 422

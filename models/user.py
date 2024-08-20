@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 from enum import Enum
-from sqlalchemy import Column, Date, String, UUID, DateTime
+from sqlalchemy import Column, Date, String, UUID, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 from db.session import Base
@@ -28,11 +28,22 @@ class User(Base):
     gender = Column(String(length=6), nullable=False, default="")
     postcode = Column(String(length=10), nullable=True, default="")
     identity_level = Column(String(length=2), nullable=False)
-    current_token = Column(String(length=500), nullable=True, index=True)
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
     status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
 
     active = relationship("Activity", backref="user")
+    token = relationship("UserToken", back_populates="user", uselist=False)
+
+
+class UserToken(Base):
+    __tablename__ = "user_tokens"
+
+    id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
+    token = Column(String(length=500), nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    user = relationship("User", back_populates="token")
 
 
 class DeleteAudit(Base):
