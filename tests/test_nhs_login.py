@@ -52,3 +52,61 @@ def test_nhs_login_callback_empty_query_params(client):
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Missing state and code"}
+
+
+def test_logout_user_without_token(client):
+    response = client.post("/nhs_login/logout")
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+def test_logout_with_unauthenticated_user(client, unauthenticated_user):
+
+    response = client.post(
+        "/nhs_login/logout",
+        headers = {"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
+
+
+def test_logout_with_authenticated_user(client, authenticated_user):
+
+    response = client.post(
+        "/nhs_login/logout",
+        headers = {"Authorization": f"Bearer {authenticated_user.current_token}"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "User logged out successfully"}
+
+
+from tests.conftest import unauthenticated_user, authenticated_user
+
+
+def test_disconnect_with_unauthenticated_user(client, unauthenticated_user):
+    response = client.post(
+        "/nhs_login/disconnect",
+        headers = {"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
+
+
+def test_disconnect_user_without_token(client):
+    response = client.post("/nhs_login/disconnect")
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+def test_disconnect_user_with_authenticated_user(client, authenticated_user):
+    response = client.post(
+        "/nhs_login/disconnect",
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "User disconnected successfully"}
