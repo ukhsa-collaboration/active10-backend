@@ -54,7 +54,6 @@ class UserService:
         return f"{local_part[:visible_chars]}...@{domain_part}"
 
     def calculate_age(self, date_of_birth):
-        print(date_of_birth)
         today = datetime.today()
 
         age = today.year - date_of_birth.year
