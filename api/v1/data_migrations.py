@@ -1,8 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+
+from auth.auth_bearer import get_authenticated_user_data
 from models import User
 from schemas.migrations_schema import ActivitiesMigrationsRequestSchema
-from service.auth_service import get_authenticated_user_data
 from service.migrations_service import load_bulk_activities_data
 from datetime import datetime
 import calendar

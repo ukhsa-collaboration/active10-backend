@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from auth.auth_bearer import get_authenticated_user_data
 from crud.walking_plan_crud import UserWalkingPlanCRUD
 from models import User
 from models.walking_plan import UserWalkingPlan
 from schemas.walking_plan import WalkingPlanRequestSchema, UserWalkingPlanResponseSchema
-from service.auth_service import get_authenticated_user_data
 
 router = APIRouter(prefix="/walking_plans", tags=["walking plans"])
 

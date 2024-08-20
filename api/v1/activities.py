@@ -1,10 +1,11 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, BackgroundTasks
+
+from auth.auth_bearer import get_authenticated_user_data
 from models import User
 from service.activity_service import load_activity_data
 
 from schemas.activity import UserActivityRequestSchema
-from service.auth_service import get_authenticated_user_data
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 

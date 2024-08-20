@@ -45,3 +45,12 @@ class UserCRUD:
             return user_to_delete
         else:
             return None
+
+    def update_current_token(self, uuid: str, token: str) -> None:
+        user_to_update = self.db.query(User).filter(User.id == uuid).first()
+
+        if user_to_update:
+            user_to_update.current_token = token
+            self.db.commit()
+
+        return None

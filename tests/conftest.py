@@ -1,8 +1,8 @@
+import time
 from uuid import uuid4
 
-import pytest
 import jwt
-import time
+import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
@@ -10,8 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from crud.user_crud import UserCRUD
-from main import app
 from db.session import get_db_session, Base
+from main import app
 from models import User
 from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
@@ -112,25 +112,27 @@ JWT_SECRET = settings.secret
 TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
-def authenticated_user_token():
-    user_id = str(user_uuid_pk)
-    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
+@pytest.fixture(scope="function")
+def authenticated_user(db_session):
+
+    user = db_session.query(User).filter(User.id == user_uuid_pk).first()
+
+    payload = {"user_id": str(user.id), "exp": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    user.current_token = token
+    db_session.commit()
 
-    return token
+    return user
 
 
-def unauthenticated_user_token():
-    user_id = str(uuid4())
-    payload = {"user_id": user_id, "expires": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
+@pytest.fixture(scope="function")
+def unauthenticated_user(db_session):
+
+    user = db_session.query(User).filter(User.id == user_uuid_pk).first()
+
+    payload = {"user_id": str(uuid4()), "exp": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    user.current_token = token
+    db_session.commit()
 
-    return token
-
-
-def expired_user_token():
-    user_id = str(user_uuid_pk)
-    payload = {"user_id": user_id, "expires": time.time() - TOKEN_EXPIRY_5_MINUTES_AS_SEC}
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-
-    return token
+    return user

@@ -3,11 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth.auth_bearer import get_authenticated_user_data
 from crud.daily_target_crud import UserDailyTargetCRUD
 from models import User
 from models.daily_target import UserDailyTarget
 from schemas.daily_target import DailyTargetRequestSchema, DailyTargetResponseSchema
-from service.auth_service import get_authenticated_user_data
+
 
 router = APIRouter(prefix="/daily_targets", tags=["daily target"])
 

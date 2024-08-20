@@ -1,12 +1,11 @@
 from unittest.mock import patch
 
 from service.migrations_service import load_bulk_activities_data
-from tests.conftest import authenticated_user_token, user_uuid_pk, unauthenticated_user_token
+from tests.conftest import user_uuid_pk
 
 
-def test_post_activities_migrations(client):
+def test_post_activities_migrations(client, authenticated_user):
     with (patch("fastapi.BackgroundTasks.add_task") as mock_add_task):
-        token = authenticated_user_token()
         activity_migration_payload = {
             "month": 1714637586,
             "activities": [{
@@ -30,7 +29,7 @@ def test_post_activities_migrations(client):
         response = client.post(
             "/v1/migrations/activities/",
             json=activity_migration_payload,
-            headers={"Authorization": f"Bearer {token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
         )
 
         assert response.status_code == 201
@@ -43,8 +42,7 @@ def test_post_activities_migrations(client):
         assert args[0] == load_bulk_activities_data
 
 
-def test_post_activities_migrations_with_out_of_range_activities(client):
-    token = authenticated_user_token()
+def test_post_activities_migrations_with_out_of_range_activities(client, authenticated_user):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": [
@@ -86,15 +84,14 @@ def test_post_activities_migrations_with_out_of_range_activities(client):
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
     )
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Some activities are out of the month range"}
 
 
-def test_post_activities_migrations_with_empty_activities(client):
-    token = authenticated_user_token()
+def test_post_activities_migrations_with_empty_activities(client, authenticated_user):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": []
@@ -103,14 +100,13 @@ def test_post_activities_migrations_with_empty_activities(client):
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
     )
 
     assert response.status_code == 422
 
 
-def test_post_activities_migrations_with_unauthenticated_user(client):
-    token = unauthenticated_user_token()
+def test_post_activities_migrations_with_unauthenticated_user(client, unauthenticated_user):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": [{
@@ -134,14 +130,13 @@ def test_post_activities_migrations_with_unauthenticated_user(client):
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"},
     )
 
     assert response.status_code == 404
 
 
-def test_post_activities_migrations_with_missing_month_field(client):
-    token = authenticated_user_token()
+def test_post_activities_migrations_with_missing_month_field(client, authenticated_user):
     activity_migration_payload = {
         "activities": [{
             "date": 1714637586,
@@ -164,7 +159,7 @@ def test_post_activities_migrations_with_missing_month_field(client):
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
     )
 
     assert response.status_code == 422
