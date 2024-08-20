@@ -28,22 +28,20 @@ class UserService:
             - date_of_birth.year
             - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
         )
-        age_ranges = {
-            (0, 20): "under 20",
-            (20, 30): "20-30",
-            (30, 40): "30-40",
-            (40, 50): "40-50",
-            (50, 60): "50-60",
-            (60, 70): "60-70",
-            (70, 80): "70-80",
-            (80, 90): "80-90",
-            (90, 100): "90-100",
-        }
-        for age_range, range_str in age_ranges.items():
-            if age_range[0] <= age < age_range[1]:
-                return range_str
 
-        return "over 100"
+        age_ranges = {
+            (18, 24): "18 to 24",
+            (25, 34): "25 to 34",
+            (35, 44): "35 to 44",
+            (45, 54): "45 to 54",
+            (55, 64): "55 to 64",
+        }
+        for age_range in age_ranges:
+            if age_range[0] <= age <= age_range[1]:
+                return age_ranges[age_range]
+        if age >= 65:
+            return "65 or over"
+        return "Out of range"
 
     def __anonymize_email(self, email: str):
         visible_chars = 3
