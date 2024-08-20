@@ -29,7 +29,7 @@ def test_post_activities_migrations(client, authenticated_user):
         response = client.post(
             "/v1/migrations/activities/",
             json=activity_migration_payload,
-            headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
         assert response.status_code == 201
@@ -84,7 +84,7 @@ def test_post_activities_migrations_with_out_of_range_activities(client, authent
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 400
@@ -100,7 +100,7 @@ def test_post_activities_migrations_with_empty_activities(client, authenticated_
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 422
@@ -130,7 +130,7 @@ def test_post_activities_migrations_with_unauthenticated_user(client, unauthenti
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
     assert response.status_code == 404
@@ -159,7 +159,7 @@ def test_post_activities_migrations_with_missing_month_field(client, authenticat
     response = client.post(
         "/v1/migrations/activities/",
         json=activity_migration_payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"},
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 422

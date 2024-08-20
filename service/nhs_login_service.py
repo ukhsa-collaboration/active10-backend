@@ -5,6 +5,7 @@ from fastapi import Depends
 from pydantic import HttpUrl
 
 from auth.jwt_handler import sign_jwt
+from crud.token_crud import TokenCRUD
 from crud.user_crud import UserCRUD
 from models import UserStatus
 from models.user import User
@@ -22,8 +23,9 @@ auth_nhs = Authenticator(
 
 
 class NHSLoginService:
-    def __init__(self, user_crud: UserCRUD = Depends()) -> None:
+    def __init__(self, user_crud: UserCRUD = Depends(), user_token_crud: TokenCRUD = Depends()) -> None:
         self.userCRUD = user_crud
+        self.token_crud = user_token_crud
         self.pds_client = PDSClient(config.nhs_api_key, config.nhs_api_url)
 
     def get_nhs_login_url(self, app_name: str, app_internal_id: str) -> HttpUrl:
@@ -101,7 +103,7 @@ class NHSLoginService:
 
         # Generate and return new redirect URL for mobile app
         generated_data = self.generate_redirect_url(result)
-        self.userCRUD.update_current_token(str(result.id), generated_data.get("token"))
+        _ = self.token_crud.create_or_update_user_token(user_id=result.id, token=generated_data.get("token"))
 
         return generated_data.get("redirect_url")
 

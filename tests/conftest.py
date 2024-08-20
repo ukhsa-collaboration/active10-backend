@@ -12,7 +12,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 from crud.user_crud import UserCRUD
 from db.session import get_db_session, Base
 from main import app
-from models import User
+from models import User, UserToken
 from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
 
@@ -112,27 +112,30 @@ JWT_SECRET = settings.secret
 TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
-@pytest.fixture(scope="function")
-def authenticated_user(db_session):
+def create_user_token(user, db_session, is_authenticated=True):
+    if user.token:
+        db_session.delete(user.token)
+        db_session.commit()
 
-    user = db_session.query(User).filter(User.id == user_uuid_pk).first()
-
-    payload = {"user_id": str(user.id), "exp": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
+    user_id = str(user.id) if is_authenticated else str(uuid4())
+    payload = {"user_id": user_id, "exp": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    user.current_token = token
+
+    user_token = UserToken(user_id=user.id, token=token)
+    db_session.add(user_token)
     db_session.commit()
+    db_session.refresh(user)
 
     return user
+
+
+@pytest.fixture(scope="function")
+def authenticated_user(db_session):
+    user = db_session.query(User).filter(User.id == user_uuid_pk).first()
+    return create_user_token(user, db_session, is_authenticated=True)
 
 
 @pytest.fixture(scope="function")
 def unauthenticated_user(db_session):
-
     user = db_session.query(User).filter(User.id == user_uuid_pk).first()
-
-    payload = {"user_id": str(uuid4()), "exp": time.time() + TOKEN_EXPIRY_5_MINUTES_AS_SEC}
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    user.current_token = token
-    db_session.commit()
-
-    return user
+    return create_user_token(user, db_session, is_authenticated=False)

@@ -14,7 +14,7 @@ def test_create_daily_target(client, authenticated_user):
     response = client.post(
         "/v1/daily_targets/",
         json=payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 201
@@ -27,7 +27,7 @@ def test_create_daily_target(client, authenticated_user):
 def test_create_daily_target_with_missing_body(client, authenticated_user):
     response = client.post(
         "/v1/daily_targets/",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 422
@@ -41,7 +41,7 @@ def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_use
     response = client.post(
         "/v1/daily_targets/",
         json=payload,
-        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -50,7 +50,7 @@ def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_use
 def test_get_user_all_daily_targets_by_unauthenticated_user(client, unauthenticated_user):
     response = client.get(
         "/v1/daily_targets/",
-        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -59,7 +59,7 @@ def test_get_user_all_daily_targets_by_unauthenticated_user(client, unauthentica
 def test_get_user_all_daily_target(client, authenticated_user):
     response = client.get(
         "/v1/daily_targets/",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 200
@@ -72,7 +72,7 @@ def test_get_user_single_daily_target(client, authenticated_user):
 
     response = client.get(
         f"/v1/daily_targets/{target_id}",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 200
@@ -85,7 +85,7 @@ def test_get_user_single_invalid_daily_target(client, authenticated_user):
 
     response = client.get(
         f"/v1/daily_targets/{invalid_target_id}",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -100,7 +100,7 @@ def test_update_daily_target(client, authenticated_user):
     response = client.put(
         f"/v1/daily_targets/{target_id}",
         json=payload,
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 200
@@ -119,7 +119,7 @@ def test_update_daily_target_by_unauthenticated_user(client, unauthenticated_use
     response = client.put(
         f"/v1/daily_targets/{target_id}",
         json=payload,
-        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -130,7 +130,7 @@ def test_delete_daily_target_by_unauthenticated_user(client, unauthenticated_use
 
     response = client.delete(
         f"/v1/daily_targets/{target_id}",
-        headers={"Authorization": f"Bearer {unauthenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"}
     )
 
     assert response.status_code == 404
@@ -141,7 +141,7 @@ def test_delete_daily_target(client, authenticated_user):
 
     response = client.delete(
         f"/v1/daily_targets/{target_id}",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 204
@@ -152,7 +152,7 @@ def test_delete_invalid_daily_target(client, authenticated_user):
 
     response = client.delete(
         f"/v1/daily_targets/{invalid_target_id}",
-        headers={"Authorization": f"Bearer {authenticated_user.current_token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
     )
 
     assert response.status_code == 404

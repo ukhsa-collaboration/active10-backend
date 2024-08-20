@@ -34,7 +34,8 @@ async def logout(
 ):
     user.status = UserStatus.LOGOUT.value
     user.status_updated_at = datetime.utcnow()
-    user.current_token = None
+    user_token = user.token
+    db.delete(user_token)
     db.commit()
 
     return {"message": "User logged out successfully"}
@@ -46,11 +47,12 @@ async def disconnect(
     db: Session = Depends(get_db_session)
 ):
     try:
+        db.delete(user.token)
         db.delete(user)
 
         delete_audit = DeleteAudit(
-            user_id = user.id,
-            delete_reason = UserDeleteReason.DISCONNECTED.value
+            user_id=user.id,
+            delete_reason=UserDeleteReason.DISCONNECTED.value
         )
         db.add(delete_audit)
         db.commit()
