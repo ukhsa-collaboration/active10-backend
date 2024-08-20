@@ -1,6 +1,14 @@
-from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse
+from datetime import datetime
+from typing import Annotated
 
+from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
+
+from auth.auth_bearer import get_authenticated_user_data
+from db.session import get_db_session
+from models import User, UserStatus, UserDeleteReason, DeleteAudit
 from service.nhs_login_service import NHSLoginService
 
 router = APIRouter(prefix="/nhs_login", tags=["NHS Login"])
@@ -19,6 +27,36 @@ async def nhs_login_callback(request: Request, service: NHSLoginService = Depend
     return RedirectResponse(deep_link)
 
 
-@router.post("/logout")
-async def nhs_logout(service: NHSLoginService = Depends()):
-    pass
+@router.post("/logout", response_class=JSONResponse, status_code=200)
+async def logout(
+    user: Annotated[User, Depends(get_authenticated_user_data)],
+    db: Session = Depends(get_db_session)
+):
+    user.status = UserStatus.LOGOUT.value
+    user.status_updated_at = datetime.utcnow()
+    user.current_token = None
+    db.commit()
+
+    return {"message": "User logged out successfully"}
+
+
+@router.post("/disconnect", response_class=JSONResponse, status_code=200)
+async def disconnect(
+    user: Annotated[User, Depends(get_authenticated_user_data)],
+    db: Session = Depends(get_db_session)
+):
+    try:
+        db.delete(user)
+
+        delete_audit = DeleteAudit(
+            user_id = user.id,
+            delete_reason = UserDeleteReason.DISCONNECTED.value
+        )
+        db.add(delete_audit)
+        db.commit()
+
+        return {"message": "User disconnected successfully"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to disconnect user") from e
