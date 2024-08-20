@@ -9,6 +9,7 @@ class UserResponse(BaseModel):
     first_name: str
     email: str
     gender: str
+    age: int    
     age_range: str
     postcode: Optional[str]
 
