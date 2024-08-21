@@ -11,6 +11,7 @@ class UserService:
     def get_user_profile(self, user: User) -> UserResponse:
         age_range = self.__get_age_range(user.date_of_birth)
         anony_email = self.__anonymize_email(user.email)
+        age = self.calculate_age(user.date_of_birth)
         return UserResponse(
             id=user.id,
             first_name=user.first_name,
@@ -19,6 +20,7 @@ class UserService:
             postcode=user.postcode,
             identity_level=user.identity_level,
             age_range=age_range,
+            age=age,
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
@@ -50,3 +52,13 @@ class UserService:
 
         local_part, domain_part = email.split("@", 1)
         return f"{local_part[:visible_chars]}...@{domain_part}"
+
+    def calculate_age(self, date_of_birth):
+        today = datetime.today()
+
+        age = today.year - date_of_birth.year
+
+        if (today.month, today.day) < (date_of_birth.month, date_of_birth.day):
+            age -= 1
+
+        return age
