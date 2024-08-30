@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 from enum import Enum
-from sqlalchemy import Column, Date, String, UUID, DateTime, ForeignKey
+from sqlalchemy import Column, Date, String, UUID, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 from db.session import Base
@@ -53,3 +53,15 @@ class DeleteAudit(Base):
     user_id = Column(UUID(as_uuid=True), nullable=False)
     delete_reason = Column(String(length=50), nullable=False)
     deleted_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+
+
+class EmailPreference(Base):
+    __tablename__ = "email_preferences"
+
+    id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(length=200), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
