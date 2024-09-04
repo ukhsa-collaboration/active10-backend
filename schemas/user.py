@@ -1,7 +1,24 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
+
+
+class EmailPreferenceRequest(BaseModel):
+    name: str = Field(..., examples=["active10_mailing_list"])
+
+    @field_validator('name')
+    def validate_name(cls, name: str) -> str:
+        if name != "active10_mailing_list":
+            raise ValueError("Invalid name")
+
+        return name
+
+
+class EmailPreferenceResponse(BaseModel):
+    id: UUID
+    name: str
+    is_active: bool
 
 
 class UserResponse(BaseModel):
@@ -12,6 +29,7 @@ class UserResponse(BaseModel):
     age: int
     age_range: str
     postcode: Optional[str]
+    email_preferences: Optional[List[EmailPreferenceResponse]] = []
 
 
 class NHSUser(BaseModel):
@@ -27,14 +45,3 @@ class NHSUser(BaseModel):
     given_name: str
     gender: str
     postcode: str
-
-
-class EmailPreferenceRequest(BaseModel):
-    name: str = Field(..., examples=["active10_mailing_list"])
-
-    @field_validator('name')
-    def validate_name(cls, name: str) -> str:
-        if name != "active10_mailing_list":
-            raise ValueError("Invalid name")
-
-        return name
