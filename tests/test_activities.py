@@ -32,7 +32,8 @@ def test_create_activities(client, authenticated_user):
 
         assert response.status_code == 201
         created_data = response.json()
-        assert created_data == {"message": "Success"}
+        assert created_data["date"] == 1714637586
+        assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
         args, kwargs = mock_add_task.call_args
@@ -61,7 +62,8 @@ def test_create_activities_without_rewards(client, authenticated_user):
 
         assert response.status_code == 201
         created_data = response.json()
-        assert created_data == {"message": "Success"}
+        assert created_data["date"] == 1714637586
+        assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
         args, kwargs = mock_add_task.call_args
@@ -119,3 +121,24 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
     )
 
     assert response.status_code == 422
+
+
+def test_list_activities(client, authenticated_user):
+    response = client.get(
+        "/v1/activities/",
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+    )
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert "id" in response_data[0]
+
+
+
+def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):
+    response = client.get(
+        "/v1/activities/",
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
+    )
+
+    assert response.status_code == 404

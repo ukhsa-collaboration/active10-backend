@@ -54,7 +54,11 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = get_url()
+
+    url = config.get_main_option("sqlalchemy.url")
+    if "test" not in url:
+        url = get_url()
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -74,7 +78,12 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
-    configuration["sqlalchemy.url"] = get_url()
+
+    url = config.get_main_option("sqlalchemy.url")
+    if "test" not in url:
+        url = get_url()
+
+    configuration["sqlalchemy.url"] = url
 
     connectable = engine_from_config(
         configuration,
