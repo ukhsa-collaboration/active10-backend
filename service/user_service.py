@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from models.user import User
-from schemas.user import UserResponse
+from schemas.user import UserResponse, EmailPreferenceResponse
 
 
 class UserService:
@@ -12,6 +12,7 @@ class UserService:
         age_range = self.__get_age_range(user.date_of_birth)
         anony_email = self.__anonymize_email(user.email)
         age = self.calculate_age(user.date_of_birth)
+
         return UserResponse(
             id=user.id,
             first_name=user.first_name,
@@ -21,6 +22,11 @@ class UserService:
             identity_level=user.identity_level,
             age_range=age_range,
             age=age,
+            email_preferences=[EmailPreferenceResponse(
+                id=ep.id,
+                name=ep.name,
+                is_active=ep.is_active,
+            ) for ep in user.email_preferences if user.email_preferences],
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
