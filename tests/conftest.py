@@ -3,6 +3,8 @@ from uuid import uuid4
 
 import jwt
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
@@ -30,30 +32,33 @@ def get_test_database_url():
 
     return database_url
 
-
-engine = create_engine(
-    get_test_database_url(),
-    poolclass=StaticPool,
-)
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 user_uuid_pk = uuid4()
+
+engine = create_engine(get_test_database_url(),poolclass=StaticPool)
+TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="session")
 def db_engine():
-    Base.metadata.create_all(bind=engine)
+    database_url = get_test_database_url()
+    alembic_cfg = Config()
+    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+    alembic_cfg.set_main_option("script_location", "db/migrations")
+
+    with engine.begin() as connection:
+        alembic_cfg.attributes['connection'] = connection
+        command.upgrade(alembic_cfg, "head")
+
     yield engine
     Base.metadata.drop_all(bind=engine)
-    drop_database(get_test_database_url())
+    drop_database(database_url)
 
 
 @pytest.fixture(scope="module")
 def db_session(db_engine):
     connection = db_engine.connect()
     transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
+    session = TestSessionLocal(bind=connection)
 
     user_crud = UserCRUD(session)
     default_user = User(
