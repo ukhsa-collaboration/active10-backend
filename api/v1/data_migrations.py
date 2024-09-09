@@ -40,7 +40,7 @@ async def save_bulk_activities(
             detail="Some activities are out of the month range"
         )
 
-    background_task.add_task(load_bulk_activities_data, data, user)
+    background_task.add_task(load_bulk_activities_data, data, str(user.id))
     activities_crud.create_bulk_activities(data.activities, user_id=user.id)
 
     return {"message": "Success"}

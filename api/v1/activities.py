@@ -21,7 +21,7 @@ async def save_activity(
         activities_crud: Annotated[ActivityCrud, Depends()]
 ):
 
-    background_task.add_task(load_activity_data, activity_payload, user)
+    background_task.add_task(load_activity_data, activity_payload, str(user.id))
     activity = activities_crud.create_activity(activity_payload, user_id=user.id)
 
     return activity
