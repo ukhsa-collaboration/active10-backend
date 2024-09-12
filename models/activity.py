@@ -15,8 +15,8 @@ class Activity(Base):
     date = Column(BigInteger, nullable=False, primary_key=True, index=True)
     user_postcode = Column(String(10), nullable=False)
     user_age_range = Column(String(50), nullable=False)
-    minsBrisk = Column(Integer, nullable=False)
-    minsWalking = Column(Integer, nullable=False)
+    brisk_minutes = Column(Integer, nullable=False)
+    walking_minutes = Column(Integer, nullable=False)
     steps = Column(Integer, nullable=False)
     rewards = Column(ARRAY(JSON), nullable=True)
 

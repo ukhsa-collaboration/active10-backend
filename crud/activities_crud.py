@@ -15,8 +15,8 @@ class ActivityCrud:
             rewards=activity_payload.rewards,
             user_postcode=activity_payload.user_postcode,
             user_age_range=activity_payload.user_age_range,
-            minsBrisk=activity_payload.activity.minsBrisk,
-            minsWalking=activity_payload.activity.minsWalking,
+            brisk_minutes=activity_payload.activity.brisk_minutes,
+            walking_minutes=activity_payload.activity.walking_minutes,
             steps=activity_payload.activity.steps,
             user_id=user_id
         )
@@ -35,8 +35,8 @@ class ActivityCrud:
                 rewards=activity_payload.rewards,
                 user_postcode=activity_payload.user_postcode,
                 user_age_range=activity_payload.user_age_range,
-                minsBrisk=activity_payload.activity.minsBrisk,
-                minsWalking=activity_payload.activity.minsWalking,
+                brisk_minutes=activity_payload.activity.brisk_minutes,
+                walking_minutes=activity_payload.activity.walking_minutes,
                 steps=activity_payload.activity.steps,
                 user_id=user_id
             )

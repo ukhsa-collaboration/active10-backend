@@ -18,8 +18,8 @@ def test_create_activities(client, authenticated_user):
                 }
             ],
             "activity": {
-                "minsBrisk": 109,
-                "minsWalking": 30,
+                "brisk_minutes": 109,
+                "walking_minutes": 30,
                 "steps": 1867
             }
         }
@@ -37,7 +37,7 @@ def test_create_activities(client, authenticated_user):
 
         mock_add_task.assert_called_once()
         args, kwargs = mock_add_task.call_args
-        assert str(args[2].id) == str(user_uuid_pk)
+        assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
 
@@ -48,8 +48,8 @@ def test_create_activities_without_rewards(client, authenticated_user):
             "user_postcode": "HD81",
             "user_age_range": "23-39",
             "activity": {
-                "minsBrisk": 109,
-                "minsWalking": 30,
+                "brisk_minutes": 109,
+                "walking_minutes": 30,
                 "steps": 1867
             }
         }
@@ -67,7 +67,7 @@ def test_create_activities_without_rewards(client, authenticated_user):
 
         mock_add_task.assert_called_once()
         args, kwargs = mock_add_task.call_args
-        assert str(args[2].id) == str(user_uuid_pk)
+        assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
 
@@ -82,7 +82,7 @@ def test_create_activities_missing_fields(client, authenticated_user):
             }
         ],
         "activity": {
-            "minsBrisk": 109,
+            "brisk_minutes": 109,
             "steps": 1867
         }
     }
@@ -108,8 +108,8 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
             }
         ],
         "activity": {
-            "minsBrisk": "ten",
-            "minsWalking": 30,
+            "brisk_minutes": "ten",
+            "walking_minutes": 30,
             "steps": 1867
         }
     }
