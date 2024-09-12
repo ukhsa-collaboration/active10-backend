@@ -19,8 +19,8 @@ def test_post_activities_migrations(client, authenticated_user):
                     }
                 ],
                 "activity": {
-                    "minsBrisk": 109,
-                    "minsWalking": 30,
+                    "brisk_minutes": 109,
+                    "walking_minutes": 30,
                     "steps": 1867
                 }
             }]
@@ -38,7 +38,7 @@ def test_post_activities_migrations(client, authenticated_user):
 
         mock_add_task.assert_called_once()
         args, _ = mock_add_task.call_args
-        assert str(args[2].id) == str(user_uuid_pk)
+        assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_bulk_activities_data
 
 
@@ -57,8 +57,8 @@ def test_post_activities_migrations_with_out_of_range_activities(client, authent
                     }
                 ],
                 "activity": {
-                    "minsBrisk": 109,
-                    "minsWalking": 30,
+                    "brisk_minutes": 109,
+                    "walking_minutes": 30,
                     "steps": 1867
                 }
             },
@@ -73,8 +73,8 @@ def test_post_activities_migrations_with_out_of_range_activities(client, authent
                     }
                 ],
                 "activity": {
-                    "minsBrisk": 200,
-                    "minsWalking": 50,
+                    "brisk_minutes": 200,
+                    "walking_minutes": 50,
                     "steps": 3000
                 }
             }
@@ -120,8 +120,8 @@ def test_post_activities_migrations_with_unauthenticated_user(client, unauthenti
                 }
             ],
             "activity": {
-                "minsBrisk": 109,
-                "minsWalking": 30,
+                "brisk_minutes": 109,
+                "walking_minutes": 30,
                 "steps": 1867
             }
         }]
@@ -149,8 +149,8 @@ def test_post_activities_migrations_with_missing_month_field(client, authenticat
                 }
             ],
             "activity": {
-                "minsBrisk": 109,
-                "minsWalking": 30,
+                "brisk_minutes": 109,
+                "walking_minutes": 30,
                 "steps": 1867
             }
         }]

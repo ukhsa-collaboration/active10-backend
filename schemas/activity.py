@@ -5,8 +5,8 @@ from typing import List, Optional, Dict, Any
 
 
 class Activity(BaseModel):
-    minsBrisk: int
-    minsWalking: int
+    brisk_minutes: int
+    walking_minutes: int
     steps: int
 
 
@@ -23,8 +23,8 @@ class ActivityResponseSchema(BaseModel):
     date: int
     user_postcode: str
     user_age_range: str
-    minsBrisk: int
-    minsWalking: int
+    brisk_minutes: int
+    walking_minutes: int
     steps: int
     rewards: Optional[List[Dict[str, Any]]] = []
     user_id: UUID
