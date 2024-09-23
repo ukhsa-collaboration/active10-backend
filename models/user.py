@@ -31,8 +31,8 @@ class User(Base):
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
     status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
 
-    token = relationship("UserToken", back_populates="user", uselist=False)
-    email_preferences = relationship("EmailPreference", backref="users", uselist=True)
+    token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
+    email_preferences = relationship("EmailPreference", backref="users", uselist=True, cascade="all, delete")
 
 class UserToken(Base):
     __tablename__ = "user_tokens"

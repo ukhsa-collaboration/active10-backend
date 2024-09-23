@@ -47,10 +47,6 @@ async def disconnect(
     db: Session = Depends(get_db_session)
 ):
     try:
-        db.delete(user.token)
-        for preference in user.email_preferences:
-            db.delete(preference)
-
         db.delete(user)
 
         delete_audit = DeleteAudit(
