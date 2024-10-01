@@ -6,8 +6,9 @@ DATABASE_URL = f"postgresql+psycopg://{config.db_user}:{config.db_pass}@{config.
 
 Engine = create_engine(
     DATABASE_URL,
-    pool_size=20,
-    max_overflow=10
+    pool_size=35,
+    max_overflow=10,
+    pool_recycle=1800,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=Engine)
