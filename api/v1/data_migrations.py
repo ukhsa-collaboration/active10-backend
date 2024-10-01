@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from starlette.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
-from crud.activities_crud import ActivityCrud
+from crud.activities_crud import create_bulk_activities
 from models import User
 from schemas.migrations_schema import ActivitiesMigrationsRequestSchema
 from service.migrations_service import load_bulk_activities_data
@@ -17,7 +17,6 @@ router = APIRouter(prefix="/migrations", tags=["migrations"])
 @router.post("/activities/", status_code=201, response_class=JSONResponse)
 async def save_bulk_activities(
         background_task: BackgroundTasks,
-        activities_crud: Annotated[ActivityCrud, Depends()],
         data: ActivitiesMigrationsRequestSchema,
         user: Annotated[User, Depends(get_authenticated_user_data)]
 ):
@@ -41,6 +40,6 @@ async def save_bulk_activities(
         )
 
     background_task.add_task(load_bulk_activities_data, data, str(user.id))
-    activities_crud.create_bulk_activities(data.activities, user_id=user.id)
+    create_bulk_activities(data.activities, user_id=user.id)
 
     return {"message": "Success"}

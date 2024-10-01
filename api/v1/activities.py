@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Depends, BackgroundTasks, Query, HTTPException
 
 from auth.auth_bearer import get_authenticated_user_data
-from crud.activities_crud import ActivityCrud
+from crud.activities_crud import create_activity, get_activities_by_filters
 from models import User
 from schemas.activity import UserActivityRequestSchema, ActivityResponseSchema
 from service.activity_service import load_activity_data
@@ -17,12 +17,11 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 async def save_activity(
         background_task: BackgroundTasks,
         activity_payload: UserActivityRequestSchema,
-        user: Annotated[User, Depends(get_authenticated_user_data)],
-        activities_crud: Annotated[ActivityCrud, Depends()]
+        user: Annotated[User, Depends(get_authenticated_user_data)]
 ):
 
     background_task.add_task(load_activity_data, activity_payload, str(user.id))
-    activity = activities_crud.create_activity(activity_payload, user_id=user.id)
+    activity = create_activity(activity_payload, user_id=user.id)
 
     return activity
 
@@ -30,7 +29,6 @@ async def save_activity(
 @router.get("/", response_model=List[ActivityResponseSchema], status_code=200)
 async def list_activities(
         user: Annotated[User, Depends(get_authenticated_user_data)],
-        activities_crud: Annotated[ActivityCrud, Depends()],
         date: Optional[int] = Query(None, gt=0, description="Filter by exact date (UNIX timestamp)"),
         start_date: Optional[int] = Query(None, gt=0, description="Filter by start date (UNIX timestamp)"),
         end_date: Optional[int] = Query(None, gt=0, description="Filter by end date (UNIX timestamp)"),
@@ -55,7 +53,7 @@ async def list_activities(
 
     filters = {k: v for k, v in {"date": date, "start_date": start_date, "end_date": end_date}.items() if v is not None}
 
-    activities = activities_crud.get_activities_by_filters(user_id=user.id, filters=filters)
+    activities = get_activities_by_filters(user_id=user.id, filters=filters)
 
     if not activities:
         raise HTTPException(status_code=404, detail="Data not found")
