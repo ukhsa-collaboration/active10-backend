@@ -1,17 +1,14 @@
-name: Test and Build
+name: "Build and Test"
+
+env:
+  APP_NAME: "active10-backend"
 
 on:
   push:
-    branches-ignore: ["main"]
-    tags-ignore: ["v*"]
   pull_request:
   workflow_dispatch:
 
-env:
-  AWS_REGION: "eu-west-2"
-  
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -26,20 +23,22 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
-        env:
-          ECR_REPOSITORY: active10-backend
-          IMAGE_TAG: latest
         with:
           context: .
           push: false
-          tags: $ECR_REPOSITORY:$IMAGE_TAG
+          tags: "${{ env.APP_NAME }}:latest"
           load: true
+          outputs: type=docker,dest=/tmp/${{ env.APP_NAME }}.tar
 
       - name: Unit tests
         run: |
           # TODO: Add unit tests
-          echo Unit tests here
-        
-        
+          echo docker run "$APP_NAME":latest pytest || exit 1
+      
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        with:
+          name: docker-container
+          path: /tmp/${{ env.APP_NAME }}.tar
 
 
