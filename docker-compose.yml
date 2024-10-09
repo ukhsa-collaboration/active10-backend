@@ -4,6 +4,9 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      AWS_SQS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/active10-queue.fifo"
+      AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/active10-activities-migrations.fifo"
     command: "./entrypoint.sh"
     volumes:
       - .:/app
@@ -20,6 +23,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./localstack_bootstrap:/etc/localstack/init/ready.d/
 
 volumes:
   postgres_data:

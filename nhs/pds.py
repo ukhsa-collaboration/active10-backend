@@ -3,6 +3,7 @@ from time import time
 
 import jwt
 import requests
+from utils.base_config import config as settings
 
 PDS_API_PATH = "personal-demographics/FHIR/R4"
 APP_KID = "better-health-app"
@@ -15,8 +16,6 @@ class PDSClient:
         self.access_data = None
 
     def generate_and_sign_jwt(self):
-        with open("private_key.pem", "r") as f:
-            private_key = f.read()
 
         claims = {
             "sub": self.api_key,
@@ -28,7 +27,10 @@ class PDSClient:
         additional_headers = {"kid": APP_KID}
 
         return jwt.encode(
-            claims, private_key, algorithm="RS512", headers=additional_headers
+            claims,
+            settings.nhs_pds_jwt_private_key,
+            algorithm="RS512",
+            headers=additional_headers,
         )
 
     def __get_pds_access_token(self):
@@ -44,7 +46,6 @@ class PDSClient:
         resp = requests.post(url, headers=headers, data=post_data)
         return resp.json()
 
-
     def __token_exchange(self, id_token_jwt):
         url = f"{self.nhs_api_url}/oauth2/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -53,7 +54,7 @@ class PDSClient:
             "subject_token_type": "urn:ietf:params:oauth:token-type:id_token",
             "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
             "subject_token": id_token_jwt,
-            "client_assertion": self.generate_and_sign_jwt()
+            "client_assertion": self.generate_and_sign_jwt(),
         }
         resp = requests.post(url, headers=headers, data=post_data)
 

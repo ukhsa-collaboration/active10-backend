@@ -5,7 +5,7 @@ import jwt
 
 from utils.base_config import config
 
-JWT_SECRET = config.secret
+JWT_SECRET = config.auth_jwt_secret
 JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRY_30_DAY_AS_SEC = 2592000
 
@@ -22,4 +22,3 @@ def decode_jwt(token: str) -> dict:
     decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
 
     return decoded_token
-
