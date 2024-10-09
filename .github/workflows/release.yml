@@ -1,0 +1,97 @@
+name: Tag and Release
+
+on:
+  push:
+    branches: ["main"]
+    
+env:
+  AWS_REGION: "eu-west-2"
+  
+permissions:
+  id-token: write
+  contents: write
+  
+jobs:
+  build:
+    name: Docker build and release
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.tag_bump.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: UKHSA-Internal/devops-github-actions/.github/actions/github-bump-tag@v0.2.0
+        id: tag_bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: arn:aws:iam::636728427214:role/active10-github-actions-role
+            role-session-name: build-and-push-env-${{ github.sha }}
+            aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: active10-backend
+          IMAGE_TAG: ${{ steps.tag_bump.outputs.new_tag }}
+        with:
+          context: .
+          push: true
+          tags: $ECR_REGISTRY/$ECR_REPOSITORY:latest,$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  deploy:
+    name: Deploy build to ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ matrix.environment }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        environment: ["dev", "qat", "prd"]
+    needs:
+      - build
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/active10-github-actions-role
+          role-session-name: deploy--${{ github.sha }}
+          aws-region: ${{ env.AWS_REGION }}
+
+    - name: Deploy to ECS
+      env: 
+        NEW_TAG: ${{ needs.build.outputs.release_tag }}
+        ENVIRONMENT: ${{ matrix.environment }}
+        ENV_SHORT_NAME: "euw2"
+      run: |
+        aws ssm put-parameter --name "/active10/backend/image_tag" --type "String" --value "$NEW_TAG"
+        aws ecs update-service --cluster aw-active10-"$ENV_SHORT_NAME"-"$ENVIRONMENT"-ecscluster --service aw-active10-"$ENV_SHORT_NAME"-"$ENVIRONMENT"-ecssvc-backend --force-new-deployment
+
+    - name: UAT tests
+      if: ${{ matrix.environment }} != "prd"
+      env: 
+        NEW_TAG: ${{ needs.build.outputs.release_tag }}
+        ENVIRONMENT: ${{ matrix.environment }}
+      run: |
+        # TODO: Add some tests here. These can include Create, Update and Destroy ops since we don't run this step in production. 
+        echo curl https://pheengland.co.uk/api/
+
+    - name: Post-Deployment Check
+      run: |
+        # TODO: Error, exit and alert if we don't get a 200 from a read API call.
+        echo curl https://pheengland.co.uk/api/ || exit 1
+
+        
+
+

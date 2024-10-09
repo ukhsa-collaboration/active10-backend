@@ -1,0 +1,45 @@
+name: Test and Build
+
+on:
+  push:
+    branches-ignore: ["main"]
+    tags-ignore: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: "eu-west-2"
+  
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Docker build image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        env:
+          ECR_REPOSITORY: active10-backend
+          IMAGE_TAG: latest
+        with:
+          context: .
+          push: false
+          tags: $ECR_REPOSITORY:$IMAGE_TAG
+          load: true
+
+      - name: Unit tests
+        run: |
+          # TODO: Add unit tests
+          echo Unit tests here
+        
+        
+
+
