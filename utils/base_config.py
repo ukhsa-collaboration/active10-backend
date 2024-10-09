@@ -25,6 +25,7 @@ class Config(BaseSettings):
     aws_sqs_activities_migrations_queue_url: str
     aws_access_key_id: str
     aws_secret_access_key: str
+    aws_sns_activity_topic_arn: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
