@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from functools import lru_cache
 
 from api.v1 import router as api_v1
+from api.v2 import router as api_v2
 from api.nhs_login import router as nhs_login
 from api.healthcheck import router as healthcheck
 from utils.base_config import config
@@ -19,5 +20,6 @@ def get_config():
 
 
 app.include_router(api_v1.router)
+app.include_router(api_v2.router)
 app.include_router(nhs_login)
 app.include_router(healthcheck)
