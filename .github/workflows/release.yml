@@ -6,7 +6,7 @@ on:
     types:
       - completed
     branches: ["main"]
-    
+
 env:
   AWS_REGION: "eu-west-2"
   APP_NAME: "active10-backend"
@@ -19,6 +19,7 @@ jobs:
   build:
     name: Tag and release
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       release_tag: ${{ steps.tag_bump.outputs.new_tag }}
     steps:
@@ -67,7 +68,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.tag_bump.outputs.new_tag }}
         run: |
-          docker load --input /tmp/docker-container.tar
+          docker load --input $GITHUB_WORKSPACE/docker-container.tar
           docker tag $APP_NAME:latest $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
           docker push $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
   
@@ -75,6 +76,7 @@ jobs:
     name: Deploy build to ${{ matrix.environment }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       max-parallel: 1
       matrix:
@@ -104,13 +106,17 @@ jobs:
         NEW_TAG: ${{ needs.build.outputs.release_tag }}
         ENVIRONMENT: ${{ matrix.environment }}
       run: |
-        # TODO: Add some tests here. These can include Create, Update and Destroy ops since we don't run this step in production. 
-        echo curl https://pheengland.co.uk/api/
+        # TODO: Add tests
+        echo Run some tests here
 
-    - name: Post-Deployment Check
+    - name: Post-Deployment Production Check
+      if: ${{ matrix.environment }} == "prd"
       run: |
-        # TODO: Error, exit and alert if we don't get a 200 from a read API call.
-        echo curl https://pheengland.co.uk/api/ || exit 1
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://active10.prod.phedigital.co.uk/api/healthcheck)
+        if [ "$response" -ne 200 ]; then
+          echo "Post-Deployment tests failed!"
+          exit 1
+        fi
 
         
 
