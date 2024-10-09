@@ -1,4 +1,4 @@
-name: "Tag and Release"
+name: "Release and Deploy"
 
 on:
   workflow_run:
@@ -16,12 +16,13 @@ permissions:
   contents: write
   
 jobs:
-  build:
+  release:
     name: Tag and release
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       release_tag: ${{ steps.tag_bump.outputs.new_tag }}
+      image: ${{ steps.push.outputs.image }}
     steps:
       - uses: actions/checkout@v4
 
@@ -63,7 +64,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
     
-      - name: Load image
+      - name: Load, tag and push image
+        id: push
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.tag_bump.outputs.new_tag }}
@@ -71,6 +73,7 @@ jobs:
           docker load --input $GITHUB_WORKSPACE/docker-container.tar
           docker tag $APP_NAME:latest $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
           docker push $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$APP_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
   
   deploy:
     name: Deploy build to ${{ matrix.environment }}
@@ -83,7 +86,7 @@ jobs:
       matrix:
         environment: ["dev", "qat", "prd"]
     needs:
-      - build
+      - release
     steps:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -94,20 +97,34 @@ jobs:
           role-session-name: deploy--${{ github.sha }}
           aws-region: ${{ env.AWS_REGION }}
 
-    - name: Deploy to ECS
+    - name: Update Parameter Store with new value
       env: 
-        NEW_TAG: ${{ needs.build.outputs.release_tag }}
-        ENVIRONMENT: ${{ matrix.environment }}
-        ENV_SHORT_NAME: "euw2"
+        NEW_TAG: ${{ needs.release.outputs.release_tag }}
       run: |
         aws ssm put-parameter --name "/active10/backend/image_tag" --type "String" --value "$NEW_TAG"
-        aws ecs update-service --cluster aw-active10-"$ENV_SHORT_NAME"-"$ENVIRONMENT"-ecscluster --service aw-active10-"$ENV_SHORT_NAME"-"$ENVIRONMENT"-ecssvc-backend --force-new-deployment
+
+    - name: Download task definition
+      run: |
+        aws ecs describe-task-definition --task-definition aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend --query taskDefinition > task-definition.json
+    
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: app
+        image: ${{ needs.release.outputs.image }}
+  
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: task-definition.json
+        service: aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend
+        cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
+        wait-for-service-stability: true
 
     - name: UAT tests
       if: ${{ matrix.environment }} != "prd"
-      env: 
-        NEW_TAG: ${{ needs.build.outputs.release_tag }}
-        ENVIRONMENT: ${{ matrix.environment }}
       run: |
         # TODO: Add tests
         echo Run some tests here
