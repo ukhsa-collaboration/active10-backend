@@ -75,7 +75,8 @@ jobs:
   deploy:
     name: Deploy build to ${{ matrix.environment }}
     runs-on: ubuntu-latest
-    environment: ${{ matrix.environment }}
+    # TODO: Environments can't be used in private repos that aren't part of an paid Enterprise.
+    # environment: ${{ matrix.environment }}
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     strategy:
       max-parallel: 1
@@ -86,8 +87,10 @@ jobs:
     steps:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
+      env:
+        AWS_ACCOUNT_ID: ${{ secrets[format('{0}{1}', 'AWS_ACCOUNT_ID_', matrix.environment)] }}
       with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/active10-github-actions-role
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/active10-github-actions-role
           role-session-name: deploy--${{ github.sha }}
           aws-region: ${{ env.AWS_REGION }}
 
