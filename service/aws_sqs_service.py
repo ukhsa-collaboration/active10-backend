@@ -2,12 +2,7 @@ import json
 import boto3
 from utils.base_config import config as settings, logger
 
-sqs = boto3.client(
-    'sqs',
-    region_name=settings.aws_region,
-    aws_access_key_id=settings.aws_access_key_id,
-    aws_secret_access_key=settings.aws_secret_access_key
-)
+sqs = boto3.client('sqs')
 
 
 def send_message_to_sqs_queue(sqs_target_url, record) -> None:
