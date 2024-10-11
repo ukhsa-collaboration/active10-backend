@@ -10,7 +10,8 @@ class Config(BaseSettings):
     nhs_login_scopes: str
     nhs_api_url: str
     nhs_api_key: str
-    secret: str
+    auth_jwt_secret: str
+    nhs_pds_jwt_secret: str
     db_host: str
     db_port: str
     db_user: str
@@ -30,12 +31,12 @@ class Config(BaseSettings):
 config = Config()
 
 
-logger = logging.getLogger('Application-Logs')
+logger = logging.getLogger("Application-Logs")
 logger.setLevel(logging.INFO)
 
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)

@@ -36,7 +36,7 @@ If you'd prefer to run the project using Docker, follow these steps:
    NHS_LOGIN_CALLBACK_URL=
    NHS_API_URL=
    NHS_API_KEY=
-   SECRET=
+   AUTH_JWT_SECRET=
    APP_URI=
    DB_HOST=
    DB_PORT=
@@ -107,7 +107,7 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    NHS_LOGIN_CALLBACK_URL=
    NHS_API_URL=
    NHS_API_KEY=
-   SECRET=
+   AUTH_JWT_SECRET=
    APP_URI=
    DB_HOST=
    DB_PORT=
@@ -119,7 +119,8 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    GOJAUNTLY_KEY_ID=
    GOJAUNTLY_PRIVATE_KEY=
    GOJAUNTLY_ISSUER_ID=
-
+   NHS_PDS_JWT_SECRET=
+ 
    # Local only
    AWS_REGION=
    AWS_ACCESS_KEY_ID=

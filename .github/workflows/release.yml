@@ -1,0 +1,143 @@
+name: "Release and Deploy"
+
+on:
+  workflow_run:
+    workflows: ["Build and Test"]
+    types:
+      - completed
+    branches: ["main"]
+
+env:
+  AWS_REGION: "eu-west-2"
+  APP_NAME: "active10-backend"
+
+permissions:
+  id-token: write
+  contents: write
+  
+jobs:
+  release:
+    name: Tag and release
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      release_tag: ${{ steps.tag_bump.outputs.new_tag }}
+      image: ${{ steps.push.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: UKHSA-Internal/devops-github-actions/.github/actions/github-bump-tag@v0.2.0
+        id: tag_bump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: arn:aws:iam::636728427214:role/active10-github-actions-role
+            role-session-name: build-and-push-env-${{ github.sha }}
+            aws-region: ${{ env.AWS_REGION }}
+
+      - name: 'Download artifact'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "docker-container"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/docker-container.tar`, Buffer.from(download.data));
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+    
+      - name: Load, tag and push image
+        id: push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.tag_bump.outputs.new_tag }}
+        run: |
+          docker load --input $GITHUB_WORKSPACE/docker-container.tar
+          docker tag $APP_NAME:latest $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$APP_NAME:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$APP_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+  
+  deploy:
+    name: Deploy build to ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    # TODO: Environments can't be used in private repos that aren't part of an paid Enterprise.
+    # environment: ${{ matrix.environment }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        environment: ["dev", "qat", "prd"]
+    needs:
+      - release
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      env:
+        AWS_ACCOUNT_ID: ${{ secrets[format('{0}{1}', 'AWS_ACCOUNT_ID_', matrix.environment)] }}
+      with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/active10-github-actions-role
+          role-session-name: deploy--${{ github.sha }}
+          aws-region: ${{ env.AWS_REGION }}
+
+    - name: Update Parameter Store with new value
+      env: 
+        NEW_TAG: ${{ needs.release.outputs.release_tag }}
+      run: |
+        aws ssm put-parameter --name "/active10/backend/image_tag" --type "String" --value "$NEW_TAG"
+
+    - name: Download task definition
+      run: |
+        aws ecs describe-task-definition --task-definition aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend --query taskDefinition > task-definition.json
+    
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: app
+        image: ${{ needs.release.outputs.image }}
+  
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: task-definition.json
+        service: aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend
+        cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
+        wait-for-service-stability: true
+
+    - name: UAT tests
+      if: ${{ matrix.environment }} != "prd"
+      run: |
+        # TODO: Add tests
+        echo Run some tests here
+
+    - name: Post-Deployment Production Check
+      if: ${{ matrix.environment }} == "prd"
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://active10.prod.phedigital.co.uk/api/healthcheck)
+        if [ "$response" -ne 200 ]; then
+          echo "Post-Deployment tests failed!"
+          exit 1
+        fi
+
+        
+
+

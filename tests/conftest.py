@@ -25,16 +25,19 @@ def get_test_database_url():
     db_user = settings.db_user
     db_password = settings.db_pass
 
-    database_url = f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/test-db"
+    database_url = (
+        f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/test-db"
+    )
 
     if not database_exists(database_url):
         create_database(database_url)
 
     return database_url
 
+
 user_uuid_pk = uuid4()
 
-engine = create_engine(get_test_database_url(),poolclass=StaticPool)
+engine = create_engine(get_test_database_url(), poolclass=StaticPool)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -46,7 +49,7 @@ def db_engine():
     alembic_cfg.set_main_option("script_location", "db/migrations")
 
     with engine.begin() as connection:
-        alembic_cfg.attributes['connection'] = connection
+        alembic_cfg.attributes["connection"] = connection
         command.upgrade(alembic_cfg, "head")
 
     yield engine
@@ -70,7 +73,7 @@ def db_session(db_engine):
         gender="male",
         postcode="12345",
         identity_level="1",
-        date_of_birth="1990-01-01"
+        date_of_birth="1990-01-01",
     )
     _ = user_crud.create_user(default_user)
 
@@ -113,7 +116,7 @@ def client(db_session):
 
 
 JWT_ALGORITHM = "HS256"
-JWT_SECRET = settings.secret
+JWT_SECRET = settings.auth_jwt_secret
 TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
