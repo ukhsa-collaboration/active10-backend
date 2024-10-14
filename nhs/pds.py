@@ -28,7 +28,7 @@ class PDSClient:
 
         return jwt.encode(
             claims,
-            settings.nhs_pds_jwt_private_key,
+            settings.nhs_pds_jwt_secret,
             algorithm="RS512",
             headers=additional_headers,
         )

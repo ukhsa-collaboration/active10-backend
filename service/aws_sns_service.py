@@ -1,6 +1,6 @@
 import json
 import boto3
-from utils.base_config import config as settings, logger
+from utils.base_config import logger
 
 sns = boto3.client('sns')
 
