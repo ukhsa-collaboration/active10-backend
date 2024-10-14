@@ -10,7 +10,8 @@ class Config(BaseSettings):
     nhs_login_scopes: str
     nhs_api_url: str
     nhs_api_key: str
-    secret: str
+    auth_jwt_secret: str
+    nhs_pds_jwt_secret: str
     db_host: str
     db_port: str
     db_user: str
@@ -20,11 +21,8 @@ class Config(BaseSettings):
     gojauntly_key_id: str
     gojauntly_private_key: str
     gojauntly_issuer_id: str
-    aws_region: str
     aws_sqs_queue_url: str
     aws_sqs_activities_migrations_queue_url: str
-    aws_access_key_id: str
-    aws_secret_access_key: str
     aws_sns_activity_topic_arn: str
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
@@ -33,12 +31,12 @@ class Config(BaseSettings):
 config = Config()
 
 
-logger = logging.getLogger('Application-Logs')
+logger = logging.getLogger("Application-Logs")
 logger.setLevel(logging.INFO)
 
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)

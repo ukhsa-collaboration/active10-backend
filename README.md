@@ -36,21 +36,23 @@ If you'd prefer to run the project using Docker, follow these steps:
    NHS_LOGIN_CALLBACK_URL=
    NHS_API_URL=
    NHS_API_KEY=
-   SECRET=
+   AUTH_JWT_SECRET=
    APP_URI=
    DB_HOST=
    DB_PORT=
    DB_USER=
    DB_PASS=
    DB_NAME=
-   AWS_REGION=
-   AWS_ACCESS_KEY_ID=
-   AWS_SECRET_ACCESS_KEY=
    AWS_SQS_QUEUE_URL=
    AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL=
    GOJAUNTLY_KEY_ID=
    GOJAUNTLY_PRIVATE_KEY=
    GOJAUNTLY_ISSUER_ID=
+   
+   # Local only
+   AWS_REGION=
+   AWS_ACCESS_KEY_ID=
+   AWS_SECRET_ACCESS_KEY=
    # Update the environment variables with your values.
     </pre>
    
@@ -105,21 +107,24 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    NHS_LOGIN_CALLBACK_URL=
    NHS_API_URL=
    NHS_API_KEY=
-   SECRET=
+   AUTH_JWT_SECRET=
    APP_URI=
    DB_HOST=
    DB_PORT=
    DB_USER=
    DB_PASS=
    DB_NAME=
-   AWS_REGION=
-   AWS_ACCESS_KEY_ID=
-   AWS_SECRET_ACCESS_KEY=
    AWS_SQS_QUEUE_URL=
    AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL=
    GOJAUNTLY_KEY_ID=
    GOJAUNTLY_PRIVATE_KEY=
    GOJAUNTLY_ISSUER_ID=
+   NHS_PDS_JWT_SECRET=
+ 
+   # Local only
+   AWS_REGION=
+   AWS_ACCESS_KEY_ID=
+   AWS_SECRET_ACCESS_KEY=
    # Update the environment variables with your values.
     </pre>
 

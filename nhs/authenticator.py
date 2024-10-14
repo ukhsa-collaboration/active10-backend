@@ -7,10 +7,13 @@ from oic.oic import Client
 from oic.oic.message import Claims, ClaimsRequest
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 from oic.utils.time_util import utc_time_sans_frac
+from utils.base_config import config as settings
 
 
 class Authenticator:
-    def __init__(self, client_id: str, authority_url: str, scopes: str, redirect_uri: str):
+    def __init__(
+        self, client_id: str, authority_url: str, scopes: str, redirect_uri: str
+    ):
         self.client = self._get_client(client_id, authority_url)
         self.callback_url = redirect_uri
         self.scopes = scopes
@@ -77,8 +80,9 @@ class Authenticator:
             "exp": _now + lifetime,
         }
 
-        with open("private_key.pem") as key_file:
-            token = jwt.encode(payload, key=key_file.read(), algorithm="RS512")
+        token = jwt.encode(
+            payload, key=settings.nhs_pds_jwt_private_key, algorithm="RS512"
+        )
         return token
 
     def get_userinfo(self, access_token):

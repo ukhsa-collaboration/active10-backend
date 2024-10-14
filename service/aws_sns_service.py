@@ -2,12 +2,7 @@ import json
 import boto3
 from utils.base_config import config as settings, logger
 
-sns = boto3.client(
-    'sns',
-    region_name=settings.aws_region,
-    aws_access_key_id=settings.aws_access_key_id,
-    aws_secret_access_key=settings.aws_secret_access_key
-)
+sns = boto3.client('sns')
 
 
 def send_message_to_sns_topic(record) -> None:
