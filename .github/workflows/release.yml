@@ -95,7 +95,7 @@ jobs:
         aws ecs describe-task-definition --task-definition aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend --query taskDefinition > task-definition.json
     
     - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
+      id: render-task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
@@ -105,7 +105,7 @@ jobs:
     - name: Deploy to Amazon ECS
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
       with:
-        task-definition: task-definition.json
+        task-definition: ${{ steps.render-task-def.outputs.task-definition }}
         service: aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend
         cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
         wait-for-service-stability: true
