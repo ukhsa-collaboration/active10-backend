@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: UKHSA-Internal/devops-github-actions/.github/actions/github-bump-tag@v0.2.0
+      - uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@v0.2.0
         id: tag_bump
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,6 +35,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
+            # This role is prefixed with active10 because it is in the ECR account and is specific to this service.
             role-to-assume: arn:aws:iam::636728427214:role/active10-github-actions-role
             role-session-name: build-and-push-env-${{ github.sha }}
             aws-region: ${{ env.AWS_REGION }}
@@ -93,7 +94,7 @@ jobs:
       env:
         AWS_ACCOUNT_ID: ${{ secrets[format('{0}{1}', 'AWS_ACCOUNT_ID_', matrix.environment)] }}
       with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/active10-github-actions-role
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-oidc
           role-session-name: deploy--${{ github.sha }}
           aws-region: ${{ env.AWS_REGION }}
 
