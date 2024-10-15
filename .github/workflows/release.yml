@@ -102,6 +102,10 @@ jobs:
         container-name: app
         image: ${{ needs.release.outputs.image }}
   
+    - name: Debug - show rendered task definition
+      run:
+        echo ${{ steps.render-task-def.outputs.task-definition }}
+
     - name: Deploy to Amazon ECS
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
       with:
@@ -109,7 +113,7 @@ jobs:
         service: aw-active10-euw2-${{ matrix.environment }}-ecssvc-backend
         cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
         wait-for-service-stability: true
-
+  
     - name: UAT tests
       if: ${{ matrix.environment }} != "prd"
       run: |
