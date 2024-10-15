@@ -81,8 +81,11 @@ jobs:
         AWS_ACCOUNT_ID: ${{ secrets[format('{0}{1}', 'AWS_ACCOUNT_ID_', matrix.environment)] }}
       with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/github-actions-oidc
-          role-session-name: deploy--${{ github.sha }}
           aws-region: ${{ env.AWS_REGION }}
+
+    - run: |
+        ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
+        echo $ID_TOKEN | base64
 
     - name: Update Parameter Store with new value
       env: 
