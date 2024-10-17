@@ -3,6 +3,7 @@ from time import time
 
 import jwt
 import requests
+
 from utils.base_config import config as settings
 
 PDS_API_PATH = "personal-demographics/FHIR/R4"
@@ -28,7 +29,7 @@ class PDSClient:
 
         return jwt.encode(
             claims,
-            settings.nhs_pds_jwt_secret,
+            settings.nhs_pds_jwt_private_key,
             algorithm="RS512",
             headers=additional_headers,
         )

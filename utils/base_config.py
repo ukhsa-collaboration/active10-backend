@@ -11,7 +11,7 @@ class Config(BaseSettings):
     nhs_api_url: str
     nhs_api_key: str
     auth_jwt_secret: str
-    nhs_pds_jwt_secret: str
+    nhs_pds_jwt_private_key: str
     db_host: str
     db_port: str
     db_user: str
