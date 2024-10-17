@@ -117,6 +117,7 @@ jobs:
         echo Run some tests here
 
     - name: Post-Deployment Health Check
+      shell: bash
       run: |
         environment_prefix=${{ matrix.environment }}
         ## Set URL as uat.active10 instead of qat.active10
