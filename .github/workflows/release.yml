@@ -102,10 +102,6 @@ jobs:
         container-name: app
         image: ${{ needs.release.outputs.image }}
   
-    - name: Debug - show rendered task definition
-      run:
-        echo ${{ steps.render-task-def.outputs.task-definition }}
-
     - name: Deploy to Amazon ECS
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
       with:
@@ -120,10 +116,12 @@ jobs:
         # TODO: Add tests
         echo Run some tests here
 
-    - name: Post-Deployment Production Check
-      if: ${{ matrix.environment }} == "prd"
+    - name: Post-Deployment Health Check
       run: |
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://active10.prod.phedigital.co.uk/api/healthcheck)
+        environment_prefix=${{ matrix.environment }}
+        ## Set URL as uat.active10 instead of qat.active10
+        [ $environment == "qat" ] && environment_prefix="uat"
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://$environment_prefix.active10.betterhealthapps.com/healthcheck/)
         if [ "$response" -ne 200 ]; then
           echo "Post-Deployment tests failed!"
           exit 1
