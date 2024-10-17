@@ -121,7 +121,7 @@ jobs:
       run: |
         environment_prefix=${{ matrix.environment }}
         ## Set URL as uat.active10 instead of qat.active10
-        [[ $environment == "qat" ]] && environment_prefix="uat"
+        [[ $environment_prefix == "qat" ]] && environment_prefix="uat"
         response=$(curl -s -o /dev/null -w "%{http_code}" https://$environment_prefix.active10.betterhealthapps.com/healthcheck/)
         if [ "$response" -ne 200 ]; then
           echo "Post-Deployment tests failed!"
