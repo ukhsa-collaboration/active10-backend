@@ -48,6 +48,7 @@ If you'd prefer to run the project using Docker, follow these steps:
    GOJAUNTLY_KEY_ID=
    GOJAUNTLY_PRIVATE_KEY=
    GOJAUNTLY_ISSUER_ID=
+   NHS_PDS_JWT_PRIVATE_KEY=
    
    # Local only
    AWS_REGION=
@@ -119,7 +120,7 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    GOJAUNTLY_KEY_ID=
    GOJAUNTLY_PRIVATE_KEY=
    GOJAUNTLY_ISSUER_ID=
-   NHS_PDS_JWT_SECRET=
+   NHS_PDS_JWT_PRIVATE_KEY=
  
    # Local only
    AWS_REGION=
