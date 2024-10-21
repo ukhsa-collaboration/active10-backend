@@ -2,7 +2,7 @@ FROM python:3.10-slim
 
 EXPOSE 8000
 
-RUN adduser -D app && chown -R app /app
+RUN useradd --user-group --system --create-home --no-log-init app && chown -R app /app
 
 WORKDIR /app
 
