@@ -3,7 +3,7 @@ from models import LogoutUserEmailLogs, MonthlyReportEmailLogs
 from utils.base_config import logger
 
 
-def populate_logout_notification_logs_in_database(success_objects_list, failed_objects_list):
+def insert_logout_logs(success_objects_list, failed_objects_list):
     with get_db_context_session() as db:
         for success_object in success_objects_list:
             db_object = LogoutUserEmailLogs(
@@ -30,7 +30,7 @@ def populate_logout_notification_logs_in_database(success_objects_list, failed_o
         db.commit()
 
 
-def populate_monthly_report_logs_in_database(success_objects_list, failed_objects_list):
+def insert_monthly_report_logs(success_objects_list, failed_objects_list):
     with get_db_context_session() as db:
         for success_object in success_objects_list:
             db_object = MonthlyReportEmailLogs(
@@ -69,15 +69,15 @@ def handle_sendgrid_webhook(body, webhook_type):
         elif event.get("event") in ["bounced", "dropped"]:
             failed_objects_list.append(event)
         else:
-            ... # skipped other events ["deferred", "processed"]
+            ...  # skipped other events ["deferred", "processed"]
 
     if webhook_type == "logout_user_notification":
         if success_objects_list and failed_objects_list:
-            populate_logout_notification_logs_in_database(success_objects_list, failed_objects_list)
+            insert_logout_logs(success_objects_list, failed_objects_list)
 
     elif webhook_type == "monthly_report":
         if success_objects_list and failed_objects_list:
-            populate_monthly_report_logs_in_database(success_objects_list, failed_objects_list)
+            insert_monthly_report_logs(success_objects_list, failed_objects_list)
 
     else:
         logger.error(f"Null or unhandled webhook type = {webhook_type}")

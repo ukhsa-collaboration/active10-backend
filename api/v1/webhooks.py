@@ -28,7 +28,7 @@ async def handle_sendgrid_events_webhook(
         return JSONResponse(content={"message": "Invalid signature"}, status_code=400)
 
     if webhook_type:
-        background_job.add_task(handle_sendgrid_webhook,body,webhook_type)
+        background_job.add_task(handle_sendgrid_webhook, body, webhook_type)
 
     else:
         logger.error(f"Missing custom args ( webhook_type ) in payload.")
