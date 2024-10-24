@@ -72,11 +72,11 @@ def handle_sendgrid_webhook(body, webhook_type):
             ...  # skipped other events ["deferred", "processed"]
 
     if webhook_type == "logout_user_notification":
-        if success_objects_list and failed_objects_list:
+        if success_objects_list or failed_objects_list:
             insert_logout_logs(success_objects_list, failed_objects_list)
 
     elif webhook_type == "monthly_report":
-        if success_objects_list and failed_objects_list:
+        if success_objects_list or failed_objects_list:
             insert_monthly_report_logs(success_objects_list, failed_objects_list)
 
     else:
