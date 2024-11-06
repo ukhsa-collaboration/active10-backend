@@ -26,6 +26,8 @@ class Config(BaseSettings):
     aws_sns_activity_topic_arn: str
     aws_sns_activities_migration_topic_arn: str
 
+    sendgrid_webhook_public_key: str
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
