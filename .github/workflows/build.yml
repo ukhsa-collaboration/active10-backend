@@ -1,12 +1,10 @@
 name: "Build and Test"
 
-env:
-  APP_NAME: "active10-backend"
-
 on:
-  push:
   pull_request:
   workflow_dispatch:
+  push:
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -26,9 +24,9 @@ jobs:
         with:
           context: .
           push: false
-          tags: "${{ env.APP_NAME }}:latest"
+          tags: "container:latest"
           load: true
-          outputs: type=docker,dest=/tmp/${{ env.APP_NAME }}.tar
+          outputs: type=docker,dest=/tmp/container-image.tar
 
       - name: Unit tests
         run: |
@@ -38,7 +36,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         with:
-          name: docker-container
-          path: /tmp/${{ env.APP_NAME }}.tar
+          name: container-image
+          path: /tmp/container-image.tar
 
 

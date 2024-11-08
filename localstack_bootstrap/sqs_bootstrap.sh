@@ -5,12 +5,11 @@ set -euo pipefail
 echo "configuring sqs"
 echo "==================="
 LOCALSTACK_HOST=localhost
-AWS_REGION=eu-west-2
 
 create_queue() {
     local QUEUE_NAME_TO_CREATE=$1
-    awslocal --endpoint-url=http://${LOCALSTACK_HOST}:4566 sqs create-queue --queue-name ${QUEUE_NAME_TO_CREATE} --region ${AWS_REGION} --attributes VisibilityTimeout=30
+    awslocal --endpoint-url=http://${LOCALSTACK_HOST}:4566 sqs create-queue --queue-name ${QUEUE_NAME_TO_CREATE} --attributes VisibilityTimeout=30
 }
 
-create_queue "active10-queue"
-create_queue "active10-activities-migrations"
+create_queue "aw-active10-local-sqs-active10"
+create_queue "aw-active10-local-sqs-activities-migrations"
