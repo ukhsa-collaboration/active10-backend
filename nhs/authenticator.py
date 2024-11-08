@@ -1,7 +1,5 @@
 import uuid
-
 import jwt
-import base64
 from oic import rndstr
 from oic.oauth2 import AuthorizationResponse
 from oic.oic import Client
@@ -73,9 +71,6 @@ class Authenticator:
         _now = utc_time_sans_frac()
         client_id = self.client.client_id
 
-        b64_encoded_pkey = settings.nhs_pds_jwt_private_key
-        decoded_pkey = base64.b64decode(b64_encoded_pkey)
-
         payload = {
             "iss": client_id,
             "sub": client_id,
@@ -84,7 +79,9 @@ class Authenticator:
             "exp": _now + lifetime,
         }
 
-        token = jwt.encode(payload, key=decoded_pkey, algorithm="RS512")
+        token = jwt.encode(
+            payload, key=settings.nhs_pds_jwt_private_key, algorithm="RS512"
+        )
 
         return token
 
