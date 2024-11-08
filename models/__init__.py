@@ -3,3 +3,4 @@ from .activity import *
 from .user import *
 from .walking_plan import *
 from .daily_target import *
+from .email_notification import *
