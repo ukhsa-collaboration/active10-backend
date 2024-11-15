@@ -1,9 +1,11 @@
+from typing import Union, Any
+
 import pytest
-from seleniumbase import BaseCase
 from fastapi.testclient import TestClient
-from utils.base_config import config as settings
+from seleniumbase import BaseCase
 
 from main import app
+from utils.base_config import config as settings
 
 BaseCase.main(__name__, __file__)
 
@@ -16,6 +18,16 @@ token = None
 
 
 class MyTestClass(BaseCase):
+    @classmethod
+    def request_with_callback_response(cls, requests) -> Union[Union[Any, None], bool]:
+        for request in requests:
+            if "/callback" in request.url:
+                if request.response:
+                    return request, True
+                else:
+                    return request, False
+
+        return None, False
 
     def test_nhs_login_flow(self):
         self.open(NHS_LOGIN_API)
@@ -31,30 +43,32 @@ class MyTestClass(BaseCase):
         self.type("#otp-input", TEST_NHS_OTP)
         self.click('button[type="submit"]')
 
-        self.wait(30)
+        self.wait_for_ready_state_complete(timeout=30)
 
-        requests_lists = self.driver.requests or []
+        max_retries = 30
+        iteration = 0
+        callback_request = None
+        callback_request_found = False
+
+        while not callback_request_found and iteration < max_retries:
+            callback_request, callback_request_found = self.request_with_callback_response(self.driver.requests)
+            if callback_request_found:
+                break
+
+            self.wait(1)
+            iteration += 1
 
         global token
 
-        with open("test_logs.txt", "w") as f:
-            if requests_lists:
-                f.write(f"Requests Count = {len(requests_lists)}\n")
-            else:
-                f.write("No requests captured\n")
+        if callback_request:
+            response = callback_request.response
+            redirect_uri = response.headers.get('Location') if response.headers else None
+            if not redirect_uri:
+                raise Exception(f"Redirect URI not found in response: {response}")
 
-            for request in requests_lists:
-                self.wait_for_ready_state_complete(timeout=30)
-                if "/callback" in request.url:  # Check if the request has a URL
-                    f.write(f"url: {request.url}\n")
-                    f.write(f"***  request headers: ***\n {request.headers}\n")
-                    f.write(f"***  response: ***\n {request.response if request.response else 'No Response Content'}\n")
-                    f.write(f"***  Status Code:   ***\n {request.response.status_code}")
-                    f.write(f"***  Response Headers:  ***\n {request.response.headers}")
-                    redirect_uri = request.response.headers.get('Location')
-                    token = redirect_uri.split("=")[-1] if redirect_uri else "Redirect URI not extracted yet"
-                    f.write(f"token = {token}")
-                    break
+            token = redirect_uri.split("=")[-1] if redirect_uri else None
+            if not token:
+                raise Exception(f"Token not found in redirect URI: {redirect_uri}")
 
 
 @pytest.fixture

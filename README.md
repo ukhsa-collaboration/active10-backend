@@ -150,9 +150,13 @@ The `app` service depends on the PostgreSQL database and runs using environment 
     ```bash
    pip install -r requirements.txt
    ```
-2. **Run the tests:**
+2. **Start the FastAPI application:**
     ```bash
-    pytest
+   uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-certfile cert/cert.pem --ssl-keyfile cert/key.pem
+   ```
+3. **Run the tests:**
+    ```bash
+    pytest --wire
     ```
 
 ### Contributing
