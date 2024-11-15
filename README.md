@@ -127,6 +127,12 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    AWS_ACCESS_KEY_ID=
    AWS_SECRET_ACCESS_KEY=
    # Update the environment variables with your values.
+
+   # For Integration Test
+   NHS_LOGIN_API=
+   TEST_NHS_EMAIL=
+   TEST_NHS_PASSWORD=
+   TEST_NHS_OTP=
     </pre>
 
 4. **Run the database migrations:**
