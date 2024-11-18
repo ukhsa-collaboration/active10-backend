@@ -152,9 +152,5 @@ def unauthenticated_user(db_session):
 
 
 @contextmanager
-def override_get_db_context_session():
-    db = TestSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def override_get_db_context_session(db_session):
+    yield db_session

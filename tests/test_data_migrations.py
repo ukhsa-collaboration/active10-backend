@@ -4,10 +4,10 @@ from service.migrations_service import load_bulk_activities_data
 from tests.conftest import user_uuid_pk, override_get_db_context_session
 
 
-def test_post_activities_migrations(client, authenticated_user):
+def test_post_activities_migrations(client, authenticated_user, db_session):
     with (
         patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
-        patch("crud.activities_crud.get_db_context_session", override_get_db_context_session),
+        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
     ):
         activity_migration_payload = {
             "month": 1714637586,
