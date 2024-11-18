@@ -9,7 +9,7 @@ from utils.base_config import config as settings
 
 BaseCase.main(__name__, __file__)
 
-NHS_LOGIN_API = settings.nhs_login_api
+NHS_LOGIN_API = settings.test_nhs_login_api
 TEST_NHS_EMAIL = settings.test_nhs_email
 TEST_NHS_PASSWORD = settings.test_nhs_password
 TEST_NHS_OTP = settings.test_nhs_otp

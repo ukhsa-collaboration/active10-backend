@@ -27,7 +27,7 @@ class Config(BaseSettings):
     aws_sns_activities_migration_topic_arn: str
     sendgrid_webhook_public_key: str
 
-    nhs_login_api: str
+    test_nhs_login_api: str
     test_nhs_email: str
     test_nhs_password: str
     test_nhs_otp: str
