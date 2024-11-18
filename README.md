@@ -162,7 +162,7 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    ```
 3. **Run the tests:**
     ```bash
-    pytest --wire
+    pytest --headless --wire
     ```
 
 ### Contributing
