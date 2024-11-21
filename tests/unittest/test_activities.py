@@ -118,6 +118,9 @@ def test_list_activities(client, authenticated_user, db_session):
         assert response.status_code == 200
         response_data = response.json()
         assert "id" in response_data[0]
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "id" in response_data[0]
 
 
 def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):

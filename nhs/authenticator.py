@@ -1,5 +1,4 @@
 import uuid
-
 import jwt
 from oic import rndstr
 from oic.oauth2 import AuthorizationResponse
@@ -83,6 +82,7 @@ class Authenticator:
         token = jwt.encode(
             payload, key=settings.nhs_pds_jwt_private_key, algorithm="RS512"
         )
+
         return token
 
     def get_userinfo(self, access_token):
