@@ -1,4 +1,4 @@
-name: "Build and Test"
+name: "Build Container"
 
 on:
   pull_request:
@@ -10,9 +10,32 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint and format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+  
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Lint code with Ruff
+        run: ruff check --output-format=github
+        continue-on-error: true
+
+      - name: Check code formatting with Ruff
+        run: ruff format --diff
+        continue-on-error: true
+
   build:
     name: Docker build image
     runs-on: ubuntu-latest
+    needs: lint
     steps:
       - uses: actions/checkout@v4
 
@@ -27,11 +50,6 @@ jobs:
           tags: "container:latest"
           load: true
           outputs: type=docker,dest=/tmp/container-image.tar
-
-      - name: Unit tests
-        run: |
-          # TODO: Add unit tests
-          echo docker run "$APP_NAME":latest pytest || exit 1
       
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
