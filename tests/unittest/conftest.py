@@ -21,39 +21,6 @@ from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
 
 
-@pytest.fixture(scope="session", autouse=True)
-def set_test_setttings():
-    """
-    Set config to avoid needing an .env file whilst unit testing.
-    """
-    settings.nhs_login_authority_url = "foo"
-    settings.nhs_login_client_id = "foo"
-    settings.nhs_login_callback_url = "foo"
-    settings.nhs_login_scopes = "foo"
-    settings.nhs_api_url = "foo"
-    settings.nhs_api_key = "foo"
-    settings.auth_jwt_secret = "foo"
-    settings.nhs_pds_jwt_private_key = "foo"
-    settings.db_host = "foo"
-    settings.db_port = "foo"
-    settings.db_user = "foo"
-    settings.db_pass = "foo"
-    settings.db_name = "foo"
-    settings.app_uri = "foo"
-    settings.gojauntly_key_id = "foo"
-    settings.gojauntly_private_key = "foo"
-    settings.gojauntly_issuer_id = "foo"
-    settings.aws_sqs_queue_url = "foo"
-    settings.aws_sqs_activities_migrations_queue_url = "foo"
-    settings.aws_sns_activity_topic_arn = "foo"
-    settings.aws_sns_activities_migration_topic_arn = "foo"
-    settings.sendgrid_webhook_public_key = "foo"
-    settings.test_nhs_login_api = "foo"
-    settings.test_nhs_email = "foo"
-    settings.test_nhs_password = "foo"
-    settings.test_nhs_otp = "foo"
-
-
 user_uuid_pk = uuid4()
 
 postgres = PostgresContainer("postgres:16")
