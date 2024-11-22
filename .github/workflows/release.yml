@@ -2,7 +2,7 @@ name: "Release and Deploy"
 
 on:
   workflow_run:
-    workflows: ["Build and Test"]
+    workflows: ["Build Container"]
     types:
       - completed
     branches: ["main"]
@@ -110,7 +110,7 @@ jobs:
         cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
         wait-for-service-stability: true
   
-    - name: UAT tests
+    - name: Integration Tests
       if: ${{ matrix.environment }} != "prd"
       run: |
         # TODO: Add tests

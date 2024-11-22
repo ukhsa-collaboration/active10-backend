@@ -1,32 +1,32 @@
 from unittest.mock import patch
 
 from service.migrations_service import load_bulk_activities_data
-from tests.conftest import user_uuid_pk, override_get_db_context_session
+from tests.unittest.conftest import user_uuid_pk, override_get_db_context_session
 
 
 def test_post_activities_migrations(client, authenticated_user, db_session):
     with (
         patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
-        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
+        patch(
+            "crud.activities_crud.get_db_context_session",
+            lambda: override_get_db_context_session(db_session),
+        ),
     ):
         activity_migration_payload = {
             "month": 1714637586,
-            "activities": [{
-                "date": 1714637586,
-                "user_postcode": "HD81",
-                "user_age_range": "23-39",
-                "rewards": [
-                    {
-                        "earned": 63,
-                        "slug": "high_five"
-                    }
-                ],
-                "activity": {
-                    "brisk_minutes": 109,
-                    "walking_minutes": 30,
-                    "steps": 1867
+            "activities": [
+                {
+                    "date": 1714637586,
+                    "user_postcode": "HD81",
+                    "user_age_range": "23-39",
+                    "rewards": [{"earned": 63, "slug": "high_five"}],
+                    "activity": {
+                        "brisk_minutes": 109,
+                        "walking_minutes": 30,
+                        "steps": 1867,
+                    },
                 }
-            }]
+            ],
         }
 
         response = client.post(
@@ -45,7 +45,9 @@ def test_post_activities_migrations(client, authenticated_user, db_session):
         assert args[0] == load_bulk_activities_data
 
 
-def test_post_activities_migrations_with_out_of_range_activities(client, authenticated_user):
+def test_post_activities_migrations_with_out_of_range_activities(
+    client, authenticated_user
+):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": [
@@ -53,35 +55,25 @@ def test_post_activities_migrations_with_out_of_range_activities(client, authent
                 "date": 1714637586,
                 "user_postcode": "HD81",
                 "user_age_range": "23-39",
-                "rewards": [
-                    {
-                        "earned": 63,
-                        "slug": "high_five"
-                    }
-                ],
+                "rewards": [{"earned": 63, "slug": "high_five"}],
                 "activity": {
                     "brisk_minutes": 109,
                     "walking_minutes": 30,
-                    "steps": 1867
-                }
+                    "steps": 1867,
+                },
             },
             {
                 "date": 1717229586,
                 "user_postcode": "HD82",
                 "user_age_range": "23-39",
-                "rewards": [
-                    {
-                        "earned": 100,
-                        "slug": "gold_star"
-                    }
-                ],
+                "rewards": [{"earned": 100, "slug": "gold_star"}],
                 "activity": {
                     "brisk_minutes": 200,
                     "walking_minutes": 50,
-                    "steps": 3000
-                }
-            }
-        ]
+                    "steps": 3000,
+                },
+            },
+        ],
     }
 
     response = client.post(
@@ -95,10 +87,7 @@ def test_post_activities_migrations_with_out_of_range_activities(client, authent
 
 
 def test_post_activities_migrations_with_empty_activities(client, authenticated_user):
-    activity_migration_payload = {
-        "month": 1714637586,
-        "activities": []
-    }
+    activity_migration_payload = {"month": 1714637586, "activities": []}
 
     response = client.post(
         "/v1/migrations/activities/",
@@ -109,25 +98,24 @@ def test_post_activities_migrations_with_empty_activities(client, authenticated_
     assert response.status_code == 422
 
 
-def test_post_activities_migrations_with_unauthenticated_user(client, unauthenticated_user):
+def test_post_activities_migrations_with_unauthenticated_user(
+    client, unauthenticated_user
+):
     activity_migration_payload = {
         "month": 1714637586,
-        "activities": [{
-            "date": 1714637586,
-            "user_postcode": "HD81",
-            "user_age_range": "23-39",
-            "rewards": [
-                {
-                    "earned": 63,
-                    "slug": "high_five"
-                }
-            ],
-            "activity": {
-                "brisk_minutes": 109,
-                "walking_minutes": 30,
-                "steps": 1867
+        "activities": [
+            {
+                "date": 1714637586,
+                "user_postcode": "HD81",
+                "user_age_range": "23-39",
+                "rewards": [{"earned": 63, "slug": "high_five"}],
+                "activity": {
+                    "brisk_minutes": 109,
+                    "walking_minutes": 30,
+                    "steps": 1867,
+                },
             }
-        }]
+        ],
     }
 
     response = client.post(
@@ -139,24 +127,23 @@ def test_post_activities_migrations_with_unauthenticated_user(client, unauthenti
     assert response.status_code == 404
 
 
-def test_post_activities_migrations_with_missing_month_field(client, authenticated_user):
+def test_post_activities_migrations_with_missing_month_field(
+    client, authenticated_user
+):
     activity_migration_payload = {
-        "activities": [{
-            "date": 1714637586,
-            "user_postcode": "HD81",
-            "user_age_range": "23-39",
-            "rewards": [
-                {
-                    "earned": 63,
-                    "slug": "high_five"
-                }
-            ],
-            "activity": {
-                "brisk_minutes": 109,
-                "walking_minutes": 30,
-                "steps": 1867
+        "activities": [
+            {
+                "date": 1714637586,
+                "user_postcode": "HD81",
+                "user_age_range": "23-39",
+                "rewards": [{"earned": 63, "slug": "high_five"}],
+                "activity": {
+                    "brisk_minutes": 109,
+                    "walking_minutes": 30,
+                    "steps": 1867,
+                },
             }
-        }]
+        ]
     }
 
     response = client.post(
