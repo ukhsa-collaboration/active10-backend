@@ -2,11 +2,14 @@ from datetime import datetime
 from unittest.mock import patch
 
 from service.activity_service import load_activity_data
-from tests.conftest import user_uuid_pk, authenticated_user
+from tests.conftest import user_uuid_pk, override_get_db_context_session
 
 
-def test_create_activities(client, authenticated_user):
-    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+def test_create_activities(client, authenticated_user, db_session):
+    with (
+        patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
+        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
+    ):
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
@@ -41,8 +44,11 @@ def test_create_activities(client, authenticated_user):
         assert args[0] == load_activity_data
 
 
-def test_create_activities_without_rewards(client, authenticated_user):
-    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+def test_create_activities_without_rewards(client, authenticated_user, db_session):
+    with (
+        patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
+        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
+    ):
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
@@ -123,16 +129,16 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
     assert response.status_code == 422
 
 
-def test_list_activities(client, authenticated_user):
-    response = client.get(
-        "/v1/activities/",
-        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
-    )
+def test_list_activities(client, authenticated_user, db_session):
+    with patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)):
+        response = client.get(
+            "/v1/activities/",
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        )
 
-    assert response.status_code == 200
-    response_data = response.json()
-    assert "id" in response_data[0]
-
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "id" in response_data[0]
 
 
 def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):

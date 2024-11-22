@@ -68,10 +68,9 @@ jobs:
           ECR_REPOSITORY: active10-backend
           IMAGE_TAG: latest
         run: |
-          aws secretsmanager get-secret-value --secret-id active10-${{ github.event.inputs.environment || 'development' }}-private-key --query SecretString --output text | base64 -d > private_key.pem
-          ls
           docker build -f Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
       - name: ECS Deployment
         run: |
           aws ecs update-service --cluster active10-dev --service active10-backend-dev-ecs-service --force-new-deployment

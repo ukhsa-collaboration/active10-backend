@@ -5,8 +5,16 @@ services:
       - "8000:8000"
     env_file: .env
     environment:
-      AWS_SQS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/active10-queue.fifo"
-      AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/active10-activities-migrations.fifo"
+      AWS_SQS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/aw-active10-local-sqs-active10.fifo"
+      AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/aw-active10-local-sqs-activities-migrations.fifo"
+      AWS_SNS_ACTIVITY_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-sns-activity-topic"
+      AWS_SNS_ACTIVITIES_MIGRATION_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-activities-migrations"
+
+      # Only required locally
+      AWS_DEFAULT_REGION: "eu-west-2"
+      AWS_REGION: "eu-west-2"
+      AWS_ACCESS_KEY_ID: "dummy"
+      AWS_SECRET_ACCESS_KEY: "dummy"
     command: "./entrypoint.sh"
     volumes:
       - .:/app
@@ -25,7 +33,10 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:3.8.1
+    environment:
+      - SERVICES=sqs,sns
+      - AWS_DEFAULT_REGION=eu-west-2
     ports:
       - "4566:4566"
     volumes:

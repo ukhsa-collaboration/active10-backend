@@ -1,4 +1,5 @@
 import time
+from contextlib import contextmanager
 from uuid import uuid4
 
 import jwt
@@ -75,7 +76,8 @@ def db_session(db_engine):
         identity_level="1",
         date_of_birth="1990-01-01",
     )
-    _ = user_crud.create_user(default_user)
+    if not session.query(User).filter_by(id=user_uuid_pk).first():
+        _ = user_crud.create_user(default_user)
 
     yield session
     session.close()
@@ -120,7 +122,7 @@ JWT_SECRET = settings.auth_jwt_secret
 TOKEN_EXPIRY_5_MINUTES_AS_SEC = 300
 
 
-def create_user_token(user, db_session, is_authenticated=True):
+def create_user_token(user, db_session, is_authenticated=True) -> None:
     if user.token:
         db_session.delete(user.token)
         db_session.commit()
@@ -134,16 +136,21 @@ def create_user_token(user, db_session, is_authenticated=True):
     db_session.commit()
     db_session.refresh(user)
 
-    return user
-
 
 @pytest.fixture(scope="function")
 def authenticated_user(db_session):
     user = db_session.query(User).filter(User.id == user_uuid_pk).first()
-    return create_user_token(user, db_session, is_authenticated=True)
+    create_user_token(user, db_session, is_authenticated=True)
+    return user
 
 
 @pytest.fixture(scope="function")
 def unauthenticated_user(db_session):
     user = db_session.query(User).filter(User.id == user_uuid_pk).first()
-    return create_user_token(user, db_session, is_authenticated=False)
+    create_user_token(user, db_session, is_authenticated=False)
+    return user
+
+
+@contextmanager
+def override_get_db_context_session(db_session):
+    yield db_session

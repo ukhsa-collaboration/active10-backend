@@ -25,8 +25,17 @@ class Config(BaseSettings):
     aws_sqs_activities_migrations_queue_url: str
     aws_sns_activity_topic_arn: str
     aws_sns_activities_migration_topic_arn: str
+    sendgrid_webhook_public_key: str
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    test_nhs_login_api: str
+    test_nhs_email: str
+    test_nhs_password: str
+    test_nhs_otp: str
+
+    # Extra allowed for adding AWS_ local dummy secrets in the .env file
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="allow"
+    )
 
 
 config = Config()
