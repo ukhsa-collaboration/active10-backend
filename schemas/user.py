@@ -15,6 +15,11 @@ class EmailPreferenceRequest(BaseModel):
         return name
 
 
+class EmailPreferenceRequestPublic(BaseModel):
+    email: EmailStr
+    name: str = Field(..., examples=["active10_mailing_list"])
+
+
 class EmailPreferenceResponse(BaseModel):
     id: UUID
     name: str
