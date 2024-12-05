@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
-from starlette.responses import JSONResponse, HTMLResponse
+from fastapi import APIRouter, Depends
+from starlette.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
 from crud.subscription_crud import SubscriptionCRUD
@@ -9,9 +9,6 @@ from models.user import User
 from schemas.user import EmailPreferenceRequest, EmailPreferenceRequestPublic
 from service.user_service import UserService
 from utils.base_config import logger
-from fastapi.templating import Jinja2Templates
-
-templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -69,7 +66,3 @@ async def public_unsubscribe_email_preference(
 
     return JSONResponse(status_code=200, content={"message": "Unsubscribed successfully"})
 
-
-@router.get("/unsubscribe", response_class=HTMLResponse)
-async def unsubscribe_page(request: Request):
-    return templates.TemplateResponse("unsubscribe.html", {"request": request})
