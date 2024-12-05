@@ -6,7 +6,7 @@ from api.v2 import router as api_v2
 from api.nhs_login import router as nhs_login
 from api.healthcheck import router as healthcheck
 from utils.base_config import config
-
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Active10 Backend Service",
@@ -14,9 +14,14 @@ app = FastAPI(
     version="0.1.0",
 )
 
+
 @lru_cache
 def get_config():
     return config()
+
+
+# Mount static directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 app.include_router(api_v1.router)
