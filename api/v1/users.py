@@ -58,7 +58,7 @@ async def public_unsubscribe_email_preference(
     Public endpoint to unsubscribe from email preferences using the user's email.
 
     Args:
-        payload (EmailPreferenceRequest): Contains the user's email and the preference name.
+        Contains the user's email and the preference mailing list name.
 
     Returns:
         JSONResponse: Success or error message.
