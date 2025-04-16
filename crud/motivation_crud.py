@@ -1,6 +1,5 @@
 from datetime import timezone, datetime
 from fastapi import Depends
-from sqlalchemy import String
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
