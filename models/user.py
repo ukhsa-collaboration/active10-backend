@@ -33,6 +33,14 @@ class User(Base):
 
     token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship("EmailPreference", backref="users", uselist=True, cascade="all, delete")
+    motivations = relationship(
+        "UserMotivation",
+        backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserMotivation.created_at)",
+    )
 
 class UserToken(Base):
     __tablename__ = "user_tokens"

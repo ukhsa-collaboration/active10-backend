@@ -1,6 +1,8 @@
+from collections import defaultdict
 from datetime import datetime
 
 from models.user import User
+from schemas.motivation import UserMotivationResponse
 from schemas.user import UserResponse, EmailPreferenceResponse
 
 
@@ -12,6 +14,15 @@ class UserService:
         age_range = self.__get_age_range(user.date_of_birth)
         anony_email = self.__anonymize_email(user.email)
         age = self.calculate_age(user.date_of_birth)
+        latest_motivation = None
+        if user.motivations.all():
+            latest = user.motivations[0]  # As list is sorted by created_at DESC
+            latest_motivation = UserMotivationResponse(
+                id=latest.id,
+                user_id=latest.user_id,
+                created_at=latest.created_at,
+                goals=latest.goals
+            )
 
         return UserResponse(
             id=user.id,
@@ -27,6 +38,7 @@ class UserService:
                 name=ep.name,
                 is_active=ep.is_active,
             ) for ep in user.email_preferences if user.email_preferences],
+            latest_motivation=latest_motivation
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
