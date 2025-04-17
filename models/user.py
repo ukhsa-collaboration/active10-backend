@@ -1,6 +1,7 @@
 from datetime import datetime
-from uuid import uuid4
 from enum import Enum
+from uuid import uuid4
+
 from sqlalchemy import Column, Date, String, UUID, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
@@ -33,6 +34,7 @@ class User(Base):
 
     token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship("EmailPreference", backref="users", uselist=True, cascade="all, delete")
+
     motivations = relationship(
         "UserMotivation",
         backref="users",
@@ -41,6 +43,14 @@ class User(Base):
         lazy="dynamic",
         order_by="desc(UserMotivation.created_at)",
     )
+    activity_levels = relationship(
+        "UserActivityLevel", backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserActivityLevel.created_at)"
+    )
+
 
 class UserToken(Base):
     __tablename__ = "user_tokens"

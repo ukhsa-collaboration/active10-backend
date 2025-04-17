@@ -1,7 +1,7 @@
-from collections import defaultdict
 from datetime import datetime
 
 from models.user import User
+from schemas.activity_level import ActivityLevelResponseSchema
 from schemas.motivation import UserMotivationResponse
 from schemas.user import UserResponse, EmailPreferenceResponse
 
@@ -23,6 +23,15 @@ class UserService:
                 created_at=latest.created_at,
                 goals=latest.goals
             )
+        activity_level = None
+        if user.activity_levels.all():
+            latest_activity_level = user.activity_levels[0]
+            activity_level = ActivityLevelResponseSchema(
+                id=latest_activity_level.id,
+                level=latest_activity_level.level,
+                created_at=latest_activity_level.created_at,
+                updated_at=latest_activity_level.updated_at
+            )
 
         return UserResponse(
             id=user.id,
@@ -38,15 +47,16 @@ class UserService:
                 name=ep.name,
                 is_active=ep.is_active,
             ) for ep in user.email_preferences if user.email_preferences],
-            latest_motivation=latest_motivation
+            latest_motivation=latest_motivation,
+            latest_activity_level=activity_level
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
         today = datetime.now()
         age = (
-            today.year
-            - date_of_birth.year
-            - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+                today.year
+                - date_of_birth.year
+                - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
         )
 
         age_ranges = {
