@@ -4,7 +4,6 @@ activity_level_record_id = "test-id"
 def test_create_user_activity_level(client, authenticated_user):
     payload = {
         "level": "Active",
-        "date": 1677649420
     }
 
     response = client.post(
@@ -16,7 +15,6 @@ def test_create_user_activity_level(client, authenticated_user):
     assert response.status_code == 200
     data = response.json()
     assert data["level"] == "Active"
-    assert data["date"] == 1677649420
 
     global activity_level_record_id
     activity_level_record_id = data["id"]
@@ -24,8 +22,7 @@ def test_create_user_activity_level(client, authenticated_user):
 
 def test_create_user_activity_level_invalid_level(client, authenticated_user):
     payload = {
-        "level": "Super Active",  # Invalid level
-        "date": 1677649420
+        "level": "Super Active",
     }
 
     response = client.post(
@@ -34,30 +31,12 @@ def test_create_user_activity_level_invalid_level(client, authenticated_user):
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 400
-
-
-def test_create_user_activity_level_without_date(client, authenticated_user):
-    payload = {
-        "level": "Moderately active"
-    }
-
-    response = client.post(
-        "/v1/activity_level/",
-        json=payload,
-        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["level"] == "Moderately active"
-    assert "date" in data
+    assert response.status_code == 422
 
 
 def test_create_user_activity_level_unauthenticated(client, unauthenticated_user):
     payload = {
         "level": "Active",
-        "date": 1677649420
     }
 
     response = client.post(
@@ -80,7 +59,6 @@ def test_get_user_activity_levels(client, authenticated_user):
     assert type(data) == list
     assert len(data) > 0
     assert "level" in data[0]
-    assert "date" in data[0]
 
 
 def test_get_specific_activity_level(client, authenticated_user):
@@ -93,7 +71,6 @@ def test_get_specific_activity_level(client, authenticated_user):
     data = response.json()
     assert data["id"] == activity_level_record_id
     assert "level" in data
-    assert "date" in data
 
 
 def test_get_nonexistent_activity_level(client, authenticated_user):
@@ -108,7 +85,6 @@ def test_get_nonexistent_activity_level(client, authenticated_user):
 def test_update_activity_level(client, authenticated_user):
     payload = {
         "level": "Inactive",
-        "date": 1677649420
     }
 
     response = client.put(
@@ -120,13 +96,11 @@ def test_update_activity_level(client, authenticated_user):
     assert response.status_code == 200
     data = response.json()
     assert data["level"] == "Inactive"
-    assert data["date"] == 1677649420
 
 
 def test_update_activity_level_invalid_level(client, authenticated_user):
     payload = {
-        "level": "Super Inactive",  # Invalid level
-        "date": 1677649420
+        "level": "Super Inactive",
     }
 
     response = client.put(
@@ -135,13 +109,12 @@ def test_update_activity_level_invalid_level(client, authenticated_user):
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
 
 
 def test_update_nonexistent_activity_level(client, authenticated_user):
     payload = {
         "level": "Active",
-        "date": 1677649420
     }
 
     response = client.put(
@@ -166,3 +139,12 @@ def test_update_activity_level_unauthenticated(client, unauthenticated_user):
     )
 
     assert response.status_code == 404
+
+
+def test_delete_activity_level_authenticated_user(client, authenticated_user):
+    response = client.delete(
+        f"/v1/activity_level/{activity_level_record_id}",
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+    )
+
+    assert response.status_code == 204
