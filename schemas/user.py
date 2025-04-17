@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
 
 from schemas.motivation import UserMotivationResponse
+from schemas.activity_level import ActivityLevelResponseSchema
 
 
 class EmailPreferenceRequest(BaseModel):
@@ -38,6 +39,7 @@ class UserResponse(BaseModel):
     postcode: Optional[str]
     email_preferences: Optional[List[EmailPreferenceResponse]] = []
     latest_motivation: Optional[UserMotivationResponse] = None
+    activity_level: Optional[ActivityLevelResponseSchema] = None
 
 
 class NHSUser(BaseModel):

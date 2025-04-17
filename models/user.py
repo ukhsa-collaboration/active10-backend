@@ -33,6 +33,7 @@ class User(Base):
 
     token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship("EmailPreference", backref="users", uselist=True, cascade="all, delete")
+
     motivations = relationship(
         "UserMotivation",
         backref="users",
@@ -40,6 +41,12 @@ class User(Base):
         cascade="all, delete",
         lazy="dynamic",
         order_by="desc(UserMotivation.created_at)",
+    )
+    activity_levels = relationship("UserActivityLevel", backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserActivityLevel.date)"
     )
 
 class UserToken(Base):
