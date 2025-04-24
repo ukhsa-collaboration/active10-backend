@@ -4,8 +4,8 @@ motivation_record_id = "test-id"
 def test_create_user_motivation(client, authenticated_user):
     payload = {
         "goals": [
-            {"text": "I want to walk more."},
-            {"text": "I want to stay healthy."}
+            {"text": "I want to walk more.", "id": 1},
+            {"text": "I want to stay healthy.", "id": 2}
         ]
     }
 
@@ -19,6 +19,7 @@ def test_create_user_motivation(client, authenticated_user):
     data = response.json()
     assert len(data["goals"]) == 2
     assert data["goals"][0]["text"] == "I want to walk more."
+    assert data["goals"][0]["id"] == 1
 
     global motivation_record_id
     motivation_record_id = data["id"]
@@ -36,7 +37,7 @@ def test_create_user_motivation_with_missing_body(client, authenticated_user):
 def test_create_user_motivation_unauthenticated(client, unauthenticated_user):
     payload = {
         "goals": [
-            {"text": "I want to walk more."}
+            {"text": "I want to walk more.", "id": 1}
         ]
     }
 
@@ -59,6 +60,7 @@ def test_get_user_motivation(client, authenticated_user):
     data = response.json()
     assert type(data) == list
     assert data[0]["goals"][0]["text"] == "I want to walk more."
+    assert data[0]["goals"][0]["id"] == 1
 
 
 def test_get_user_motivation_unauthenticated(client, unauthenticated_user):
@@ -73,7 +75,7 @@ def test_get_user_motivation_unauthenticated(client, unauthenticated_user):
 def test_update_user_motivation(client, authenticated_user):
     payload = {
         "goals": [
-            {"text": "Updated goal: Walk 10k steps daily"}
+            {"text": "Updated goal: Walk 10k steps daily", "id": 1}
         ]
     }
 
@@ -86,12 +88,12 @@ def test_update_user_motivation(client, authenticated_user):
     assert response.status_code == 200
     data = response.json()
     assert data["goals"][0]["text"] == "Updated goal: Walk 10k steps daily"
-
+    assert data["goals"][0]["id"] == 1
 
 def test_update_user_motivation_unauthenticated(client, unauthenticated_user):
     payload = {
         "goals": [
-            {"text": "Unauthenticated update"}
+            {"text": "Unauthenticated update", "id": 1}
         ]
     }
 

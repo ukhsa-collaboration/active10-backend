@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 class GoalItem(BaseModel):
     text: str = Field(..., examples=["I want to make regular walks a part of my lifestyle"])
+    id: int = Field(..., examples=["1"])
 
 
 class CreateUpdateUserMotivationRequest(BaseModel):
