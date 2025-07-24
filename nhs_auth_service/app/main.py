@@ -18,5 +18,5 @@ def health_check():
     return {"status": "Healthy"}
 
 
-app.include_router(v1_router.routes, prefix="/api")
+app.include_router(v1_router.routes)
 app.include_router(nhs_login.router)
