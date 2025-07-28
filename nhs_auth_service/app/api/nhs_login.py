@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 from typing import Annotated
 
+from app.core.logger import logger
 from app.db.session import get_db_session
 from app.models import User, UserStatus, UserDeleteReason, DeleteAudit
+from app.schemas.common import MessageResponse
 from app.services.nhs_login_service import NHSLoginService
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from starlette.responses import JSONResponse
 
 from .deps import get_authenticated_user_data
 
@@ -22,14 +23,18 @@ async def nhs_login(
     return RedirectResponse(url)
 
 
-@router.get("/callback", response_class=RedirectResponse, status_code=301)
+@router.get(
+    "/callback",
+    response_class=RedirectResponse,
+    status_code=status.HTTP_301_MOVED_PERMANENTLY,
+)
 async def nhs_login_callback(request: Request, service: NHSLoginService = Depends()):
     req_args = dict(request.query_params)
     deep_link = service.process_callback(req_args)
     return RedirectResponse(deep_link)
 
 
-@router.post("/logout", response_class=JSONResponse, status_code=200)
+@router.post("/logout", response_model=MessageResponse, status_code=status.HTTP_200_OK)
 async def logout(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     db: Session = Depends(get_db_session),
@@ -43,7 +48,9 @@ async def logout(
     return {"message": "User logged out successfully"}
 
 
-@router.post("/disconnect", response_class=JSONResponse, status_code=200)
+@router.post(
+    "/disconnect", response_model=MessageResponse, status_code=status.HTTP_200_OK
+)
 async def disconnect(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     db: Session = Depends(get_db_session),
@@ -60,5 +67,6 @@ async def disconnect(
         return {"message": "User disconnected successfully"}
 
     except Exception as e:
+        logger.exception(f"Failed to disconnect user: {e}", extra={"user_id": user.id})
         db.rollback()
         raise HTTPException(status_code=500, detail="Failed to disconnect user") from e
