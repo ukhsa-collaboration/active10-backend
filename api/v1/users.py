@@ -13,16 +13,19 @@ from utils.base_config import logger
 router = APIRouter(prefix="/users", tags=["users"])
 router.redirect_slashes = False  # avoid 307 redirects - they're problematic behind API Gateway
 
-# Kept in this file just for demo purposes
+
 def get_authenticated_user_data(
-    user_id: Annotated[str | None, Header(alias="Bh-User-Id")] = None,
-    user_crud: Annotated["UserCRUD", Depends()] = Depends(),
+    user_id: str = Header(None, alias="Bh-User-Id")
 ):
     if not user_id:
         raise HTTPException(status_code=401, detail="Missing Bh-User-Id header")
+
+    user_crud = UserCRUD()
     user = user_crud.get_user_by_id(user_id)
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 # We could use two decorators here to allow "/" but a URL ending in / isn't supported by API Gateway
