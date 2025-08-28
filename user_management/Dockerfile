@@ -1,0 +1,32 @@
+FROM python:3.12
+
+EXPOSE 8000
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    pkg-config \
+    build-essential \
+    netcat-openbsd \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+RUN chmod +x ./scripts/start-backend.sh
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN useradd --user-group --system --create-home --no-log-init app && chown -R app /app
+
+# Install AWS RDS TLS certificate
+RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /etc/ssl/certs/global-bundle.pem \
+  && update-ca-certificates
+
+USER app
+
+ENTRYPOINT ["scripts/start-backend.sh"]
