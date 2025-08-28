@@ -1,14 +1,13 @@
-# Active10 - Authentication Microservice
+# Active10 - User Management Microservice
 
 ## Description
 
-Authentication microservice for the Active10 application. This service provides authentication, user management, and NHS
+User Management microservice for the Active10 application. This service provides user management, and NHS
 Login integration for the Active10 app. Built with FastAPI, PostgreSQL, and Alembic for migrations.
 
 ## Features
 
 - NHS Login authentication and callback flow
-- JWT-based authentication
 - User profile and email preferences management
 - Integration with NHS Personal Demographics Service (PDS)
 - RESTful API endpoints for user and authentication operations
@@ -95,7 +94,6 @@ If you'd prefer to run the project using Docker, follow these steps:
 
    Create a `.env` file in the root directory and add the following variables:
    <pre>
-   SECRET_KEY=your_secret_key_here
    AUTH_JWT_SECRET=HS256
    AUTH_JWT_EXPIRY_IN_SECONDS=3600
 
@@ -176,7 +174,6 @@ The app is accessible via port 8000, and the database is available on port 5432.
 
    Create a `.env` file in the root directory and add the following variables:
    <pre>
-   SECRET_KEY=your_secret_key_here
    AUTH_JWT_SECRET=HS256
    AUTH_JWT_EXPIRY_IN_SECONDS=3600
 
