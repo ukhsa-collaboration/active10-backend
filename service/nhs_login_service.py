@@ -23,7 +23,9 @@ auth_nhs = Authenticator(
 
 
 class NHSLoginService:
-    def __init__(self, user_crud: UserCRUD = Depends(), user_token_crud: TokenCRUD = Depends()) -> None:
+    def __init__(
+        self, user_crud: UserCRUD = Depends(), user_token_crud: TokenCRUD = Depends()
+    ) -> None:
         self.userCRUD = user_crud
         self.token_crud = user_token_crud
         self.pds_client = PDSClient(config.nhs_api_key, config.nhs_api_url)
@@ -103,7 +105,9 @@ class NHSLoginService:
 
         # Generate and return new redirect URL for mobile app
         generated_data = self.generate_redirect_url(result)
-        _ = self.token_crud.create_or_update_user_token(user_id=result.id, token=generated_data.get("token"))
+        _ = self.token_crud.create_or_update_user_token(
+            user_id=result.id, token=generated_data.get("token")
+        )
 
         return generated_data.get("redirect_url")
 
@@ -118,12 +122,9 @@ class NHSLoginService:
         auth_resp = auth_nhs.get_authorization_response(req_args)
         data = auth_nhs.get_access_token(auth_resp)
         user_info = auth_nhs.get_userinfo(data["access_token"])
-        pds_data = self.pds_client.get_pds_data(
-            data["id_token_jwt"], user_info["nhs_number"]
-        )
-
-        user_info["gender"] = pds_data["gender"]
-        user_info["postcode"] = pds_data["postcode"]
+        # TODO: gender and postcode needs to come from Mobile App now.
+        user_info["gender"] = "na"
+        user_info["postcode"] = "na"
 
         return user_info
 
