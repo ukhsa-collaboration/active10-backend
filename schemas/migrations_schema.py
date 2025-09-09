@@ -8,7 +8,9 @@ from schemas.activity import UserActivityRequestSchema
 
 
 class ActivitiesMigrationsRequestSchema(BaseModel):
-    month: int = Field(..., gt=0, description="First date (unix timestamp) of data month")
+    month: int = Field(
+        ..., gt=0, description="First date (unix timestamp) of data month"
+    )
     activities: List[UserActivityRequestSchema] = Field(...)
 
     @model_validator(mode="before")

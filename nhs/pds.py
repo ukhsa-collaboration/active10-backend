@@ -17,7 +17,6 @@ class PDSClient:
         self.access_data = None
 
     def generate_and_sign_jwt(self):
-
         claims = {
             "sub": self.api_key,
             "iss": self.api_key,

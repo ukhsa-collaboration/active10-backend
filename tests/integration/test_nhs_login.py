@@ -51,7 +51,9 @@ class MyTestClass(BaseCase):
         callback_request_found = False
 
         while not callback_request_found and iteration < max_retries:
-            callback_request, callback_request_found = self.request_with_callback_response(self.driver.requests)
+            callback_request, callback_request_found = (
+                self.request_with_callback_response(self.driver.requests)
+            )
             if callback_request_found:
                 break
 
@@ -62,7 +64,9 @@ class MyTestClass(BaseCase):
 
         if callback_request:
             response = callback_request.response
-            redirect_uri = response.headers.get('Location') if response.headers else None
+            redirect_uri = (
+                response.headers.get("Location") if response.headers else None
+            )
             if not redirect_uri:
                 raise Exception(f"Redirect URI not found in response: {response}")
 

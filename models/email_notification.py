@@ -32,15 +32,30 @@ class LogoutUserEmailLogs(Base):
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     user_email = Column(String(length=254), nullable=False, index=True)
-    notification_type = Column(SQLAlchemyEnum(*LogoutNotificationType.value_choices(), name="notification_type_enum"), nullable=False, index=True)
-    email_delivery_status = Column(SQLAlchemyEnum(*EmailStatusEnum.value_choices(), name="email_status_enum"), nullable=False, index=True)
+    notification_type = Column(
+        SQLAlchemyEnum(
+            *LogoutNotificationType.value_choices(), name="notification_type_enum"
+        ),
+        nullable=False,
+        index=True,
+    )
+    email_delivery_status = Column(
+        SQLAlchemyEnum(*EmailStatusEnum.value_choices(), name="email_status_enum"),
+        nullable=False,
+        index=True,
+    )
     failure_reason = Column(String(length=128), nullable=True)
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
+    )
     updated_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
     )
 
 
@@ -52,12 +67,23 @@ class MonthlyReportEmailLogs(Base):
     user_email = Column(String(length=254), nullable=False, index=True)
     batch_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     report_month = Column(String(length=12), nullable=False, index=True)
-    email_delivery_status = Column(SQLAlchemyEnum(*EmailStatusEnum.value_choices(), name="report_email_status_enum"), nullable=False, index=True)
+    email_delivery_status = Column(
+        SQLAlchemyEnum(
+            *EmailStatusEnum.value_choices(), name="report_email_status_enum"
+        ),
+        nullable=False,
+        index=True,
+    )
     failure_reason = Column(String(length=128), nullable=True)
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
+    )
     updated_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc)
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),
+        onupdate=datetime.now(timezone.utc),
     )

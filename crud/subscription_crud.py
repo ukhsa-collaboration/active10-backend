@@ -20,12 +20,15 @@ class SubscriptionCRUD:
         Raises:
             HTTPException: If the user is already subscribed to email preferences with the same name.
         """
-        email_preference = self.db.query(EmailPreference).filter_by(user_id=user_id, name=name).first()
+        email_preference = (
+            self.db.query(EmailPreference).filter_by(user_id=user_id, name=name).first()
+        )
 
         if email_preference:
             if email_preference.is_active:
                 raise HTTPException(
-                    status_code=400, detail=f"User is already subscribed to email preferences with the name '{name}'"
+                    status_code=400,
+                    detail=f"User is already subscribed to email preferences with the name '{name}'",
                 )
             else:
                 email_preference.is_active = True
@@ -49,12 +52,15 @@ class SubscriptionCRUD:
         Raises:
             HTTPException: If the user is not subscribed to email preferences.
         """
-        email_preference = self.db.query(EmailPreference).filter_by(user_id=user_id, name=name).first()
+        email_preference = (
+            self.db.query(EmailPreference).filter_by(user_id=user_id, name=name).first()
+        )
 
         if email_preference:
             if not email_preference.is_active:
                 raise HTTPException(
-                    status_code=400, detail=f"User is already unsubscribed from email preferences with the name '{name}'"
+                    status_code=400,
+                    detail=f"User is already unsubscribed from email preferences with the name '{name}'",
                 )
 
             email_preference.is_active = False
@@ -62,5 +68,6 @@ class SubscriptionCRUD:
             self.db.refresh(email_preference)
         else:
             raise HTTPException(
-                status_code=400, detail=f"User is not subscribed to email preferences with the name '{name}'"
+                status_code=400,
+                detail=f"User is not subscribed to email preferences with the name '{name}'",
             )

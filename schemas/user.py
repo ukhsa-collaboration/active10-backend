@@ -7,7 +7,7 @@ from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
 class EmailPreferenceRequest(BaseModel):
     name: str = Field(..., examples=["active10_mailing_list"])
 
-    @field_validator('name')
+    @field_validator("name")
     def validate_name(cls, name: str) -> str:
         if name != "active10_mailing_list":
             raise ValueError("Invalid name")

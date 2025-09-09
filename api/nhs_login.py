@@ -15,7 +15,9 @@ router = APIRouter(prefix="/nhs_login", tags=["NHS Login"])
 
 
 @router.get("/{app_name}/{app_internal_id}")
-async def nhs_login(app_name: str, app_internal_id: str, service: NHSLoginService = Depends()):
+async def nhs_login(
+    app_name: str, app_internal_id: str, service: NHSLoginService = Depends()
+):
     url = service.get_nhs_login_url(app_name, app_internal_id)
     return RedirectResponse(url)
 
@@ -30,7 +32,7 @@ async def nhs_login_callback(request: Request, service: NHSLoginService = Depend
 @router.post("/logout", response_class=JSONResponse, status_code=200)
 async def logout(
     user: Annotated[User, Depends(get_authenticated_user_data)],
-    db: Session = Depends(get_db_session)
+    db: Session = Depends(get_db_session),
 ):
     user.status = UserStatus.LOGOUT.value
     user.status_updated_at = datetime.utcnow()
@@ -44,14 +46,13 @@ async def logout(
 @router.post("/disconnect", response_class=JSONResponse, status_code=200)
 async def disconnect(
     user: Annotated[User, Depends(get_authenticated_user_data)],
-    db: Session = Depends(get_db_session)
+    db: Session = Depends(get_db_session),
 ):
     try:
         db.delete(user)
 
         delete_audit = DeleteAudit(
-            user_id=user.id,
-            delete_reason=UserDeleteReason.DISCONNECTED.value
+            user_id=user.id, delete_reason=UserDeleteReason.DISCONNECTED.value
         )
         db.add(delete_audit)
         db.commit()

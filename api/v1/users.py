@@ -12,6 +12,7 @@ from utils.base_config import logger
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+
 @router.get("/", response_class=JSONResponse)
 async def get_user(
     user: Annotated[User, Depends(get_authenticated_user_data)],
@@ -30,7 +31,9 @@ async def subscribe_email_preference(
     subscription_crud.subscribe_email_preferences(user.id, payload.name)
     logger.info(f"User (id = {user.id}) is subscribed to email preferences")
 
-    return JSONResponse(status_code=200, content={"message": "Subscribed to email preferences"})
+    return JSONResponse(
+        status_code=200, content={"message": "Subscribed to email preferences"}
+    )
 
 
 @router.post("/email_preferences/unsubscribe/", response_class=JSONResponse)
@@ -42,4 +45,6 @@ async def unsubscribe_email_preference(
     subscription_crud.unsubscribe_email_preferences(user.id, payload.name)
     logger.info(f"User (id = {user.id}) is unsubscribed from email preferences")
 
-    return JSONResponse(status_code=200, content={"message": "Unsubscribed from email preferences"})
+    return JSONResponse(
+        status_code=200, content={"message": "Unsubscribed from email preferences"}
+    )

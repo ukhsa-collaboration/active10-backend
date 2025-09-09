@@ -14,6 +14,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+
 @lru_cache
 def get_config():
     return config()

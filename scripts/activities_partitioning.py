@@ -15,7 +15,7 @@ engine = create_engine(
         os.getenv("DB_PASS"),
         os.getenv("DB_HOST"),
         os.getenv("DB_PORT"),
-        os.getenv("DB_NAME")
+        os.getenv("DB_NAME"),
     )
 )
 
@@ -24,7 +24,7 @@ temp_table_name = "temp_activities"
 
 def get_partition_name_from_unix(unix_month_start: int) -> str:
     """Generates partition table name based on the Unix timestamp for the start of the month."""
-    return f'activities_{datetime.fromtimestamp(unix_month_start).strftime("%Y_%m")}'
+    return f"activities_{datetime.fromtimestamp(unix_month_start).strftime('%Y_%m')}"
 
 
 def create_temp_table():
@@ -96,11 +96,7 @@ def delete_temp_table():
     Deletes the temporary table.
     """
     with Session(engine) as db:
-        db.execute(
-            text(
-                f"DROP TABLE IF EXISTS {temp_table_name}"
-            )
-        )
+        db.execute(text(f"DROP TABLE IF EXISTS {temp_table_name}"))
         db.commit()
         print("Deleted temp table: ", temp_table_name)
 
@@ -132,14 +128,13 @@ def migrate_data_to_partition_table(partition_name, start_date_unix, end_date_un
         print("Moved data to partition table: ", partition_name)
 
 
-def create_partition_table_by_params(
-        start_date_unix: int,
-        end_date_unix: int
-):
+def create_partition_table_by_params(start_date_unix: int, end_date_unix: int):
     if not start_date_unix or not end_date_unix:
         raise ValueError("Both start_date_unix and end_date_unix must be provided")
 
-    start_date = datetime.fromtimestamp(start_date_unix).replace(hour=0, minute=0, second=0, day=1)
+    start_date = datetime.fromtimestamp(start_date_unix).replace(
+        hour=0, minute=0, second=0, day=1
+    )
     end_date = datetime.fromtimestamp(end_date_unix)
     time_range = relativedelta(end_date, start_date)
     months_difference = time_range.years * 12 + time_range.months
@@ -148,7 +143,9 @@ def create_partition_table_by_params(
         months_difference += 1
 
     if months_difference < 1:
-        raise ValueError("The difference between start_date and end_date must be at least 1 month")
+        raise ValueError(
+            "The difference between start_date and end_date must be at least 1 month"
+        )
 
     start_date_unix = int(start_date.timestamp())
 
@@ -159,7 +156,7 @@ def create_partition_table_by_params(
             hour=23,
             minute=59,
             second=59,
-            microsecond=999999
+            microsecond=999999,
         )
         end_date_unix = int(end_date.timestamp())
 
@@ -167,15 +164,18 @@ def create_partition_table_by_params(
             create_partition_table(partition_name, start_date_unix, end_date_unix)
 
         except IntegrityError as e:
-
             if "updated partition constraint for default partition" in str(e):
-                print(f"IntegrityError detected: {e}.\n\nHandling overlapping data for partition {partition_name}.\n")
+                print(
+                    f"IntegrityError detected: {e}.\n\nHandling overlapping data for partition {partition_name}.\n"
+                )
 
                 create_temp_table()
                 move_data_to_temp_table(start_date_unix, end_date_unix)
                 delete_data_from_default_partition(start_date_unix, end_date_unix)
                 create_partition_table(partition_name, start_date_unix, end_date_unix)
-                migrate_data_to_partition_table(partition_name, start_date_unix, end_date_unix)
+                migrate_data_to_partition_table(
+                    partition_name, start_date_unix, end_date_unix
+                )
                 delete_temp_table()
 
             else:
@@ -188,7 +188,7 @@ def create_partition_table_by_params(
         start_date = datetime.fromtimestamp(start_date_unix)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_date_ = int(datetime(2018, 1, 1, tzinfo=timezone.utc).timestamp())
     end_date_ = int(datetime(2030, 12, 31, tzinfo=timezone.utc).timestamp())
 

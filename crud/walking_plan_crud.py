@@ -20,9 +20,15 @@ class UserWalkingPlanCRUD:
         return walking_plan
 
     def get_walking_plan_by_user_id(self, uuid: str) -> Union[UserWalkingPlan, None]:
-        return self.db.query(UserWalkingPlan).filter(UserWalkingPlan.user_id == uuid).first()
+        return (
+            self.db.query(UserWalkingPlan)
+            .filter(UserWalkingPlan.user_id == uuid)
+            .first()
+        )
 
-    def update_walking_plan(self, walking_plan: UserWalkingPlan, payload: WalkingPlanRequestSchema) -> UserWalkingPlan:
+    def update_walking_plan(
+        self, walking_plan: UserWalkingPlan, payload: WalkingPlanRequestSchema
+    ) -> UserWalkingPlan:
         walking_plan.walking_plan_data = payload.walking_plan_data
         self.db.commit()
         self.db.refresh(walking_plan)

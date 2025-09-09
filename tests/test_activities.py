@@ -8,23 +8,17 @@ from tests.conftest import user_uuid_pk, override_get_db_context_session
 def test_create_activities(client, authenticated_user, db_session):
     with (
         patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
-        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
+        patch(
+            "crud.activities_crud.get_db_context_session",
+            lambda: override_get_db_context_session(db_session),
+        ),
     ):
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
             "user_age_range": "23-39",
-            "rewards": [
-                {
-                    "earned": 63,
-                    "slug": "high_five"
-                }
-            ],
-            "activity": {
-                "brisk_minutes": 109,
-                "walking_minutes": 30,
-                "steps": 1867
-            }
+            "rewards": [{"earned": 63, "slug": "high_five"}],
+            "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
         }
 
         response = client.post(
@@ -47,17 +41,16 @@ def test_create_activities(client, authenticated_user, db_session):
 def test_create_activities_without_rewards(client, authenticated_user, db_session):
     with (
         patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
-        patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)),
+        patch(
+            "crud.activities_crud.get_db_context_session",
+            lambda: override_get_db_context_session(db_session),
+        ),
     ):
         activity_payload = {
             "date": 1714637586,
             "user_postcode": "HD81",
             "user_age_range": "23-39",
-            "activity": {
-                "brisk_minutes": 109,
-                "walking_minutes": 30,
-                "steps": 1867
-            }
+            "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
         }
 
         response = client.post(
@@ -81,16 +74,8 @@ def test_create_activities_missing_fields(client, authenticated_user):
     activity_payload = {
         "user_postcode": "HD81",
         "user_age_range": "23-39",
-        "rewards": [
-            {
-                "earned": 63,
-                "slug": "high_five"
-            }
-        ],
-        "activity": {
-            "brisk_minutes": 109,
-            "steps": 1867
-        }
+        "rewards": [{"earned": 63, "slug": "high_five"}],
+        "activity": {"brisk_minutes": 109, "steps": 1867},
     }
 
     response = client.post(
@@ -107,17 +92,8 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
         "date": datetime.now().isoformat(),
         "user_postcode": "HD81",
         "user_age_range": "23-39",
-        "rewards": [
-            {
-                "earned": 63,
-                "slug": "high_five"
-            }
-        ],
-        "activity": {
-            "brisk_minutes": "ten",
-            "walking_minutes": 30,
-            "steps": 1867
-        }
+        "rewards": [{"earned": 63, "slug": "high_five"}],
+        "activity": {"brisk_minutes": "ten", "walking_minutes": 30, "steps": 1867},
     }
 
     response = client.post(
@@ -130,7 +106,10 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
 
 
 def test_list_activities(client, authenticated_user, db_session):
-    with patch("crud.activities_crud.get_db_context_session", lambda: override_get_db_context_session(db_session)):
+    with patch(
+        "crud.activities_crud.get_db_context_session",
+        lambda: override_get_db_context_session(db_session),
+    ):
         response = client.get(
             "/v1/activities/",
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},

@@ -11,4 +11,9 @@ class UserDailyTarget(Base):
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
     date = Column(Integer, nullable=True)
     daily_target = Column(Integer, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )

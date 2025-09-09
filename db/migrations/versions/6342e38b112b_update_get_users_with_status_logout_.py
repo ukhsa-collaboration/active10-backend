@@ -5,14 +5,15 @@ Revises: aa8451fd521c
 Create Date: 2024-09-19 21:21:18.256479
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
-revision: str = '6342e38b112b'
-down_revision: Union[str, None] = 'aa8451fd521c'
+revision: str = "6342e38b112b"
+down_revision: Union[str, None] = "aa8451fd521c"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -35,9 +36,14 @@ END;
 $$ LANGUAGE plpgsql;
 """
 
+
 def upgrade():
-    if op.get_bind().execute(text("SELECT to_regclass('public.users')")).scalar() is not None:
+    if (
+        op.get_bind().execute(text("SELECT to_regclass('public.users')")).scalar()
+        is not None
+    ):
         op.execute(text(stored_procedure_sql))
+
 
 def downgrade():
     op.execute(text("DROP FUNCTION IF EXISTS get_users_with_status_logout();"))

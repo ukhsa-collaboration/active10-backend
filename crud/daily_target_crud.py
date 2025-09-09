@@ -19,7 +19,9 @@ class UserDailyTargetCRUD:
 
         return daily_target
 
-    def get_daily_targets_by_filters(self, user_id: str, filters: Dict) -> [List[UserDailyTarget]]:
+    def get_daily_targets_by_filters(
+        self, user_id: str, filters: Dict
+    ) -> [List[UserDailyTarget]]:
         query = self.db.query(UserDailyTarget).filter_by(user_id=user_id)
 
         if "date" in filters:
@@ -29,16 +31,24 @@ class UserDailyTargetCRUD:
         if "end_date" in filters:
             query = query.filter(UserDailyTarget.date <= filters["end_date"])
         if "min_daily_target" in filters:
-            query = query.filter(UserDailyTarget.daily_target >= filters["min_daily_target"])
+            query = query.filter(
+                UserDailyTarget.daily_target >= filters["min_daily_target"]
+            )
         if "max_daily_target" in filters:
-            query = query.filter(UserDailyTarget.daily_target <= filters["max_daily_target"])
+            query = query.filter(
+                UserDailyTarget.daily_target <= filters["max_daily_target"]
+            )
 
         return query.all()
 
     def get_daily_targets_by_user_id(self, uuid: str) -> [List[UserDailyTarget]]:
-        return self.db.query(UserDailyTarget).filter(UserDailyTarget.user_id == uuid).all()
+        return (
+            self.db.query(UserDailyTarget).filter(UserDailyTarget.user_id == uuid).all()
+        )
 
-    def update_daily_target(self, daily_target: UserDailyTarget, payload: DailyTargetRequestSchema) -> UserDailyTarget:
+    def update_daily_target(
+        self, daily_target: UserDailyTarget, payload: DailyTargetRequestSchema
+    ) -> UserDailyTarget:
         daily_target.daily_target = payload.daily_target
         daily_target.date = payload.date
         self.db.commit()
@@ -50,10 +60,18 @@ class UserDailyTargetCRUD:
         self.db.delete(daily_target)
         self.db.commit()
 
-    def get_user_daily_target_by_id(self, user_id, target_id) -> Union[UserDailyTarget, None]:
-        return self.db.query(UserDailyTarget).filter_by(user_id=user_id, id=target_id).first()
+    def get_user_daily_target_by_id(
+        self, user_id, target_id
+    ) -> Union[UserDailyTarget, None]:
+        return (
+            self.db.query(UserDailyTarget)
+            .filter_by(user_id=user_id, id=target_id)
+            .first()
+        )
 
     def get_user_target_by_payload_data(self, user_id, data):
-        return self.db.query(UserDailyTarget).filter_by(
-            user_id=user_id, date=data.date, daily_target=data.daily_target
-        ).first()
+        return (
+            self.db.query(UserDailyTarget)
+            .filter_by(user_id=user_id, date=data.date, daily_target=data.daily_target)
+            .first()
+        )
