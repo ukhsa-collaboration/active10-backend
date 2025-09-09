@@ -30,7 +30,7 @@ def test_post_activities_migrations(client, authenticated_user, db_session):
         }
 
         response = client.post(
-            "/v1/migrations/activities/",
+            "/v1/migrations/activities",
             json=activity_migration_payload,
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
@@ -77,7 +77,7 @@ def test_post_activities_migrations_with_out_of_range_activities(
     }
 
     response = client.post(
-        "/v1/migrations/activities/",
+        "/v1/migrations/activities",
         json=activity_migration_payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -90,7 +90,7 @@ def test_post_activities_migrations_with_empty_activities(client, authenticated_
     activity_migration_payload = {"month": 1714637586, "activities": []}
 
     response = client.post(
-        "/v1/migrations/activities/",
+        "/v1/migrations/activities",
         json=activity_migration_payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -119,7 +119,7 @@ def test_post_activities_migrations_with_unauthenticated_user(
     }
 
     response = client.post(
-        "/v1/migrations/activities/",
+        "/v1/migrations/activities",
         json=activity_migration_payload,
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
@@ -147,7 +147,7 @@ def test_post_activities_migrations_with_missing_month_field(
     }
 
     response = client.post(
-        "/v1/migrations/activities/",
+        "/v1/migrations/activities",
         json=activity_migration_payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )

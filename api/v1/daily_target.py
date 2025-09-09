@@ -13,7 +13,7 @@ from schemas.daily_target import DailyTargetRequestSchema, DailyTargetResponseSc
 router = APIRouter(prefix="/daily_targets", tags=["daily target"])
 
 
-@router.post("/", response_model=DailyTargetResponseSchema, status_code=201)
+@router.post("", response_model=DailyTargetResponseSchema, status_code=201)
 async def create_daily_target(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     payload: DailyTargetRequestSchema,
@@ -35,7 +35,7 @@ async def create_daily_target(
     return created_daily_target
 
 
-@router.get("/", response_model=List[DailyTargetResponseSchema], status_code=200)
+@router.get("", response_model=List[DailyTargetResponseSchema], status_code=200)
 async def get_user_daily_targets_list(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],

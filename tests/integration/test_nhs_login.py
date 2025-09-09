@@ -92,7 +92,7 @@ class TestNHSLoginToken:
             raise Exception("Token not captured during login flow")
 
         response = self.client.get(
-            "/v1/users/",
+            "/v1/users",
             headers={"Authorization": f"Bearer {token}"},
         )
 

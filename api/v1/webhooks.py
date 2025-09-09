@@ -9,7 +9,7 @@ from utils.webhook_utils import is_valid_webhook_signature
 router = APIRouter(prefix="/webhook", tags=["Webhooks"])
 
 
-@router.post("/sendgrid/", response_class=JSONResponse, status_code=200)
+@router.post("/sendgrid", response_class=JSONResponse, status_code=200)
 async def handle_sendgrid_events_webhook(
     request: Request, background_job: BackgroundTasks
 ):

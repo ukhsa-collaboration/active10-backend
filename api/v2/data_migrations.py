@@ -13,7 +13,7 @@ from service.migrations_service import publish_bulk_activities_data_to_sns
 router = APIRouter(prefix="/migrations", tags=["migrations"])
 
 
-@router.post("/activities/", status_code=201, response_class=JSONResponse)
+@router.post("/activities", status_code=201, response_class=JSONResponse)
 async def save_bulk_activities(
     background_task: BackgroundTasks,
     data: ActivitiesMigrationsRequestSchema,

@@ -13,7 +13,7 @@ from utils.base_config import logger
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/", response_class=JSONResponse)
+@router.get("", response_class=JSONResponse)
 async def get_user(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     user_service: Annotated[UserService, Depends()],
@@ -22,7 +22,7 @@ async def get_user(
     return user_details
 
 
-@router.post("/email_preferences/subscribe/", response_class=JSONResponse)
+@router.post("/email_preferences/subscribe", response_class=JSONResponse)
 async def subscribe_email_preference(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     subscription_crud: Annotated[SubscriptionCRUD, Depends()],
@@ -36,7 +36,7 @@ async def subscribe_email_preference(
     )
 
 
-@router.post("/email_preferences/unsubscribe/", response_class=JSONResponse)
+@router.post("/email_preferences/unsubscribe", response_class=JSONResponse)
 async def unsubscribe_email_preference(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     subscription_crud: Annotated[SubscriptionCRUD, Depends()],

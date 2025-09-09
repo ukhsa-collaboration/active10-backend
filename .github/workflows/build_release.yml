@@ -294,7 +294,7 @@ jobs:
       - name: Post-Deployment Smoke Test
         shell: bash
         env:
-          URL: "https://${{ steps.url.outputs.prefix }}.active10.betterhealthapps.com/healthcheck/"
+          URL: "https://${{ steps.url.outputs.prefix }}.active10.betterhealthapps.com/healthcheck"
         run: |
           code=$(curl -H "user-agent: Mozilla/5.0 (compatible; PostDeploymentHealthCheck)" -L -s -o /dev/null -w "%{http_code}" "$URL")
           if [ "$code" -ne 200 ]; then

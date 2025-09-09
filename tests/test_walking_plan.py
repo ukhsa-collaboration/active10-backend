@@ -8,7 +8,7 @@ def test_create_walking_plan(client, authenticated_user):
         }
     }
     response = client.post(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         json=payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -20,7 +20,7 @@ def test_create_walking_plan(client, authenticated_user):
 
 def test_create_walking_plan_with_missing_body(client, authenticated_user):
     response = client.post(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
@@ -37,7 +37,7 @@ def test_create_walking_plan_by_unauthenticated_user(client, unauthenticated_use
         }
     }
     response = client.post(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         json=payload,
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
@@ -47,7 +47,7 @@ def test_create_walking_plan_by_unauthenticated_user(client, unauthenticated_use
 
 def test_get_user_walking_plan_by_unauthenticated_user(client, unauthenticated_user):
     response = client.get(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
@@ -56,7 +56,7 @@ def test_get_user_walking_plan_by_unauthenticated_user(client, unauthenticated_u
 
 def test_get_user_walking_plan(client, authenticated_user):
     response = client.get(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
@@ -75,7 +75,7 @@ def test_update_walking_plan(client, authenticated_user):
         }
     }
     response = client.put(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         json=payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -95,7 +95,7 @@ def test_update_walking_plan_by_unauthenticated_user(client, unauthenticated_use
         }
     }
     response = client.put(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         json=payload,
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
@@ -105,7 +105,7 @@ def test_update_walking_plan_by_unauthenticated_user(client, unauthenticated_use
 
 def test_delete_walking_plan_by_unauthenticated_user(client, unauthenticated_user):
     response = client.delete(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
@@ -114,7 +114,7 @@ def test_delete_walking_plan_by_unauthenticated_user(client, unauthenticated_use
 
 def test_delete_walking_plan(client, authenticated_user):
     response = client.delete(
-        "/v1/walking_plans/",
+        "/v1/walking_plans",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 

@@ -8,7 +8,7 @@ invalid_target_id = uuid4()
 def test_create_daily_target(client, authenticated_user):
     payload = {"daily_target": 20, "date": 12341234}
     response = client.post(
-        "/v1/daily_targets/",
+        "/v1/daily_targets",
         json=payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -22,7 +22,7 @@ def test_create_daily_target(client, authenticated_user):
 
 def test_create_daily_target_with_missing_body(client, authenticated_user):
     response = client.post(
-        "/v1/daily_targets/",
+        "/v1/daily_targets",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
@@ -32,7 +32,7 @@ def test_create_daily_target_with_missing_body(client, authenticated_user):
 def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_user):
     payload = {"daily_target": 20, "date": 12341234}
     response = client.post(
-        "/v1/daily_targets/",
+        "/v1/daily_targets",
         json=payload,
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
@@ -44,7 +44,7 @@ def test_get_user_all_daily_targets_by_unauthenticated_user(
     client, unauthenticated_user
 ):
     response = client.get(
-        "/v1/daily_targets/",
+        "/v1/daily_targets",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
@@ -53,7 +53,7 @@ def test_get_user_all_daily_targets_by_unauthenticated_user(
 
 def test_get_user_all_daily_target(client, authenticated_user):
     response = client.get(
-        "/v1/daily_targets/",
+        "/v1/daily_targets",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
