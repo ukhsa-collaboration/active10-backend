@@ -6,7 +6,7 @@ def test_nhs_login_redirect(client):
 
 
 def test_nhs_login_missing_app_internal_id(client):
-    response = client.get("/nhs_login/test_app/", follow_redirects=False)
+    response = client.get("/nhs_login/test_app", follow_redirects=False)
 
     assert response.status_code == 404
 

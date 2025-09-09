@@ -13,7 +13,7 @@ from service.activity_service import load_activity_data
 router = APIRouter(prefix="/activities", tags=["activities"])
 
 
-@router.post("/", status_code=201, response_model=ActivityResponseSchema)
+@router.post("", status_code=201, response_model=ActivityResponseSchema)
 async def save_activity(
     background_task: BackgroundTasks,
     activity_payload: UserActivityRequestSchema,
@@ -25,7 +25,7 @@ async def save_activity(
     return activity
 
 
-@router.get("/", response_model=List[ActivityResponseSchema], status_code=200)
+@router.get("", response_model=List[ActivityResponseSchema], status_code=200)
 async def list_activities(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     date: Optional[int] = Query(

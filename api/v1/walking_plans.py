@@ -11,7 +11,7 @@ from schemas.walking_plan import WalkingPlanRequestSchema, UserWalkingPlanRespon
 router = APIRouter(prefix="/walking_plans", tags=["walking plans"])
 
 
-@router.post("/", response_model=UserWalkingPlanResponseSchema, status_code=201)
+@router.post("", response_model=UserWalkingPlanResponseSchema, status_code=201)
 async def create_walking_plan(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     payload: WalkingPlanRequestSchema,
@@ -29,7 +29,7 @@ async def create_walking_plan(
     return created_walking_plan
 
 
-@router.get("/", response_model=UserWalkingPlanResponseSchema, status_code=200)
+@router.get("", response_model=UserWalkingPlanResponseSchema, status_code=200)
 async def get_user_walking_plan(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     walking_plan_crud: Annotated[UserWalkingPlanCRUD, Depends()],
@@ -40,7 +40,7 @@ async def get_user_walking_plan(
     return walking_plan
 
 
-@router.put("/", response_model=UserWalkingPlanResponseSchema, status_code=200)
+@router.put("", response_model=UserWalkingPlanResponseSchema, status_code=200)
 async def update_walking_plan(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     payload: WalkingPlanRequestSchema,
@@ -57,7 +57,7 @@ async def update_walking_plan(
     return updated_walking_plan
 
 
-@router.delete("/", status_code=204)
+@router.delete("", status_code=204)
 async def delete_walking_plan(
     user: Annotated[User, Depends(get_authenticated_user_data)],
     walking_plan_crud: Annotated[UserWalkingPlanCRUD, Depends()],

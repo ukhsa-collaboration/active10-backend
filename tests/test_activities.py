@@ -22,7 +22,7 @@ def test_create_activities(client, authenticated_user, db_session):
         }
 
         response = client.post(
-            "/v1/activities/",
+            "/v1/activities",
             json=activity_payload,
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
@@ -54,7 +54,7 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
         }
 
         response = client.post(
-            "/v1/activities/",
+            "/v1/activities",
             json=activity_payload,
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
@@ -79,7 +79,7 @@ def test_create_activities_missing_fields(client, authenticated_user):
     }
 
     response = client.post(
-        "/v1/activities/",
+        "/v1/activities",
         json=activity_payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -97,7 +97,7 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
     }
 
     response = client.post(
-        "/v1/activities/",
+        "/v1/activities",
         json=activity_payload,
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
@@ -111,7 +111,7 @@ def test_list_activities(client, authenticated_user, db_session):
         lambda: override_get_db_context_session(db_session),
     ):
         response = client.get(
-            "/v1/activities/",
+            "/v1/activities",
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
@@ -122,7 +122,7 @@ def test_list_activities(client, authenticated_user, db_session):
 
 def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):
     response = client.get(
-        "/v1/activities/",
+        "/v1/activities",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 

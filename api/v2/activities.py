@@ -11,7 +11,7 @@ from service.activity_service import load_activities_data_in_sns
 router = APIRouter(prefix="/activities", tags=["activities"])
 
 
-@router.post("/", status_code=201, response_class=JSONResponse)
+@router.post("", status_code=201, response_class=JSONResponse)
 async def save_activity(
     background_task: BackgroundTasks,
     activity_payload: UserActivityRequestSchema,
