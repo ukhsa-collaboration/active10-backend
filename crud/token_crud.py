@@ -14,9 +14,13 @@ class TokenCRUD:
     def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
-    def create_or_update_user_token(self, user_id: str, token: str) -> Optional[UserToken]:
+    def create_or_update_user_token(
+        self, user_id: str, token: str
+    ) -> Optional[UserToken]:
         try:
-            user_token = self.db.query(UserToken).filter(UserToken.user_id == user_id).first()
+            user_token = (
+                self.db.query(UserToken).filter(UserToken.user_id == user_id).first()
+            )
 
             if user_token:
                 user_token.token = token
@@ -38,4 +42,8 @@ class TokenCRUD:
         return self.db.query(UserToken).filter(UserToken.user_id == user_id).first()
 
     def validate_user_token(self, user_id: str, token: str) -> Union[UserToken, None]:
-        return self.db.query(UserToken).filter(UserToken.user_id == user_id, UserToken.token == token).first()
+        return (
+            self.db.query(UserToken)
+            .filter(UserToken.user_id == user_id, UserToken.token == token)
+            .first()
+        )

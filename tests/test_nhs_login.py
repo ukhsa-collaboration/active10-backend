@@ -6,10 +6,7 @@ def test_nhs_login_redirect(client):
 
 
 def test_nhs_login_missing_app_internal_id(client):
-    response = client.get(
-        "/nhs_login/test_app/",
-        follow_redirects=False
-    )
+    response = client.get("/nhs_login/test_app/", follow_redirects=False)
 
     assert response.status_code == 404
 
@@ -18,11 +15,14 @@ def test_nhs_login_callback_success(client):
     response = client.get(
         "/nhs_login/callback",
         params={"code": "123", "state": "test_app_12345"},
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert response.status_code == 307
-    assert response.headers["location"] == "active10dev://nhs_login_callback?code=123&state=test_app_12345"
+    assert (
+        response.headers["location"]
+        == "active10dev://nhs_login_callback?code=123&state=test_app_12345"
+    )
 
 
 def test_nhs_login_callback_missing_code(client):
@@ -61,10 +61,9 @@ def test_logout_user_without_token(client):
 
 
 def test_logout_with_unauthenticated_user(client, unauthenticated_user):
-
     response = client.post(
         "/nhs_login/logout",
-        headers = {"Authorization": f"Bearer {unauthenticated_user.token.token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
     assert response.status_code == 404
@@ -72,23 +71,19 @@ def test_logout_with_unauthenticated_user(client, unauthenticated_user):
 
 
 def test_logout_with_authenticated_user(client, authenticated_user):
-
     response = client.post(
         "/nhs_login/logout",
-        headers = {"Authorization": f"Bearer {authenticated_user.token.token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 200
     assert response.json() == {"message": "User logged out successfully"}
 
 
-from tests.conftest import unauthenticated_user, authenticated_user
-
-
 def test_disconnect_with_unauthenticated_user(client, unauthenticated_user):
     response = client.post(
         "/nhs_login/disconnect",
-        headers = {"Authorization": f"Bearer {unauthenticated_user.token.token}"}
+        headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
     assert response.status_code == 404
@@ -105,7 +100,7 @@ def test_disconnect_user_without_token(client):
 def test_disconnect_user_with_authenticated_user(client, authenticated_user):
     response = client.post(
         "/nhs_login/disconnect",
-        headers={"Authorization": f"Bearer {authenticated_user.token.token}"}
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
     assert response.status_code == 200

@@ -31,8 +31,13 @@ class User(Base):
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
     status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
 
-    token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
-    email_preferences = relationship("EmailPreference", backref="users", uselist=True, cascade="all, delete")
+    token = relationship(
+        "UserToken", back_populates="user", uselist=False, cascade="all, delete"
+    )
+    email_preferences = relationship(
+        "EmailPreference", backref="users", uselist=True, cascade="all, delete"
+    )
+
 
 class UserToken(Base):
     __tablename__ = "user_tokens"
@@ -40,7 +45,12 @@ class UserToken(Base):
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     token = Column(String(length=500), nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
 
     user = relationship("User", back_populates="token")
 
@@ -58,9 +68,16 @@ class EmailPreference(Base):
     __tablename__ = "email_preferences"
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     name = Column(String(length=200), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
 
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)

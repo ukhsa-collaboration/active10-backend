@@ -22,11 +22,15 @@ class UserService:
             identity_level=user.identity_level,
             age_range=age_range,
             age=age,
-            email_preferences=[EmailPreferenceResponse(
-                id=ep.id,
-                name=ep.name,
-                is_active=ep.is_active,
-            ) for ep in user.email_preferences if user.email_preferences],
+            email_preferences=[
+                EmailPreferenceResponse(
+                    id=ep.id,
+                    name=ep.name,
+                    is_active=ep.is_active,
+                )
+                for ep in user.email_preferences
+                if user.email_preferences
+            ],
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:

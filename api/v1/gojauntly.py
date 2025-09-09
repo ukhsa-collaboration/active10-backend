@@ -13,13 +13,15 @@ from schemas.gojauntly import (
 )
 
 
-router = APIRouter(dependencies=[Depends(get_authenticated_user_data)], tags=["GoJauntly"])
+router = APIRouter(
+    dependencies=[Depends(get_authenticated_user_data)], tags=["GoJauntly"]
+)
 
 
 client = GoJauntlyApi(
     key_id=config.gojauntly_key_id,
     secret_key=config.gojauntly_private_key,
-    issuer_id=config.gojauntly_issuer_id
+    issuer_id=config.gojauntly_issuer_id,
 )
 
 
@@ -31,7 +33,9 @@ async def curated_walk_search(data: CuratedWalksSearch):
 
 
 @router.post("/curated-walks/{id}")
-async def curated_walk_retrieve(id: Annotated[str, Path(description="ID of the walk")], data: CuratedWalkRetrieve):
+async def curated_walk_retrieve(
+    id: Annotated[str, Path(description="ID of the walk")], data: CuratedWalkRetrieve
+):
     response = client.curated_walk_retrieve(id=id, data=data.model_dump())
 
     return response

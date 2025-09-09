@@ -5,14 +5,15 @@ Revises: 162a50d9f084
 Create Date: 2024-08-22 18:56:47.604531
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
-revision: str = 'cc9ba9e54c42'
-down_revision: Union[str, None] = '162a50d9f084'
+revision: str = "cc9ba9e54c42"
+down_revision: Union[str, None] = "162a50d9f084"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -30,9 +31,11 @@ $$ LANGUAGE plpgsql;
 """
 
 
-
 def upgrade() -> None:
-    if op.get_bind().execute(text("SELECT to_regclass('public.users')")).scalar() is not None:
+    if (
+        op.get_bind().execute(text("SELECT to_regclass('public.users')")).scalar()
+        is not None
+    ):
         op.execute(text(stored_procedure_sql))
 
 

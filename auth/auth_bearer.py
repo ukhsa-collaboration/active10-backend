@@ -9,10 +9,11 @@ from .jwt_handler import decode_jwt
 
 security = HTTPBearer()
 
+
 def get_authenticated_user_data(
     token: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_crud: Annotated[UserCRUD, Depends()],
-    token_crud: Annotated[TokenCRUD, Depends()]
+    token_crud: Annotated[TokenCRUD, Depends()],
 ):
     try:
         decoded_data = decode_jwt(token.credentials)

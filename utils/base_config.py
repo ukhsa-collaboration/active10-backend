@@ -3,6 +3,7 @@ import logging
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
+
 class Config(BaseSettings):
     nhs_login_authority_url: str
     nhs_login_client_id: str

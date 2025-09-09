@@ -1,3 +1,4 @@
+# TODO: This hasn't worked for a long time. Disabled to avoid failed actions.
 name: SonarCloud Scan
 on:
   push:

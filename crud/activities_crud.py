@@ -5,7 +5,9 @@ from schemas.activity import UserActivityRequestSchema
 from utils.base_config import logger
 
 
-def create_activity(activity_payload: UserActivityRequestSchema, user_id: str) -> Activity:
+def create_activity(
+    activity_payload: UserActivityRequestSchema, user_id: str
+) -> Activity:
     activity = Activity(
         date=activity_payload.date,
         rewards=activity_payload.rewards,
@@ -14,7 +16,7 @@ def create_activity(activity_payload: UserActivityRequestSchema, user_id: str) -
         brisk_minutes=activity_payload.activity.brisk_minutes,
         walking_minutes=activity_payload.activity.walking_minutes,
         steps=activity_payload.activity.steps,
-        user_id=user_id
+        user_id=user_id,
     )
 
     with get_db_context_session() as db:
@@ -30,7 +32,9 @@ def create_activity(activity_payload: UserActivityRequestSchema, user_id: str) -
     return activity
 
 
-def create_bulk_activities(activities: list[UserActivityRequestSchema], user_id: str) -> None:
+def create_bulk_activities(
+    activities: list[UserActivityRequestSchema], user_id: str
+) -> None:
     activities_list = []
 
     for activity_payload in activities:
@@ -42,7 +46,7 @@ def create_bulk_activities(activities: list[UserActivityRequestSchema], user_id:
             brisk_minutes=activity_payload.activity.brisk_minutes,
             walking_minutes=activity_payload.activity.walking_minutes,
             steps=activity_payload.activity.steps,
-            user_id=user_id
+            user_id=user_id,
         )
         activities_list.append(activity)
 

@@ -16,6 +16,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=Engine)
 
 Base = declarative_base()
 
+
 @contextmanager
 def get_db_context_session() -> Session:
     db = SessionLocal()

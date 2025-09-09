@@ -11,14 +11,14 @@ from requests.exceptions import HTTPError, RequestException
 
 from utils.base_config import logger
 
-ALGORITHM = 'ES256'
+ALGORITHM = "ES256"
 GOJAUNTLY_BASE_URL = "https://connect.gojauntly.com"
 TOKEN_EXPIRATION_MINUTES = 15
 
 
 class HttpMethod(Enum):
-    GET = 'GET'
-    POST = 'POST'
+    GET = "GET"
+    POST = "POST"
 
 
 class GoJauntlyApi:
@@ -49,22 +49,25 @@ class GoJauntlyApi:
         """Generate a new JWT token."""
 
         self.token_gen_date = datetime.now()
-        exp = int(time.mktime((self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)).timetuple()))
-        payload = {
-            'iss': self.issuer_id,
-            'exp': exp,
-            'aud': 'gojauntly-api-v1'
-        }
-        headers = {
-            'kid': self.key_id,
-            'typ': 'JWT'
-        }
-        token = jwt.encode(payload=payload, key=self.secret_key, headers=headers, algorithm=ALGORITHM)
+        exp = int(
+            time.mktime(
+                (
+                    self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
+                ).timetuple()
+            )
+        )
+        payload = {"iss": self.issuer_id, "exp": exp, "aud": "gojauntly-api-v1"}
+        headers = {"kid": self.key_id, "typ": "JWT"}
+        token = jwt.encode(
+            payload=payload, key=self.secret_key, headers=headers, algorithm=ALGORITHM
+        )
         logger.info("Generated new token.")
 
         return token
 
-    def _api_call(self, url: str, method: HttpMethod, data: Optional[Dict] = None) -> Union[Dict, requests.Response]:
+    def _api_call(
+        self, url: str, method: HttpMethod, data: Optional[Dict] = None
+    ) -> Union[Dict, requests.Response]:
         """
         Make an API call to the specified endpoint.
 
@@ -79,23 +82,30 @@ class GoJauntlyApi:
         url = f"{GOJAUNTLY_BASE_URL}{url}"
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json" if method == HttpMethod.POST else None
+            "Content-Type": "application/json" if method == HttpMethod.POST else None,
         }
 
         if self._debug:
             logger.info(f"Making {method.value} request to {url}")
 
         try:
-            response = requests.request(method.value, url, headers=headers, data=json.dumps(data) if data else None)
+            response = requests.request(
+                method.value,
+                url,
+                headers=headers,
+                data=json.dumps(data) if data else None,
+            )
             response.raise_for_status()
 
-            content_type = response.headers.get('content-type', '')
+            content_type = response.headers.get("content-type", "")
 
             if content_type in ["application/json", "application/vnd.api+json"]:
                 data = response.json()
 
-                if 'errors' in data:
-                    error_message = data.get('errors', [])[0].get('detail', 'Unknown error')
+                if "errors" in data:
+                    error_message = data.get("errors", [])[0].get(
+                        "detail", "Unknown error"
+                    )
                     logger.error(f"API error: {error_message}")
                     raise HTTPException(status_code=500, detail=error_message)
 
@@ -106,7 +116,10 @@ class GoJauntlyApi:
 
         except HTTPError as http_err:
             logger.error(f"HTTP error occurred: {http_err}")
-            raise HTTPException(status_code=http_err.response.status_code, detail=http_err.response.json())
+            raise HTTPException(
+                status_code=http_err.response.status_code,
+                detail=http_err.response.json(),
+            )
 
         except RequestException as req_err:
             logger.error(f"Request error occurred: {req_err}")
@@ -115,7 +128,10 @@ class GoJauntlyApi:
     @property
     def token(self) -> str:
         """Return the current token, generating a new one if needed."""
-        if not self._token or (self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES) < datetime.now()):
+        if not self._token or (
+            self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
+            < datetime.now()
+        ):
             self._token = self._generate_token()
 
         return self._token
@@ -129,7 +145,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The search results.
         """
-        return self._api_call(url="/curated-walks/search", method=HttpMethod.POST, data=data)
+        return self._api_call(
+            url="/curated-walks/search", method=HttpMethod.POST, data=data
+        )
 
     def curated_walk_retrieve(self, id: str, data: Dict) -> Dict:
         """Retrieve a specific curated walk by ID.
@@ -141,7 +159,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The details of the curated walk.
         """
-        return self._api_call(url=f"/curated-walks/{id}", method=HttpMethod.POST, data=data)
+        return self._api_call(
+            url=f"/curated-walks/{id}", method=HttpMethod.POST, data=data
+        )
 
     def dynamic_routes_route(self, data: Dict) -> Dict:
         """Get dynamic route.
@@ -163,7 +183,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The circular route details.
         """
-        return self._api_call(url="/routing/circular", method=HttpMethod.POST, data=data)
+        return self._api_call(
+            url="/routing/circular", method=HttpMethod.POST, data=data
+        )
 
     def dynamic_routes_circular_collection(self, data: Dict) -> Dict:
         """Get dynamic circular collection route.
@@ -174,4 +196,6 @@ class GoJauntlyApi:
         Returns:
             Dict: The circular collection route details.
         """
-        return self._api_call(url="/routing/circular/collection", method=HttpMethod.POST, data=data)
+        return self._api_call(
+            url="/routing/circular/collection", method=HttpMethod.POST, data=data
+        )

@@ -2,7 +2,7 @@ import json
 import boto3
 from utils.base_config import logger
 
-sns = boto3.client('sns')
+sns = boto3.client("sns")
 
 
 def send_message_to_sns_topic(topic, record) -> None:
@@ -16,12 +16,12 @@ def send_message_to_sns_topic(topic, record) -> None:
     """
     try:
         response = sns.publish(
-            TopicArn=topic,
-            Message=json.dumps(record),
-            Subject="activity-daily-data"
+            TopicArn=topic, Message=json.dumps(record), Subject="activity-daily-data"
         )
 
         logger.info(f"Message published to SNS topic {topic} => response: {response}")
 
     except Exception as e:
-        logger.error(f"Error occurred while publishing message to SNS topic {topic}: {e}")
+        logger.error(
+            f"Error occurred while publishing message to SNS topic {topic}: {e}"
+        )

@@ -12,7 +12,7 @@ def insert_logout_logs(success_objects_list, failed_objects_list):
                 notification_type=success_object.get("notification_type"),
                 email_delivery_status="Sent",
                 timestamp=int(success_object.get("timestamp")),
-                message_id=success_object.get("sg_message_id")
+                message_id=success_object.get("sg_message_id"),
             )
             db.add(db_object)
 
@@ -24,7 +24,7 @@ def insert_logout_logs(success_objects_list, failed_objects_list):
                 email_delivery_status="Failed",
                 timestamp=int(failed_object.get("timestamp")),
                 failure_reason=failed_object.get("reason"),
-                message_id=failed_object.get("sg_message_id")
+                message_id=failed_object.get("sg_message_id"),
             )
             db.add(db_object)
         db.commit()
@@ -40,7 +40,7 @@ def insert_monthly_report_logs(success_objects_list, failed_objects_list):
                 user_email=success_object.get("email"),
                 email_delivery_status="Sent",
                 timestamp=int(success_object.get("timestamp")),
-                message_id=success_object.get("sg_message_id")
+                message_id=success_object.get("sg_message_id"),
             )
             db.add(db_object)
 
@@ -53,7 +53,7 @@ def insert_monthly_report_logs(success_objects_list, failed_objects_list):
                 email_delivery_status="Failed",
                 timestamp=int(failed_object.get("timestamp")),
                 failure_reason=failed_object.get("reason"),
-                message_id=failed_object.get("sg_message_id")
+                message_id=failed_object.get("sg_message_id"),
             )
             db.add(db_object)
         db.commit()
