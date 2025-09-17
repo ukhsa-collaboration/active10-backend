@@ -54,6 +54,23 @@ class User(Base):
         order_by="desc(UserActivityLevel.created_at)",
     )
 
+    motivations = relationship(
+        "UserMotivation",
+        backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserMotivation.created_at)",
+    )
+    activity_levels = relationship(
+        "UserActivityLevel",
+        backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserActivityLevel.created_at)",
+    )
+
 
 class UserToken(Base):
     __tablename__ = "user_tokens"
