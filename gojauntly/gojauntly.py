@@ -2,7 +2,6 @@ import json
 import time
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Optional, Union
 
 import jwt
 import requests
@@ -33,8 +32,8 @@ class GoJauntlyApi:
             secret_key (str): The secret key for JWT.
             issuer_id (str): The Issuer ID for JWT.
         """
-        self._token: Optional[str] = None
-        self.token_gen_date: Optional[datetime] = None
+        self._token: str | None = None
+        self.token_gen_date: datetime | None = None
         self.key_id = key_id
         self.secret_key = secret_key
         self.issuer_id = issuer_id
@@ -51,9 +50,7 @@ class GoJauntlyApi:
         self.token_gen_date = datetime.now()
         exp = int(
             time.mktime(
-                (
-                    self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
-                ).timetuple()
+                (self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)).timetuple()
             )
         )
         payload = {"iss": self.issuer_id, "exp": exp, "aud": "gojauntly-api-v1"}
@@ -66,8 +63,8 @@ class GoJauntlyApi:
         return token
 
     def _api_call(
-        self, url: str, method: HttpMethod, data: Optional[Dict] = None
-    ) -> Union[Dict, requests.Response]:
+        self, url: str, method: HttpMethod, data: dict | None = None
+    ) -> dict | requests.Response:
         """
         Make an API call to the specified endpoint.
 
@@ -103,9 +100,7 @@ class GoJauntlyApi:
                 data = response.json()
 
                 if "errors" in data:
-                    error_message = data.get("errors", [])[0].get(
-                        "detail", "Unknown error"
-                    )
+                    error_message = data.get("errors", [])[0].get("detail", "Unknown error")
                     logger.error(f"API error: {error_message}")
                     raise HTTPException(status_code=500, detail=error_message)
 
@@ -116,27 +111,26 @@ class GoJauntlyApi:
 
         except HTTPError as http_err:
             logger.error(f"HTTP error occurred: {http_err}")
-            raise HTTPException(
+            raise HTTPException(  # noqa: B904
                 status_code=http_err.response.status_code,
                 detail=http_err.response.json(),
             )
 
         except RequestException as req_err:
             logger.error(f"Request error occurred: {req_err}")
-            raise HTTPException(status_code=500, detail="Internal server error")
+            raise HTTPException(status_code=500, detail="Internal server error")  # noqa: B904
 
     @property
     def token(self) -> str:
         """Return the current token, generating a new one if needed."""
         if not self._token or (
-            self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES)
-            < datetime.now()
+            self.token_gen_date + timedelta(minutes=TOKEN_EXPIRATION_MINUTES) < datetime.now()
         ):
             self._token = self._generate_token()
 
         return self._token
 
-    def curated_walk_search(self, data: Dict) -> Dict:
+    def curated_walk_search(self, data: dict) -> dict:
         """Search for curated walks.
 
         Args:
@@ -145,11 +139,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The search results.
         """
-        return self._api_call(
-            url="/curated-walks/search", method=HttpMethod.POST, data=data
-        )
+        return self._api_call(url="/curated-walks/search", method=HttpMethod.POST, data=data)
 
-    def curated_walk_retrieve(self, id: str, data: Dict) -> Dict:
+    def curated_walk_retrieve(self, id: str, data: dict) -> dict:
         """Retrieve a specific curated walk by ID.
 
         Args:
@@ -159,11 +151,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The details of the curated walk.
         """
-        return self._api_call(
-            url=f"/curated-walks/{id}", method=HttpMethod.POST, data=data
-        )
+        return self._api_call(url=f"/curated-walks/{id}", method=HttpMethod.POST, data=data)
 
-    def dynamic_routes_route(self, data: Dict) -> Dict:
+    def dynamic_routes_route(self, data: dict) -> dict:
         """Get dynamic route.
 
         Args:
@@ -174,7 +164,7 @@ class GoJauntlyApi:
         """
         return self._api_call(url="/routing/route", method=HttpMethod.POST, data=data)
 
-    def dynamic_routes_circular(self, data: Dict) -> Dict:
+    def dynamic_routes_circular(self, data: dict) -> dict:
         """Get dynamic circular route.
 
         Args:
@@ -183,11 +173,9 @@ class GoJauntlyApi:
         Returns:
             Dict: The circular route details.
         """
-        return self._api_call(
-            url="/routing/circular", method=HttpMethod.POST, data=data
-        )
+        return self._api_call(url="/routing/circular", method=HttpMethod.POST, data=data)
 
-    def dynamic_routes_circular_collection(self, data: Dict) -> Dict:
+    def dynamic_routes_circular_collection(self, data: dict) -> dict:
         """Get dynamic circular collection route.
 
         Args:
@@ -196,6 +184,4 @@ class GoJauntlyApi:
         Returns:
             Dict: The circular collection route details.
         """
-        return self._api_call(
-            url="/routing/circular/collection", method=HttpMethod.POST, data=data
-        )
+        return self._api_call(url="/routing/circular/collection", method=HttpMethod.POST, data=data)

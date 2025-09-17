@@ -58,7 +58,7 @@ class PDSClient:
         }
         resp = requests.post(url, headers=headers, data=post_data)
 
-        if resp.status_code == 200:
+        if resp.status_code == 200:  # noqa: PLR2004
             self.token_data = resp.json()
             return self.token_data
         else:
@@ -79,9 +79,7 @@ class PDSClient:
     def __get_user_postcode(self, user_data):
         if user_data.get("address") and len(user_data["address"]) > 0:
             # sort addresses by period/start
-            addresses = sorted(
-                user_data["address"], key=lambda x: x.get("period", {}).get("start")
-            )
+            addresses = sorted(user_data["address"], key=lambda x: x.get("period", {}).get("start"))
 
             # return postcode of the most recent address
             return addresses[-1].get("postalCode") or ""

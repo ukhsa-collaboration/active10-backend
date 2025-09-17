@@ -6,7 +6,7 @@ from auth.auth_bearer import get_authenticated_user_data
 from crud.walking_plan_crud import UserWalkingPlanCRUD
 from models import User
 from models.walking_plan import UserWalkingPlan
-from schemas.walking_plan import WalkingPlanRequestSchema, UserWalkingPlanResponseSchema
+from schemas.walking_plan import UserWalkingPlanResponseSchema, WalkingPlanRequestSchema
 
 router = APIRouter(prefix="/walking_plans", tags=["walking plans"])
 
@@ -22,9 +22,7 @@ async def create_walking_plan(
     if existing_plan:
         raise HTTPException(status_code=400, detail="User walking plan already exists")
 
-    new_walking_plan = UserWalkingPlan(
-        user_id=user.id, walking_plan_data=payload.walking_plan_data
-    )
+    new_walking_plan = UserWalkingPlan(user_id=user.id, walking_plan_data=payload.walking_plan_data)
     created_walking_plan = walking_plan_crud.create_walking_plan(new_walking_plan)
     return created_walking_plan
 
@@ -51,9 +49,7 @@ async def update_walking_plan(
     if not user_walking_plan:
         raise HTTPException(status_code=404, detail="User walking plan not found")
 
-    updated_walking_plan = walking_plan_crud.update_walking_plan(
-        user_walking_plan, payload
-    )
+    updated_walking_plan = walking_plan_crud.update_walking_plan(user_walking_plan, payload)
     return updated_walking_plan
 
 

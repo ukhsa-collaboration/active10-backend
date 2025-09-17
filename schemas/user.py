@@ -1,7 +1,9 @@
-from typing import Optional, List
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
+
+from schemas.activity_level import ActivityLevelResponseSchema
+from schemas.motivation import UserMotivationResponse
 
 
 class EmailPreferenceRequest(BaseModel):
@@ -13,6 +15,11 @@ class EmailPreferenceRequest(BaseModel):
             raise ValueError("Invalid name")
 
         return name
+
+
+class EmailPreferenceRequestPublic(BaseModel):
+    email: EmailStr
+    name: str = Field(..., examples=["active10_mailing_list"])
 
 
 class EmailPreferenceResponse(BaseModel):
@@ -28,8 +35,11 @@ class UserResponse(BaseModel):
     gender: str
     age: int
     age_range: str
-    postcode: Optional[str]
-    email_preferences: Optional[List[EmailPreferenceResponse]] = []
+    postcode: str | None
+    identity_level: str | None
+    email_preferences: list[EmailPreferenceResponse] | None = []
+    latest_motivation: UserMotivationResponse | None = None
+    latest_activity_level: ActivityLevelResponseSchema | None = None
 
 
 class NHSUser(BaseModel):

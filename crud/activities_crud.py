@@ -1,13 +1,12 @@
 from fastapi import HTTPException
+
 from db.session import get_db_context_session
 from models.activity import Activity
 from schemas.activity import UserActivityRequestSchema
 from utils.base_config import logger
 
 
-def create_activity(
-    activity_payload: UserActivityRequestSchema, user_id: str
-) -> Activity:
+def create_activity(activity_payload: UserActivityRequestSchema, user_id: str) -> Activity:
     activity = Activity(
         date=activity_payload.date,
         rewards=activity_payload.rewards,
@@ -27,14 +26,12 @@ def create_activity(
         except Exception as e:
             db.rollback()
             logger.error("Error while adding activity: ", str(e))
-            raise HTTPException(status_code=500, detail="something went wrong")
+            raise HTTPException(status_code=500, detail="something went wrong")  # noqa: B904
 
     return activity
 
 
-def create_bulk_activities(
-    activities: list[UserActivityRequestSchema], user_id: str
-) -> None:
+def create_bulk_activities(activities: list[UserActivityRequestSchema], user_id: str) -> None:
     activities_list = []
 
     for activity_payload in activities:
@@ -57,9 +54,7 @@ def create_bulk_activities(
         except Exception as e:
             db.rollback()
             logger.error("Error while adding bulk activities: ", str(e))
-            raise HTTPException(status_code=500, detail="something went wrong")
-
-    return None
+            raise HTTPException(status_code=500, detail="something went wrong")  # noqa: B904
 
 
 def get_activities_by_filters(user_id, filters) -> [list[Activity]]:

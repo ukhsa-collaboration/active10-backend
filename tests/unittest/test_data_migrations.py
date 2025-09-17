@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from service.migrations_service import load_bulk_activities_data
-from tests.conftest import user_uuid_pk, override_get_db_context_session
+from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
 
 
 def test_post_activities_migrations(client, authenticated_user, db_session):
@@ -35,7 +35,7 @@ def test_post_activities_migrations(client, authenticated_user, db_session):
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
-        assert response.status_code == 201
+        assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
         assert created_data == {"message": "Success"}
 
@@ -45,9 +45,7 @@ def test_post_activities_migrations(client, authenticated_user, db_session):
         assert args[0] == load_bulk_activities_data
 
 
-def test_post_activities_migrations_with_out_of_range_activities(
-    client, authenticated_user
-):
+def test_post_activities_migrations_with_out_of_range_activities(client, authenticated_user):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": [
@@ -82,7 +80,7 @@ def test_post_activities_migrations_with_out_of_range_activities(
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 400  # noqa: PLR2004
     assert response.json() == {"detail": "Some activities are out of the month range"}
 
 
@@ -95,12 +93,10 @@ def test_post_activities_migrations_with_empty_activities(client, authenticated_
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 422  # noqa: PLR2004
 
 
-def test_post_activities_migrations_with_unauthenticated_user(
-    client, unauthenticated_user
-):
+def test_post_activities_migrations_with_unauthenticated_user(client, unauthenticated_user):
     activity_migration_payload = {
         "month": 1714637586,
         "activities": [
@@ -124,12 +120,10 @@ def test_post_activities_migrations_with_unauthenticated_user(
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 404  # noqa: PLR2004
 
 
-def test_post_activities_migrations_with_missing_month_field(
-    client, authenticated_user
-):
+def test_post_activities_migrations_with_missing_month_field(client, authenticated_user):
     activity_migration_payload = {
         "activities": [
             {
@@ -152,4 +146,4 @@ def test_post_activities_migrations_with_missing_month_field(
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 422  # noqa: PLR2004

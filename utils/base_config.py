@@ -1,7 +1,6 @@
 import logging
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional
 
 
 class Config(BaseSettings):
@@ -28,15 +27,13 @@ class Config(BaseSettings):
     aws_sns_activities_migration_topic_arn: str
     sendgrid_webhook_public_key: str
 
-    test_nhs_login_api: Optional[str] = None
-    test_nhs_email: Optional[str] = None
-    test_nhs_password: Optional[str] = None
-    test_nhs_otp: Optional[str] = None
+    test_nhs_login_api: str | None = None
+    test_nhs_email: str | None = None
+    test_nhs_password: str | None = None
+    test_nhs_otp: str | None = None
 
     # Extra allowed for adding AWS_ local dummy secrets in the .env file
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="allow"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
 
 
 config = Config()

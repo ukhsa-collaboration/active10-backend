@@ -1,14 +1,14 @@
 from uuid import uuid4
 
 from sqlalchemy import (
-    Integer,
+    ARRAY,
+    JSON,
+    UUID,
+    BigInteger,
     Column,
     ForeignKey,
-    UUID,
-    JSON,
+    Integer,
     String,
-    BigInteger,
-    ARRAY,
 )
 
 from db.session import Base
@@ -16,7 +16,7 @@ from db.session import Base
 
 class Activity(Base):
     __tablename__ = "activities"
-    __table_args__ = {"postgresql_partition_by": "RANGE (date)"}
+    __table_args__ = {"postgresql_partition_by": "RANGE (date)"}  # noqa: RUF012
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
     date = Column(BigInteger, nullable=False, primary_key=True, index=True)
@@ -27,6 +27,4 @@ class Activity(Base):
     steps = Column(Integer, nullable=False)
     rewards = Column(ARRAY(JSON), nullable=True)
 
-    user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True)

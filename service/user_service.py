@@ -1,7 +1,9 @@
 from datetime import datetime
 
 from models.user import User
-from schemas.user import UserResponse, EmailPreferenceResponse
+from schemas.activity_level import ActivityLevelResponseSchema
+from schemas.motivation import UserMotivationResponse
+from schemas.user import EmailPreferenceResponse, UserResponse
 
 
 class UserService:
@@ -12,6 +14,24 @@ class UserService:
         age_range = self.__get_age_range(user.date_of_birth)
         anony_email = self.__anonymize_email(user.email)
         age = self.calculate_age(user.date_of_birth)
+        latest_motivation = None
+        if user.motivations.all():
+            latest = user.motivations[0]  # As list is sorted by created_at DESC
+            latest_motivation = UserMotivationResponse(
+                id=latest.id,
+                user_id=latest.user_id,
+                created_at=latest.created_at,
+                goals=latest.goals,
+            )
+        activity_level = None
+        if user.activity_levels.all():
+            latest_activity_level = user.activity_levels[0]
+            activity_level = ActivityLevelResponseSchema(
+                id=latest_activity_level.id,
+                level=latest_activity_level.level,
+                created_at=latest_activity_level.created_at,
+                updated_at=latest_activity_level.updated_at,
+            )
 
         return UserResponse(
             id=user.id,
@@ -31,6 +51,8 @@ class UserService:
                 for ep in user.email_preferences
                 if user.email_preferences
             ],
+            latest_motivation=latest_motivation,
+            latest_activity_level=activity_level,
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
@@ -48,10 +70,10 @@ class UserService:
             (45, 54): "45 to 54",
             (55, 64): "55 to 64",
         }
-        for age_range in age_ranges:
+        for age_range in age_ranges:  # noqa: PLC0206
             if age_range[0] <= age <= age_range[1]:
                 return age_ranges[age_range]
-        if age >= 65:
+        if age >= 65:  # noqa: PLR2004
             return "65 or over"
         return "Out of range"
 

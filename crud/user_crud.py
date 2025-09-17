@@ -1,5 +1,3 @@
-from typing import Union, Optional
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -8,7 +6,7 @@ from models.user import User
 
 
 class UserCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
         self.db = db
 
     def create_user(self, user: User) -> User:
@@ -17,13 +15,13 @@ class UserCRUD:
         self.db.refresh(user)
         return user
 
-    def get_user_by_id(self, uuid: str) -> Union[User, None]:
+    def get_user_by_id(self, uuid: str) -> User | None:
         return self.db.query(User).filter(User.id == uuid).first()
 
-    def get_user_by_sub(self, uuid: str) -> Union[User, None]:
+    def get_user_by_sub(self, uuid: str) -> User | None:
         return self.db.query(User).filter(User.unique_id == uuid).first()
 
-    def update_user(self, user: User) -> Union[User, None]:
+    def update_user(self, user: User) -> User | None:
         existing_user = self.db.query(User).filter(User.id == user.id).first()
         if existing_user:
             existing_user.first_name = user.first_name
@@ -37,7 +35,7 @@ class UserCRUD:
         else:
             return None
 
-    def delete_user(self, uuid: str) -> Optional[User]:
+    def delete_user(self, uuid: str) -> User | None:
         user_to_delete = self.db.query(User).filter(User.id == uuid).first()
         if user_to_delete:
             self.db.delete(user_to_delete)
@@ -52,5 +50,3 @@ class UserCRUD:
         if user_to_update:
             user_to_update.current_token = token
             self.db.commit()
-
-        return None

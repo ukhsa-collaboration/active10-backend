@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from service.activity_service import load_activity_data
-from tests.conftest import user_uuid_pk, override_get_db_context_session
+from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
 
 
 def test_create_activities(client, authenticated_user, db_session):
@@ -27,13 +27,13 @@ def test_create_activities(client, authenticated_user, db_session):
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
-        assert response.status_code == 201
+        assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
-        assert created_data["date"] == 1714637586
+        assert created_data["date"] == 1714637586  # noqa: PLR2004
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args
+        args, kwargs = mock_add_task.call_args  # noqa: RUF059
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
@@ -59,13 +59,13 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
-        assert response.status_code == 201
+        assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
-        assert created_data["date"] == 1714637586
+        assert created_data["date"] == 1714637586  # noqa: PLR2004
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args
+        args, kwargs = mock_add_task.call_args  # noqa: RUF059
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
@@ -84,7 +84,7 @@ def test_create_activities_missing_fields(client, authenticated_user):
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 422  # noqa: PLR2004
 
 
 def test_create_activities_invalid_data_types(client, authenticated_user):
@@ -102,7 +102,7 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 422  # noqa: PLR2004
 
 
 def test_list_activities(client, authenticated_user, db_session):
@@ -115,7 +115,10 @@ def test_list_activities(client, authenticated_user, db_session):
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 200  # noqa: PLR2004
+        response_data = response.json()
+        assert "id" in response_data[0]
+        assert response.status_code == 200  # noqa: PLR2004
         response_data = response.json()
         assert "id" in response_data[0]
 
@@ -126,4 +129,4 @@ def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 404  # noqa: PLR2004

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
@@ -17,7 +17,5 @@ async def save_activity(
     activity_payload: UserActivityRequestSchema,
     user: Annotated[User, Depends(get_authenticated_user_data)],
 ):
-    background_task.add_task(
-        load_activities_data_in_sns, activity_payload, str(user.id)
-    )
+    background_task.add_task(load_activities_data_in_sns, activity_payload, str(user.id))
     return {"message": "Success"}

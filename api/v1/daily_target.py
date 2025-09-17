@@ -1,4 +1,4 @@
-from typing import Annotated, List, Optional
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -8,7 +8,6 @@ from crud.daily_target_crud import UserDailyTargetCRUD
 from models import User
 from models.daily_target import UserDailyTarget
 from schemas.daily_target import DailyTargetRequestSchema, DailyTargetResponseSchema
-
 
 router = APIRouter(prefix="/daily_targets", tags=["daily target"])
 
@@ -35,25 +34,15 @@ async def create_daily_target(
     return created_daily_target
 
 
-@router.get("", response_model=List[DailyTargetResponseSchema], status_code=200)
-async def get_user_daily_targets_list(
+@router.get("", response_model=list[DailyTargetResponseSchema], status_code=200)
+async def get_user_daily_targets_list(  # noqa: PLR0913
     user: Annotated[User, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
-    date: Optional[int] = Query(
-        None, description="Filter by exact date (UNIX timestamp)"
-    ),
-    start_date: Optional[int] = Query(
-        None, description="Filter by start date (UNIX timestamp)"
-    ),
-    end_date: Optional[int] = Query(
-        None, description="Filter by end date (UNIX timestamp)"
-    ),
-    min_daily_target: Optional[int] = Query(
-        None, description="Filter by minimum daily target"
-    ),
-    max_daily_target: Optional[int] = Query(
-        None, description="Filter by maximum daily target"
-    ),
+    date: int | None = Query(None, description="Filter by exact date (UNIX timestamp)"),
+    start_date: int | None = Query(None, description="Filter by start date (UNIX timestamp)"),
+    end_date: int | None = Query(None, description="Filter by end date (UNIX timestamp)"),
+    min_daily_target: int | None = Query(None, description="Filter by minimum daily target"),
+    max_daily_target: int | None = Query(None, description="Filter by maximum daily target"),
 ):
     filters = {
         "date": date,
@@ -103,9 +92,7 @@ async def update_daily_target(
     if not user_daily_target:
         raise HTTPException(status_code=404, detail="Data not found")
 
-    updated_daily_target = daily_target_crud.update_daily_target(
-        user_daily_target, payload
-    )
+    updated_daily_target = daily_target_crud.update_daily_target(user_daily_target, payload)
     return updated_daily_target
 
 

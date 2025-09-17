@@ -1,5 +1,4 @@
 import time
-from typing import Dict
 
 import jwt
 
@@ -10,7 +9,7 @@ JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRY_30_DAY_AS_SEC = 2592000
 
 
-def sign_jwt(user_id: str) -> Dict[str, str]:
+def sign_jwt(user_id: str) -> dict[str, str]:
     payload = {"user_id": user_id, "exp": time.time() + TOKEN_EXPIRY_30_DAY_AS_SEC}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 

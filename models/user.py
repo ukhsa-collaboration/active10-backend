@@ -1,7 +1,8 @@
 from datetime import datetime
-from uuid import uuid4
 from enum import Enum
-from sqlalchemy import Column, Date, String, UUID, DateTime, ForeignKey, Boolean
+from uuid import uuid4
+
+from sqlalchemy import UUID, Boolean, Column, Date, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 from db.session import Base
@@ -31,11 +32,26 @@ class User(Base):
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
     status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
 
-    token = relationship(
-        "UserToken", back_populates="user", uselist=False, cascade="all, delete"
-    )
+    token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship(
         "EmailPreference", backref="users", uselist=True, cascade="all, delete"
+    )
+
+    motivations = relationship(
+        "UserMotivation",
+        backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserMotivation.created_at)",
+    )
+    activity_levels = relationship(
+        "UserActivityLevel",
+        backref="users",
+        uselist=True,
+        cascade="all, delete",
+        lazy="dynamic",
+        order_by="desc(UserActivityLevel.created_at)",
     )
 
 
@@ -77,7 +93,5 @@ class EmailPreference(Base):
     name = Column(String(length=200), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
 
-    updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
