@@ -24,7 +24,7 @@ auth_nhs = Authenticator(
 class NHSLoginService:
     def __init__(
         self,
-        user_crud: UserCRUD = Depends(),
+        user_crud: UserCRUD = Depends(),  # noqa: B008
         user_token_crud: TokenCRUD = Depends(),  # noqa: B008
     ) -> None:
         self.userCRUD = user_crud

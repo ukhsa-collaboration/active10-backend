@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
@@ -57,7 +57,7 @@ async def list_activities(
 
     if not date and not start_date and not end_date:
         start_date = int(
-            (datetime.now(UTC).replace(tzinfo=None) - relativedelta(years=1)).timestamp()
+            (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017
         )
 
     filters = {

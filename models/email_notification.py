@@ -7,8 +7,6 @@ from sqlalchemy import Enum as SQLAlchemyEnum
 
 from db.session import Base
 
-UTC = timezone.utc  # noqa:UP017 datetime.utc() not implemented in Python 3.10
-
 
 class LogoutNotificationType(PyEnum):
     LOGOUT_FOR_6_MONTHS = "Logged Out for 6 Months"
@@ -50,12 +48,16 @@ class LogoutUserEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
+    created_at = Column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),  # noqa: UP017
+    )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        default=datetime.now(timezone.utc),  # noqa: UP017
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017
     )
 
 
@@ -76,10 +78,14 @@ class MonthlyReportEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
+    created_at = Column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),  # noqa: UP017
+    )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        default=datetime.now(timezone.utc),  # noqa: UP017
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017
     )
