@@ -59,7 +59,7 @@ async def list_activities(
             (datetime.now(UTC).replace(tzinfo=None) - relativedelta(years=1)).timestamp()
         )
         start_date = int(
-            (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017
+            (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017 Not supported in Python 3.10
         )
 
     filters = {

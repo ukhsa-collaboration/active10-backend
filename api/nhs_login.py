@@ -47,7 +47,8 @@ async def logout(
     db.commit()
 
     # Invalidate user cache on logout
-    redis_service.invalidate_user_session(str(user.id))
+    token_hash = redis_service.hash_token(user_token.token)
+    _ = redis_service.delete_auth_cache(token_hash, str(user.id))
 
     return {"message": "User logged out successfully"}
 
@@ -65,7 +66,9 @@ async def disconnect(
             raise HTTPException(status_code=404, detail="User not found")
 
         # Invalidate user cache before deletion
-        redis_service.invalidate_user_session(str(user.id))
+        user_token = user.token.token
+        token_hash = redis_service.hash_token(user_token)
+        _ = redis_service.delete_auth_cache(token_hash, str(user.id))
 
         db.delete(user)
 

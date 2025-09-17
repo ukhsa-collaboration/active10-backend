@@ -6,6 +6,8 @@ import redis
 
 from utils.base_config import config, logger
 
+DEFAULT_AUTH_TTL: int = 2592000  # 30 days in seconds
+
 
 class RedisService:
     """
@@ -92,7 +94,7 @@ class RedisService:
             return False
 
     @classmethod
-    def set(cls, key: str, value: Any, ttl: int | None = None) -> bool:
+    def set(cls, key: str, value: Any, ttl: int | None = DEFAULT_AUTH_TTL) -> bool:
         """
         Set a key-value pair in Redis with optional expiration time (TTL).
 
@@ -160,139 +162,61 @@ class RedisService:
             return False
 
     @classmethod
-    def delete_pattern(cls, pattern: str) -> int:
+    def set_auth_cache(cls, token_hash: str, user_id: str, ttl: int = DEFAULT_AUTH_TTL) -> bool:
         """
-        Delete all keys matching the given pattern.
+        Store authentication data in the cache using a hashed token as the key.
 
         Args:
-            pattern (str): The Redis key pattern (e.g. 'user:*').
+            token_hash (str): The hashed authentication token.
+            user_id (str): The identifier of the user associated with the token.
+            ttl (int, optional): Time-to-live in seconds for the cache entry.
+                Defaults to DEFAULT_AUTH_TTL.
 
         Returns:
-            int: Number of keys deleted.
+            bool: True if the data was successfully cached, False otherwise.
         """
-        if not cls.is_available():
-            return 0
-        try:
-            keys = cls._client.keys(pattern)
-            if keys:
-                return cls._client.delete(*keys)
-            return 0
-        except Exception as e:
-            logger.error(f"Error deleting keys with pattern {pattern}: {e}")
-            return 0
+        key = f"{token_hash}"
+        cache_data = {"user_id": user_id}
+        return cls.set(key, cache_data, ttl)
 
     @classmethod
-    def set_user_cache(cls, user_id: str, user_data: Any, ttl: int = 3600) -> bool:
+    def get_auth_cache(cls, token_hash: str) -> Any | None:
         """
-        Cache user data with a standardized cache key.
+        Retrieve authentication data from the cache.
 
         Args:
-            user_id (str): The user identifier.
-            user_data (Any): The data to cache.
-            ttl (int): Time-to-live in seconds (default 3600).
+            token_hash (str): The hashed authentication token.
 
         Returns:
-            bool: True if cached successfully, False otherwise.
+            Any: Cached user data if found, otherwise None.
         """
-        key = f"user:{user_id}"
-        return cls.set(key, user_data, ttl)
-
-    @classmethod
-    def get_user_cache(cls, user_id: str) -> Any | None:
-        """
-        Retrieve cached user data by user ID.
-
-        Args:
-            user_id (str): The user identifier.
-
-        Returns:
-            Any: Cached user data or None if not found.
-        """
-        key = f"user:{user_id}"
+        key = f"{token_hash}"
         return cls.get(key)
 
     @classmethod
-    def delete_user_cache(cls, user_id: str) -> bool:
+    def delete_auth_cache(cls, token_hash: str, user_id: str | None) -> bool:
         """
-        Delete cached user data for the given user ID.
+        Remove authentication data from the cache.
 
         Args:
-            user_id (str): The user identifier.
+            token_hash (str): The hashed authentication token.
+            user_id (str, optional): The identifier of the user associated
+                with the token. Defaults to None.
 
         Returns:
-            bool: True if deleted successfully, False otherwise.
-        """
-        key = f"user:{user_id}"
-        return cls.delete(key)
+            bool: True if the cache entry was deleted successfully, False otherwise.
 
-    @classmethod
-    def set_token_cache(cls, token_hash: str, user_id: str, ttl: int = 3600) -> bool:
-        """
-        Cache token validation info using a composite key.
-
-        Args:
-            token_hash (str): The hashed token.
-            user_id (str): The user identifier.
-            ttl (int): Time-to-live in seconds (default 3600).
-
-        Returns:
-            bool: True if cached successfully, False otherwise.
-        """
-        key = f"token:{user_id}:{token_hash}"
-        return cls.set(key, user_id, ttl)
-
-    @classmethod
-    def get_token_cache(cls, token_hash: str, user_id: str) -> str | None:
-        """
-        Retrieve cached token validation info.
-
-        Args:
-            token_hash (str): The hashed token.
-            user_id (str): The user identifier.
-
-        Returns:
-            str: User ID if token valid, None if not found.
-        """
-        key = f"token:{user_id}:{token_hash}"
-        return cls.get(key)
-
-    @classmethod
-    def delete_token_cache(cls, token_hash: str, user_id: str) -> bool:
-        """
-        Delete cached token validation info.
-
-        Args:
-            token_hash (str): The hashed token.
-            user_id (str): The user identifier.
-
-        Returns:
-            bool: True if deleted successfully, False otherwise.
-        """
-        key = f"token:{user_id}:{token_hash}"
-        return cls.delete(key)
-
-    @classmethod
-    def invalidate_user_session(cls, user_id: str) -> bool:
-        """
-        Invalidate all cached data for a user, including tokens.
-
-        Args:
-            user_id (str): The user identifier.
-
-        Returns:
-            bool: True if invalidation succeeded, False otherwise.
+        Raises:
+            Exception: If an error occurs while attempting to delete the cache entry.
         """
         try:
-            user_deleted = cls.delete_user_cache(user_id)
-            tokens_deleted = cls.delete_pattern(f"token:{user_id}:*")
-            logger.info(
-                f"Invalidated session for user {user_id}:"
-                f"user_cache={user_deleted}, tokens_cleared={tokens_deleted}"
-            )
+            key = f"{token_hash}"
+            deleted_cache = cls.delete(key)
+            logger.info(f"Deleted Cache for user {user_id}: token_cache={deleted_cache}")
             return True
         except Exception as e:
-            logger.error(f"Error invalidating user session {user_id}: {e}")
-            return False
+            logger.error(f"Error deleting user session {user_id}: {e}")
+            raise
 
 
 def get_redis_service() -> RedisService:

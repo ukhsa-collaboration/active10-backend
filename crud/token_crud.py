@@ -30,7 +30,7 @@ class TokenCRUD:
                 # Invalidate old token cache if updating
                 try:
                     old_token_hash = self.redis_service.hash_token(user_token.token)
-                    self.redis_service.delete_token_cache(old_token_hash, user_id)
+                    _ = self.redis_service.delete_auth_cache(old_token_hash, user_id)
                 except Exception as e:
                     logger.warning(f"Failed to invalidate old token cache for user {user_id}: {e}")
 
@@ -42,6 +42,12 @@ class TokenCRUD:
 
             self.db.commit()
             self.db.refresh(user_token)
+
+            try:
+                new_token_hash = self.redis_service.hash_token(user_token.token)
+                _ = self.redis_service.set_auth_cache(new_token_hash, str(user_id))
+            except Exception as e:
+                logger.warning(f"Failed to set new token cache for user {user_id}: {e}")
 
             return user_token
         except SQLAlchemyError as e:

@@ -40,7 +40,7 @@ class UserActivityLevelCRUD:
         )
 
     def create(self, user_id: UUID, payload: ActivityLevelRequestSchema) -> UserActivityLevel:
-        current_timestamp = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017
+        current_timestamp = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
         new_activity_level = UserActivityLevel(
             user_id=user_id,
             level=payload.level,
@@ -55,7 +55,7 @@ class UserActivityLevelCRUD:
     def update(
         self, activity_level: UserActivityLevel, payload: ActivityLevelRequestSchema
     ) -> UserActivityLevel | None:
-        activity_level.updated_at = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017
+        activity_level.updated_at = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
         activity_level.level = payload.level
         self.db.commit()
         self.db.refresh(activity_level)
