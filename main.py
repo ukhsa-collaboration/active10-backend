@@ -1,13 +1,14 @@
-from fastapi import FastAPI
 from functools import lru_cache
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from api.healthcheck import router as healthcheck
+from api.nhs_login import router as nhs_login
+from api.unsubscribe import router as unsubscribe
 from api.v1 import router as api_v1
 from api.v2 import router as api_v2
-from api.nhs_login import router as nhs_login
-from api.healthcheck import router as healthcheck
-from api.unsubscribe import router as unsubscribe
 from utils.base_config import config
-from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Active10 Backend Service",

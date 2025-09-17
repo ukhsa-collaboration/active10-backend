@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import HTTPException, Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from crud.user_crud import UserCRUD
 from crud.token_crud import TokenCRUD
+from crud.user_crud import UserCRUD
+
 from .jwt_handler import decode_jwt
 
 security = HTTPBearer()
@@ -18,7 +19,7 @@ def get_authenticated_user_data(
     try:
         decoded_data = decode_jwt(token.credentials)
     except Exception as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        raise HTTPException(status_code=403, detail=str(e))  # noqa: B904
 
     user_data = user_crud.get_user_by_id(decoded_data.get("user_id"))
 

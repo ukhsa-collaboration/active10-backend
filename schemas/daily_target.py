@@ -1,7 +1,6 @@
-from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
-from uuid import UUID
 
 
 class DailyTargetRequestSchema(BaseModel):
@@ -11,5 +10,5 @@ class DailyTargetRequestSchema(BaseModel):
 
 class DailyTargetResponseSchema(BaseModel):
     id: UUID
-    date: Optional[int]
+    date: int | None
     daily_target: int

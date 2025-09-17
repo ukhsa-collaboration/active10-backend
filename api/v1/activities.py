@@ -1,13 +1,13 @@
-from datetime import datetime, timezone
-from typing import Annotated, Optional, List
+from datetime import UTC, datetime
+from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, Depends, BackgroundTasks, Query, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from auth.auth_bearer import get_authenticated_user_data
 from crud.activities_crud import create_activity, get_activities_by_filters
 from models import User
-from schemas.activity import UserActivityRequestSchema, ActivityResponseSchema
+from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activity_data
 
 router = APIRouter(prefix="/activities", tags=["activities"])
@@ -25,18 +25,12 @@ async def save_activity(
     return activity
 
 
-@router.get("", response_model=List[ActivityResponseSchema], status_code=200)
+@router.get("", response_model=list[ActivityResponseSchema], status_code=200)
 async def list_activities(
     user: Annotated[User, Depends(get_authenticated_user_data)],
-    date: Optional[int] = Query(
-        None, gt=0, description="Filter by exact date (UNIX timestamp)"
-    ),
-    start_date: Optional[int] = Query(
-        None, gt=0, description="Filter by start date (UNIX timestamp)"
-    ),
-    end_date: Optional[int] = Query(
-        None, gt=0, description="Filter by end date (UNIX timestamp)"
-    ),
+    date: int | None = Query(None, gt=0, description="Filter by exact date (UNIX timestamp)"),
+    start_date: int | None = Query(None, gt=0, description="Filter by start date (UNIX timestamp)"),
+    end_date: int | None = Query(None, gt=0, description="Filter by end date (UNIX timestamp)"),
 ):
     if date and (start_date or end_date):
         raise HTTPException(
@@ -59,15 +53,11 @@ async def list_activities(
         unix_one_year = 31536000
 
         if end_date - start_date > unix_one_year:
-            raise HTTPException(
-                status_code=400, detail="Date range cannot be greater than 1 year"
-            )
+            raise HTTPException(status_code=400, detail="Date range cannot be greater than 1 year")
 
     if not date and not start_date and not end_date:
         start_date = int(
-            (
-                datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)
-            ).timestamp()
+            (datetime.now(UTC).replace(tzinfo=None) - relativedelta(years=1)).timestamp()
         )
 
     filters = {

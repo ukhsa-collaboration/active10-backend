@@ -1,7 +1,7 @@
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 
 
 class Activity(BaseModel):
@@ -14,7 +14,7 @@ class UserActivityRequestSchema(BaseModel):
     date: int
     user_postcode: str
     user_age_range: str
-    rewards: Optional[List[Dict[str, Any]]] = []
+    rewards: list[dict[str, Any]] | None = []
     activity: Activity
 
 
@@ -26,5 +26,5 @@ class ActivityResponseSchema(BaseModel):
     brisk_minutes: int
     walking_minutes: int
     steps: int
-    rewards: Optional[List[Dict[str, Any]]] = []
+    rewards: list[dict[str, Any]] | None = []
     user_id: UUID

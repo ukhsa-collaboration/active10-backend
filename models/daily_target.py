@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from sqlalchemy import UUID, Column, Integer, ForeignKey
+from sqlalchemy import UUID, Column, ForeignKey, Integer
 
 from db.session import Base
 

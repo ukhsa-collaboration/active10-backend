@@ -2,7 +2,7 @@ import calendar
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from starlette.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
@@ -40,9 +40,7 @@ async def save_bulk_activities(
     ]
 
     if out_of_range_activities:
-        raise HTTPException(
-            status_code=400, detail="Some activities are out of the month range"
-        )
+        raise HTTPException(status_code=400, detail="Some activities are out of the month range")
 
     background_task.add_task(publish_bulk_activities_data_to_sns, data, str(user.id))
 

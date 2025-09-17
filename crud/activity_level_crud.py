@@ -1,5 +1,4 @@
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import Depends
@@ -11,10 +10,10 @@ from schemas.activity_level import ActivityLevelRequestSchema
 
 
 class UserActivityLevelCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
         self.db = db
 
-    def get_latest_by_user(self, user_id: UUID) -> Optional[UserActivityLevel]:
+    def get_latest_by_user(self, user_id: UUID) -> UserActivityLevel | None:
         return (
             self.db.query(UserActivityLevel)
             .filter(UserActivityLevel.user_id == user_id)
@@ -22,7 +21,7 @@ class UserActivityLevelCRUD:
             .first()
         )
 
-    def get_by_id(self, user_id: UUID, activity_level_id: UUID) -> Optional[UserActivityLevel]:
+    def get_by_id(self, user_id: UUID, activity_level_id: UUID) -> UserActivityLevel | None:
         return (
             self.db.query(UserActivityLevel)
             .filter(
@@ -32,7 +31,7 @@ class UserActivityLevelCRUD:
             .first()
         )
 
-    def get_all_by_user(self, user_id: UUID) -> List[UserActivityLevel]:
+    def get_all_by_user(self, user_id: UUID) -> list[UserActivityLevel]:
         return (
             self.db.query(UserActivityLevel)
             .filter(UserActivityLevel.user_id == user_id)
@@ -41,7 +40,7 @@ class UserActivityLevelCRUD:
         )
 
     def create(self, user_id: UUID, payload: ActivityLevelRequestSchema) -> UserActivityLevel:
-        current_timestamp = int(datetime.now(timezone.utc).timestamp())
+        current_timestamp = int(datetime.now(UTC).timestamp())
         new_activity_level = UserActivityLevel(
             user_id=user_id,
             level=payload.level,
@@ -53,9 +52,10 @@ class UserActivityLevelCRUD:
         self.db.refresh(new_activity_level)
         return new_activity_level
 
-    def update(self, activity_level: UserActivityLevel, payload: ActivityLevelRequestSchema) -> Optional[
-        UserActivityLevel]:
-        activity_level.updated_at = int(datetime.now(timezone.utc).timestamp())
+    def update(
+        self, activity_level: UserActivityLevel, payload: ActivityLevelRequestSchema
+    ) -> UserActivityLevel | None:
+        activity_level.updated_at = int(datetime.now(UTC).timestamp())
         activity_level.level = payload.level
         self.db.commit()
         self.db.refresh(activity_level)

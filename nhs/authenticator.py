@@ -12,9 +12,7 @@ from utils.base_config import config as settings
 
 
 class Authenticator:
-    def __init__(
-        self, client_id: str, authority_url: str, scopes: str, redirect_uri: str
-    ):
+    def __init__(self, client_id: str, authority_url: str, scopes: str, redirect_uri: str):
         self.client = self._get_client(client_id, authority_url)
         self.callback_url = redirect_uri
         self.scopes = scopes
@@ -81,9 +79,7 @@ class Authenticator:
             "exp": _now + lifetime,
         }
 
-        token = jwt.encode(
-            payload, key=settings.nhs_pds_jwt_private_key, algorithm="RS512"
-        )
+        token = jwt.encode(payload, key=settings.nhs_pds_jwt_private_key, algorithm="RS512")
 
         return token
 
@@ -92,6 +88,4 @@ class Authenticator:
         return user_info.to_dict()
 
     def get_authorization_response(self, args):
-        return self.client.parse_response(
-            AuthorizationResponse, info=args, sformat="dict"
-        )
+        return self.client.parse_response(AuthorizationResponse, info=args, sformat="dict")

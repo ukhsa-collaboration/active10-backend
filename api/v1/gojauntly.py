@@ -4,18 +4,14 @@ from fastapi import APIRouter, Depends, Path
 
 from auth.auth_bearer import get_authenticated_user_data
 from gojauntly.gojauntly import GoJauntlyApi
-from utils.base_config import config
-
 from schemas.gojauntly import (
     CuratedWalkRetrieve,
     CuratedWalksSearch,
     DynamicRoutesCircularCollection,
 )
+from utils.base_config import config
 
-
-router = APIRouter(
-    dependencies=[Depends(get_authenticated_user_data)], tags=["GoJauntly"]
-)
+router = APIRouter(dependencies=[Depends(get_authenticated_user_data)], tags=["GoJauntly"])
 
 
 client = GoJauntlyApi(

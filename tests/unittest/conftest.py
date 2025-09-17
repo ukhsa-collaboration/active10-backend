@@ -8,18 +8,17 @@ from alembic import command
 from alembic.config import Config
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, StaticPool
+from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import drop_database
 from testcontainers.postgres import PostgresContainer
 
 from crud.user_crud import UserCRUD
-from db.session import get_db_session, Base
+from db.session import Base, get_db_session
 from main import app
 from models import User, UserToken
 from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
-
 
 user_uuid_pk = uuid4()
 

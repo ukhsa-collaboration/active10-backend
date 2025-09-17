@@ -1,6 +1,8 @@
 from contextlib import contextmanager
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session, declarative_base
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
+
 from utils.base_config import config
 
 DATABASE_URL = f"postgresql+psycopg://{config.db_user}:{config.db_pass}@{config.db_host}:{config.db_port}/{config.db_name}"

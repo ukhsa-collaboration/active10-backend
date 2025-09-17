@@ -10,9 +10,7 @@ router = APIRouter(prefix="/webhook", tags=["Webhooks"])
 
 
 @router.post("/sendgrid", response_class=JSONResponse, status_code=200)
-async def handle_sendgrid_events_webhook(
-    request: Request, background_job: BackgroundTasks
-):
+async def handle_sendgrid_events_webhook(request: Request, background_job: BackgroundTasks):
     headers = request.headers
     webhook_signature = headers.get("x-twilio-email-event-webhook-signature")
     webhook_timestamp = headers.get("x-twilio-email-event-webhook-timestamp")

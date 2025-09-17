@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -19,7 +19,7 @@ token = None
 
 class MyTestClass(BaseCase):
     @classmethod
-    def request_with_callback_response(cls, requests) -> Union[Union[Any, None], bool]:
+    def request_with_callback_response(cls, requests) -> Any | None | bool:
         for request in requests:
             if "/callback" in request.url:
                 if request.response:
@@ -51,8 +51,8 @@ class MyTestClass(BaseCase):
         callback_request_found = False
 
         while not callback_request_found and iteration < max_retries:
-            callback_request, callback_request_found = (
-                self.request_with_callback_response(self.driver.requests)
+            callback_request, callback_request_found = self.request_with_callback_response(
+                self.driver.requests
             )
             if callback_request_found:
                 break
@@ -60,13 +60,11 @@ class MyTestClass(BaseCase):
             self.wait(1)
             iteration += 1
 
-        global token
+        global token  # noqa: PLW0603
 
         if callback_request:
             response = callback_request.response
-            redirect_uri = (
-                response.headers.get("Location") if response.headers else None
-            )
+            redirect_uri = response.headers.get("Location") if response.headers else None
             if not redirect_uri:
                 raise Exception(f"Redirect URI not found in response: {response}")
 
@@ -86,7 +84,7 @@ class TestNHSLoginToken:
         self.client = client
 
     def test_nhs_login_token(self):
-        global token
+        global token  # noqa: PLW0602
 
         if token is None:
             raise Exception("Token not captured during login flow")
@@ -96,5 +94,5 @@ class TestNHSLoginToken:
             headers={"Authorization": f"Bearer {token}"},
         )
 
-        assert response.status_code == 200
+        assert response.status_code == 200  # noqa: PLR2004
         assert "email" in response.json()

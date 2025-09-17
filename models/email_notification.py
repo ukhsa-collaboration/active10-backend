@@ -1,7 +1,9 @@
-from datetime import datetime, timezone
-from uuid import uuid4
-from sqlalchemy import Column, UUID, String, DateTime, Enum as SQLAlchemyEnum, Integer
+from datetime import UTC, datetime
 from enum import Enum as PyEnum
+from uuid import uuid4
+
+from sqlalchemy import UUID, Column, DateTime, Integer, String
+from sqlalchemy import Enum as SQLAlchemyEnum
 
 from db.session import Base
 
@@ -33,9 +35,7 @@ class LogoutUserEmailLogs(Base):
     user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     user_email = Column(String(length=254), nullable=False, index=True)
     notification_type = Column(
-        SQLAlchemyEnum(
-            *LogoutNotificationType.value_choices(), name="notification_type_enum"
-        ),
+        SQLAlchemyEnum(*LogoutNotificationType.value_choices(), name="notification_type_enum"),
         nullable=False,
         index=True,
     )
@@ -48,14 +48,12 @@ class LogoutUserEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc),
+        default=datetime.now(UTC),
+        onupdate=datetime.now(UTC),
     )
 
 
@@ -68,9 +66,7 @@ class MonthlyReportEmailLogs(Base):
     batch_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     report_month = Column(String(length=12), nullable=False, index=True)
     email_delivery_status = Column(
-        SQLAlchemyEnum(
-            *EmailStatusEnum.value_choices(), name="report_email_status_enum"
-        ),
+        SQLAlchemyEnum(*EmailStatusEnum.value_choices(), name="report_email_status_enum"),
         nullable=False,
         index=True,
     )
@@ -78,12 +74,10 @@ class MonthlyReportEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),
-        onupdate=datetime.now(timezone.utc),
+        default=datetime.now(UTC),
+        onupdate=datetime.now(UTC),
     )

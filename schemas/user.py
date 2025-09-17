@@ -1,4 +1,3 @@
-from typing import Optional, List
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
@@ -36,11 +35,11 @@ class UserResponse(BaseModel):
     gender: str
     age: int
     age_range: str
-    postcode: Optional[str]
-    identity_level: Optional[str]
-    email_preferences: Optional[List[EmailPreferenceResponse]] = []
-    latest_motivation: Optional[UserMotivationResponse] = None
-    latest_activity_level: Optional[ActivityLevelResponseSchema] = None
+    postcode: str | None
+    identity_level: str | None
+    email_preferences: list[EmailPreferenceResponse] | None = []
+    latest_motivation: UserMotivationResponse | None = None
+    latest_activity_level: ActivityLevelResponseSchema | None = None
 
 
 class NHSUser(BaseModel):

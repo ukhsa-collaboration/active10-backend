@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Dict
 
 from fastapi import Depends
 from pydantic import HttpUrl
@@ -24,7 +23,9 @@ auth_nhs = Authenticator(
 
 class NHSLoginService:
     def __init__(
-        self, user_crud: UserCRUD = Depends(), user_token_crud: TokenCRUD = Depends()
+        self,
+        user_crud: UserCRUD = Depends(),
+        user_token_crud: TokenCRUD = Depends(),  # noqa: B008
     ) -> None:
         self.userCRUD = user_crud
         self.token_crud = user_token_crud
@@ -62,7 +63,7 @@ class NHSLoginService:
         """
 
         error = req_args.get("error")
-        if error:
+        if error:  # noqa: SIM102
             # if access denied return no consent deeplink and force user
             # to use app without NHS login
             if error == "access_denied":
@@ -129,7 +130,7 @@ class NHSLoginService:
         return user_info
 
     @staticmethod
-    def generate_redirect_url(user_info: User) -> Dict[str, str]:
+    def generate_redirect_url(user_info: User) -> dict[str, str]:
         """
         Generate a redirect URL for the user after successful login.
         This URL is consumed by the mobile app.
