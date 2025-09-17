@@ -7,7 +7,8 @@ from sqlalchemy import Enum as SQLAlchemyEnum
 
 from db.session import Base
 
-UTC = timezone.utc # noqa:UP017 datetime.utc() not implemented in Python 3.10
+UTC = timezone.utc  # noqa:UP017 datetime.utc() not implemented in Python 3.10
+
 
 class LogoutNotificationType(PyEnum):
     LOGOUT_FOR_6_MONTHS = "Logged Out for 6 Months"
