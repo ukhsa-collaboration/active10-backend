@@ -1,19 +1,16 @@
 from fastapi import APIRouter
 from api.v1 import (
-    users,
-    walking_plans,
-    activities,
-    gojauntly,
-    daily_target,
-    data_migrations,
-    webhooks,
+    users, walking_plans, activities, gojauntly, daily_target, data_migrations, webhooks, motivation, activity_level
 )
 
 router = APIRouter(prefix="/v1")
 router.include_router(users.router)
+router.include_router(motivation.router)
 router.include_router(walking_plans.router)
 router.include_router(daily_target.router)
+router.include_router(activity_level.router)
 router.include_router(activities.router)
 router.include_router(data_migrations.router)
 router.include_router(gojauntly.router)
 router.include_router(webhooks.router)
+

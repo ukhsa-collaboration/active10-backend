@@ -10,7 +10,8 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_utils import create_database, database_exists, drop_database
+from sqlalchemy_utils import drop_database
+from testcontainers.postgres import PostgresContainer
 
 from crud.user_crud import UserCRUD
 from db.session import get_db_session, Base
@@ -20,31 +21,18 @@ from service.nhs_login_service import NHSLoginService
 from utils.base_config import config as settings
 
 
-def get_test_database_url():
-    db_host = settings.db_host
-    db_port = settings.db_port
-    db_user = settings.db_user
-    db_password = settings.db_pass
-
-    database_url = (
-        f"postgresql+psycopg://{db_user}:{db_password}@{db_host}:{db_port}/test-db"
-    )
-
-    if not database_exists(database_url):
-        create_database(database_url)
-
-    return database_url
-
-
 user_uuid_pk = uuid4()
 
-engine = create_engine(get_test_database_url(), poolclass=StaticPool)
+postgres = PostgresContainer("postgres:16")
+postgres.start()
+engine = create_engine(postgres.get_connection_url(), poolclass=StaticPool)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="session")
 def db_engine():
-    database_url = get_test_database_url()
+    database_url = postgres.get_connection_url()
+
     alembic_cfg = Config()
     alembic_cfg.set_main_option("sqlalchemy.url", database_url)
     alembic_cfg.set_main_option("script_location", "db/migrations")

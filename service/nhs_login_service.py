@@ -122,12 +122,9 @@ class NHSLoginService:
         auth_resp = auth_nhs.get_authorization_response(req_args)
         data = auth_nhs.get_access_token(auth_resp)
         user_info = auth_nhs.get_userinfo(data["access_token"])
-        pds_data = self.pds_client.get_pds_data(
-            data["id_token_jwt"], user_info["nhs_number"]
-        )
-
-        user_info["gender"] = pds_data["gender"]
-        user_info["postcode"] = pds_data["postcode"]
+        # TODO: gender and postcode needs to come from Mobile App now.
+        user_info["gender"] = "na"
+        user_info["postcode"] = "na"
 
         return user_info
 

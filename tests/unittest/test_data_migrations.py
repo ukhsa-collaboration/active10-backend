@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from service.migrations_service import load_bulk_activities_data
-from tests.conftest import user_uuid_pk, override_get_db_context_session
+from tests.unittest.conftest import user_uuid_pk, override_get_db_context_session
 
 
 def test_post_activities_migrations(client, authenticated_user, db_session):

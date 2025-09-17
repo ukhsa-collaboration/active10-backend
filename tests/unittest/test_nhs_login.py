@@ -1,3 +1,6 @@
+from tests.unittest.conftest import unauthenticated_user, authenticated_user # noqa
+
+
 def test_nhs_login_redirect(client):
     response = client.get("/nhs_login/test_app/12345", follow_redirects=False)
 
@@ -60,7 +63,7 @@ def test_logout_user_without_token(client):
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_logout_with_unauthenticated_user(client, unauthenticated_user):
+def test_logout_with_unauthenticated_user(client, unauthenticated_user): # noqa
     response = client.post(
         "/nhs_login/logout",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
@@ -70,7 +73,7 @@ def test_logout_with_unauthenticated_user(client, unauthenticated_user):
     assert response.json() == {"detail": "User not found"}
 
 
-def test_logout_with_authenticated_user(client, authenticated_user):
+def test_logout_with_authenticated_user(client, authenticated_user): # noqa
     response = client.post(
         "/nhs_login/logout",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
@@ -80,7 +83,7 @@ def test_logout_with_authenticated_user(client, authenticated_user):
     assert response.json() == {"message": "User logged out successfully"}
 
 
-def test_disconnect_with_unauthenticated_user(client, unauthenticated_user):
+def test_disconnect_with_unauthenticated_user(client, unauthenticated_user): # noqa
     response = client.post(
         "/nhs_login/disconnect",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
@@ -97,7 +100,7 @@ def test_disconnect_user_without_token(client):
     assert response.json() == {"detail": "Not authenticated"}
 
 
-def test_disconnect_user_with_authenticated_user(client, authenticated_user):
+def test_disconnect_user_with_authenticated_user(client, authenticated_user): # noqa
     response = client.post(
         "/nhs_login/disconnect",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},

@@ -1,11 +1,12 @@
 from uuid import uuid4
 
+from tests.unittest.conftest import authenticated_user, unauthenticated_user # noqa
 
 target_id = None
 invalid_target_id = uuid4()
 
 
-def test_create_daily_target(client, authenticated_user):
+def test_create_daily_target(client, authenticated_user): # noqa
     payload = {"daily_target": 20, "date": 12341234}
     response = client.post(
         "/v1/daily_targets",
@@ -20,7 +21,7 @@ def test_create_daily_target(client, authenticated_user):
     assert data["daily_target"] == 20
 
 
-def test_create_daily_target_with_missing_body(client, authenticated_user):
+def test_create_daily_target_with_missing_body(client, authenticated_user): # noqa
     response = client.post(
         "/v1/daily_targets",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
@@ -29,7 +30,7 @@ def test_create_daily_target_with_missing_body(client, authenticated_user):
     assert response.status_code == 422
 
 
-def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_user):
+def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_user): # noqa
     payload = {"daily_target": 20, "date": 12341234}
     response = client.post(
         "/v1/daily_targets",
@@ -41,8 +42,8 @@ def test_create_daily_target_by_unauthenticated_user(client, unauthenticated_use
 
 
 def test_get_user_all_daily_targets_by_unauthenticated_user(
-    client, unauthenticated_user
-):
+    client, unauthenticated_user # noqa
+): 
     response = client.get(
         "/v1/daily_targets",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
@@ -62,7 +63,7 @@ def test_get_user_all_daily_target(client, authenticated_user):
     assert len(data) > 0
 
 
-def test_get_user_single_daily_target(client, authenticated_user):
+def test_get_user_single_daily_target(client, authenticated_user): # noqa
     global target_id
 
     response = client.get(
@@ -75,7 +76,7 @@ def test_get_user_single_daily_target(client, authenticated_user):
     assert data["id"] == target_id
 
 
-def test_get_user_single_invalid_daily_target(client, authenticated_user):
+def test_get_user_single_invalid_daily_target(client, authenticated_user): # noqa
     global invalid_target_id
 
     response = client.get(
@@ -86,7 +87,7 @@ def test_get_user_single_invalid_daily_target(client, authenticated_user):
     assert response.status_code == 404
 
 
-def test_update_daily_target(client, authenticated_user):
+def test_update_daily_target(client, authenticated_user): # noqa
     global target_id
     payload = {"date": 123499, "daily_target": 10}
     response = client.put(
@@ -100,7 +101,7 @@ def test_update_daily_target(client, authenticated_user):
     assert data["daily_target"] == 10
 
 
-def test_update_daily_target_by_unauthenticated_user(client, unauthenticated_user):
+def test_update_daily_target_by_unauthenticated_user(client, unauthenticated_user): # noqa
     global target_id
 
     payload = {"daily_target": 20, "date": 12341234}
@@ -114,7 +115,7 @@ def test_update_daily_target_by_unauthenticated_user(client, unauthenticated_use
     assert response.status_code == 404
 
 
-def test_delete_daily_target_by_unauthenticated_user(client, unauthenticated_user):
+def test_delete_daily_target_by_unauthenticated_user(client, unauthenticated_user): # noqa
     global target_id
 
     response = client.delete(
@@ -125,7 +126,7 @@ def test_delete_daily_target_by_unauthenticated_user(client, unauthenticated_use
     assert response.status_code == 404
 
 
-def test_delete_daily_target(client, authenticated_user):
+def test_delete_daily_target(client, authenticated_user): # noqa
     global target_id
 
     response = client.delete(
@@ -136,7 +137,7 @@ def test_delete_daily_target(client, authenticated_user):
     assert response.status_code == 204
 
 
-def test_delete_invalid_daily_target(client, authenticated_user):
+def test_delete_invalid_daily_target(client, authenticated_user): # noqa
     global invalid_target_id
 
     response = client.delete(

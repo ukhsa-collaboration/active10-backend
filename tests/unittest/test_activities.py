@@ -2,7 +2,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from service.activity_service import load_activity_data
-from tests.conftest import user_uuid_pk, override_get_db_context_session
+from tests.unittest.conftest import user_uuid_pk, override_get_db_context_session
 
 
 def test_create_activities(client, authenticated_user, db_session):
@@ -115,6 +115,9 @@ def test_list_activities(client, authenticated_user, db_session):
             headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
         )
 
+        assert response.status_code == 200
+        response_data = response.json()
+        assert "id" in response_data[0]
         assert response.status_code == 200
         response_data = response.json()
         assert "id" in response_data[0]

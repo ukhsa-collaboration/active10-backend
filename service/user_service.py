@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from models.user import User
+from schemas.activity_level import ActivityLevelResponseSchema
+from schemas.motivation import UserMotivationResponse
 from schemas.user import UserResponse, EmailPreferenceResponse
 
 
@@ -12,6 +14,24 @@ class UserService:
         age_range = self.__get_age_range(user.date_of_birth)
         anony_email = self.__anonymize_email(user.email)
         age = self.calculate_age(user.date_of_birth)
+        latest_motivation = None
+        if user.motivations.all():
+            latest = user.motivations[0]  # As list is sorted by created_at DESC
+            latest_motivation = UserMotivationResponse(
+                id=latest.id,
+                user_id=latest.user_id,
+                created_at=latest.created_at,
+                goals=latest.goals
+            )
+        activity_level = None
+        if user.activity_levels.all():
+            latest_activity_level = user.activity_levels[0]
+            activity_level = ActivityLevelResponseSchema(
+                id=latest_activity_level.id,
+                level=latest_activity_level.level,
+                created_at=latest_activity_level.created_at,
+                updated_at=latest_activity_level.updated_at
+            )
 
         return UserResponse(
             id=user.id,
@@ -22,23 +42,21 @@ class UserService:
             identity_level=user.identity_level,
             age_range=age_range,
             age=age,
-            email_preferences=[
-                EmailPreferenceResponse(
-                    id=ep.id,
-                    name=ep.name,
-                    is_active=ep.is_active,
-                )
-                for ep in user.email_preferences
-                if user.email_preferences
-            ],
+            email_preferences=[EmailPreferenceResponse(
+                id=ep.id,
+                name=ep.name,
+                is_active=ep.is_active,
+            ) for ep in user.email_preferences if user.email_preferences],
+            latest_motivation=latest_motivation,
+            latest_activity_level=activity_level
         )
 
     def __get_age_range(self, date_of_birth: datetime) -> str:
         today = datetime.now()
         age = (
-            today.year
-            - date_of_birth.year
-            - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+                today.year
+                - date_of_birth.year
+                - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
         )
 
         age_ranges = {
