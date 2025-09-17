@@ -14,4 +14,4 @@ alembic upgrade head
 # python scripts/activities_partitioning.py
 
 echo "Starting FastAPI application..."
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-certfile cert/cert.pem --ssl-keyfile cert/key.pem

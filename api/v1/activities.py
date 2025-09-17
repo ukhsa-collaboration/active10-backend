@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime, timezone
 from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
@@ -6,7 +6,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from auth.auth_bearer import get_authenticated_user_data
 from crud.activities_crud import create_activity, get_activities_by_filters
-from models import User
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activity_data
 
@@ -17,17 +16,17 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 async def save_activity(
     background_task: BackgroundTasks,
     activity_payload: UserActivityRequestSchema,
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
 ):
-    background_task.add_task(load_activity_data, activity_payload, str(user.id))
-    activity = create_activity(activity_payload, user_id=user.id)
+    background_task.add_task(load_activity_data, activity_payload, user_data["user_id"])
+    activity = create_activity(activity_payload, user_id=user_data["user_id"])
 
     return activity
 
 
 @router.get("", response_model=list[ActivityResponseSchema], status_code=200)
 async def list_activities(
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     date: int | None = Query(None, gt=0, description="Filter by exact date (UNIX timestamp)"),
     start_date: int | None = Query(None, gt=0, description="Filter by start date (UNIX timestamp)"),
     end_date: int | None = Query(None, gt=0, description="Filter by end date (UNIX timestamp)"),
@@ -57,6 +56,9 @@ async def list_activities(
 
     if not date and not start_date and not end_date:
         start_date = int(
+            (datetime.now(UTC).replace(tzinfo=None) - relativedelta(years=1)).timestamp()
+        )
+        start_date = int(
             (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017
         )
 
@@ -70,7 +72,7 @@ async def list_activities(
         if v is not None
     }
 
-    activities = get_activities_by_filters(user_id=user.id, filters=filters)
+    activities = get_activities_by_filters(user_id=user_data["user_id"], filters=filters)
 
     if not activities:
         raise HTTPException(status_code=404, detail="Data not found")
