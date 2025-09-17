@@ -29,8 +29,8 @@ class UserMotivationCRUD:
     ) -> UserMotivation:
         new_motivation = UserMotivation(
             user_id=user_id,
-            created_at=int(datetime.now(timezone.utc).timestamp()),
-            updated_at=int(datetime.now(timezone.utc).timestamp()),
+            created_at=int(datetime.now(timezone.utc).timestamp()),  # noqa: UP017
+            updated_at=int(datetime.now(timezone.utc).timestamp()),  # noqa: UP017
             goals=[goal.model_dump() for goal in payload.goals],
         )
         self.db.add(new_motivation)
@@ -41,7 +41,7 @@ class UserMotivationCRUD:
     def update_motivation(
         self, motivation: UserMotivation, payload: CreateUpdateUserMotivationRequest
     ) -> UserMotivation:
-        motivation.updated_at = int(datetime.now(timezone.utc).timestamp())
+        motivation.updated_at = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017
         motivation.goals = [goal.model_dump() for goal in payload.goals]
         self.db.commit()
         self.db.refresh(motivation)
