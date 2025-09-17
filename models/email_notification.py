@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone  # noqa: I001
 from enum import Enum as PyEnum
 from uuid import uuid4
 
@@ -6,8 +6,6 @@ from sqlalchemy import UUID, Column, DateTime, Integer, String
 from sqlalchemy import Enum as SQLAlchemyEnum
 
 from db.session import Base
-
-UTC = timezone.utc  # noqa:UP017 datetime.utc() not implemented in Python 3.10
 
 
 class LogoutNotificationType(PyEnum):
@@ -50,12 +48,14 @@ class LogoutUserEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
+    created_at = Column(
+        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
+    )  # noqa: E501, UP017
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        default=datetime.now(timezone.utc),  # noqa: UP017
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017
     )
 
 
@@ -76,10 +76,12 @@ class MonthlyReportEmailLogs(Base):
     message_id = Column(String(length=128), nullable=True)
     timestamp = Column(Integer, nullable=False, index=True)
 
-    created_at = Column(DateTime(timezone=False), nullable=False, default=datetime.now(UTC))
+    created_at = Column(
+        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)
+    )  # noqa: E501, UP017
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(UTC),
-        onupdate=datetime.now(UTC),
+        default=datetime.now(timezone.utc),  # noqa: UP017
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017
     )

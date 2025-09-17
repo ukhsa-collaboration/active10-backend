@@ -1,6 +1,6 @@
 import calendar
 import os
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
@@ -182,7 +182,7 @@ def create_partition_table_by_params(start_date_unix: int, end_date_unix: int):
 
 
 if __name__ == "__main__":
-    start_date_ = int(datetime(2018, 1, 1, tzinfo=UTC).timestamp())
-    end_date_ = int(datetime(2030, 12, 31, tzinfo=UTC).timestamp())
+    start_date_ = int(datetime(2018, 1, 1, tzinfo=timezone.utc).timestamp())  # noqa: UP017
+    end_date_ = int(datetime(2030, 12, 31, tzinfo=timezone.utc).timestamp())  # noqa: UP017
 
     create_partition_table_by_params(start_date_, end_date_)
