@@ -1,4 +1,4 @@
-from datetime import datetime, timezone  # noqa: I001
+from datetime import datetime, timezone
 from enum import Enum as PyEnum
 from uuid import uuid4
 
