@@ -49,8 +49,10 @@ class LogoutUserEmailLogs(Base):
     timestamp = Column(Integer, nullable=False, index=True)
 
     created_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc)  # noqa: UP017
-    )  
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),  # noqa: UP017
+    )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
@@ -77,7 +79,9 @@ class MonthlyReportEmailLogs(Base):
     timestamp = Column(Integer, nullable=False, index=True)
 
     created_at = Column(
-        DateTime(timezone=False), nullable=False, default=datetime.now(timezone.utc) # noqa: UP017
+        DateTime(timezone=False),
+        nullable=False,
+        default=datetime.now(timezone.utc),  # noqa: UP017
     )
     updated_at = Column(
         DateTime(timezone=False),
