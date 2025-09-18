@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timezone
+from datetime import datetime, timezone
 from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
@@ -55,9 +55,6 @@ async def list_activities(
             raise HTTPException(status_code=400, detail="Date range cannot be greater than 1 year")
 
     if not date and not start_date and not end_date:
-        start_date = int(
-            (datetime.now(UTC).replace(tzinfo=None) - relativedelta(years=1)).timestamp()
-        )
         start_date = int(
             (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017 Not supported in Python 3.10
         )
