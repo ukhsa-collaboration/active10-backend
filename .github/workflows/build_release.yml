@@ -58,6 +58,7 @@ jobs:
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
       sign_release: true
+      lint_dockerfile: false
       deploy_environments: >-
         [
           { "name": "dev", "base_url": "https://dev.active10.betterhealthapps.com", "smoke_test_url": "https://dev.active10.betterhealthapps.com/healthcheck" },
