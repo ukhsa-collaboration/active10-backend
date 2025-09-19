@@ -37,12 +37,11 @@ jobs:
 
       - name: Export release tag
         id: export
-        run: |
-          echo "release_tag=${{ steps.bump.outputs.new_tag }}" >> "$GITHUB_OUTPUT"
+        run: echo "release_tag=${{ steps.bump.outputs.new_tag }}" >> "$GITHUB_OUTPUT"
 
   container-image:
     name: Build, Test and Release
-    needs: [prepare-release-tag]
+    needs: prepare-release-tag
     permissions:
       contents: write
       id-token: write
@@ -53,28 +52,16 @@ jobs:
       app_name: ${{ vars.APP_NAME }}
       service_identifier: ${{ vars.ECR_NAMESPACE }}
       aws_region: ${{ vars.AWS_REGION }}
-      runner_labels: '["ohid-runners"]'
-      run_unit_tests: ${{ vars.RUN_UNIT_TESTS }}
+      # runner_labels: '["ohid-runners"]'
+      run_unit_tests: ${{ vars.RUN_UNIT_TESTS == 'true' }}
       unit_test_command: make unit-tests
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
       sign_release: true
       deploy_environments: >-
         [
-          {
-            "name": "dev",
-            "base_url": "https://dev.active10.betterhealthapps.com",
-            "smoke_test_url": "https://dev.active10.betterhealthapps.com/healthcheck"
-          },
-          {
-            "name": "uat",
-            "base_url": "https://uat.active10.betterhealthapps.com",
-            "smoke_test_url": "https://uat.active10.betterhealthapps.com/healthcheck"
-          },
-          {
-            "name": "prd",
-            "base_url": "https://prd.active10.betterhealthapps.com",
-            "smoke_test_url": "https://prd.active10.betterhealthapps.com/healthcheck"
-          }
+          { "name": "dev", "base_url": "https://dev.active10.betterhealthapps.com", "smoke_test_url": "https://dev.active10.betterhealthapps.com/healthcheck" },
+          { "name": "uat", "base_url": "https://uat.active10.betterhealthapps.com", "smoke_test_url": "https://uat.active10.betterhealthapps.com/healthcheck" },
+          { "name": "prd", "base_url": "https://prd.active10.betterhealthapps.com", "smoke_test_url": "https://prd.active10.betterhealthapps.com/healthcheck" }
         ]
     secrets: inherit
