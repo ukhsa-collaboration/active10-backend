@@ -47,12 +47,12 @@ jobs:
       id-token: write
       actions: read
       pull-requests: write
-    uses: ukhsa-collaboration/devops-github-reusable-workflows/.github/workflows/container-image-build-python.yml@3d33092edbd671ce5ba76fc76f8d7086da62b81a
+    uses: ukhsa-collaboration/devops-github-reusable-workflows/.github/workflows/container-image-build-python.yml@5a0130acbfad3c9eca11f3709b798fc88f9c1e88
     with:
       app_name: ${{ vars.APP_NAME }}
       service_identifier: ${{ vars.ECR_NAMESPACE }}
       aws_region: ${{ vars.AWS_REGION }}
-      # runner_labels: '["ohid-runners"]'
+      runner_labels: '["ohid-runners"]'
       run_unit_tests: ${{ vars.RUN_UNIT_TESTS == 'true' }}
       unit_test_command: make unit-tests
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
