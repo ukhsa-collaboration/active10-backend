@@ -9,7 +9,7 @@ services:
       AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/aw-active10-local-sqs-activities-migrations.fifo"
       AWS_SNS_ACTIVITY_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-sns-activity-topic"
       AWS_SNS_ACTIVITIES_MIGRATION_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-activities-migrations"
-
+      REDIS_HOST: "redis"
       # Only required locally
       AWS_DEFAULT_REGION: "eu-west-2"
       AWS_REGION: "eu-west-2"
@@ -20,6 +20,7 @@ services:
       - .:/app
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:13
@@ -28,9 +29,17 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8.0-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
   localstack:
     image: localstack/localstack:3.8.1
@@ -44,3 +53,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:

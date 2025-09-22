@@ -54,6 +54,9 @@ If you'd prefer to run the project using Docker, follow these steps:
    AWS_REGION=
    AWS_ACCESS_KEY_ID=
    AWS_SECRET_ACCESS_KEY=
+   
+   REDIS_HOST=
+   REDIS_PORT=
    # Update the environment variables with your values.
     </pre>
    
@@ -126,6 +129,9 @@ The `app` service depends on the PostgreSQL database and runs using environment 
    AWS_REGION=
    AWS_ACCESS_KEY_ID=
    AWS_SECRET_ACCESS_KEY=
+   
+   REDIS_HOST=
+   REDIS_PORT=
    # Update the environment variables with your values.
 
    # For Integration Test

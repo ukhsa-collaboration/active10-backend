@@ -182,7 +182,7 @@ def create_partition_table_by_params(start_date_unix: int, end_date_unix: int):
 
 
 if __name__ == "__main__":
-    start_date_ = int(datetime(2018, 1, 1, tzinfo=timezone.utc).timestamp())  # noqa: UP017
-    end_date_ = int(datetime(2030, 12, 31, tzinfo=timezone.utc).timestamp())  # noqa: UP017
+    start_date_ = int(datetime(2018, 1, 1, tzinfo=timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
+    end_date_ = int(datetime(2030, 12, 31, tzinfo=timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
 
     create_partition_table_by_params(start_date_, end_date_)

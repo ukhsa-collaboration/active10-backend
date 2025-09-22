@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
+from crud.user_crud import UserCRUD
 from db.session import get_db_session
-from models import DeleteAudit, User, UserDeleteReason, UserStatus
+from models import DeleteAudit, UserDeleteReason, UserStatus
 from service.nhs_login_service import NHSLoginService
+from service.redis_service import RedisService, get_redis_service
 
 router = APIRouter(prefix="/nhs_login", tags=["NHS Login"])
 
@@ -29,24 +31,45 @@ async def nhs_login_callback(request: Request, service: NHSLoginService = Depend
 
 @router.post("/logout", response_class=JSONResponse, status_code=200)
 async def logout(
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
+    user_crud: Annotated[UserCRUD, Depends()],
+    redis_service: RedisService = Depends(get_redis_service),  # noqa: B008
     db: Session = Depends(get_db_session),  # noqa: B008
 ):
+    user = user_crud.get_user_by_id(user_data["user_id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     user.status = UserStatus.LOGOUT.value
     user.status_updated_at = datetime.utcnow()
     user_token = user.token
     db.delete(user_token)
     db.commit()
 
+    # Invalidate user cache on logout
+    token_hash = redis_service.hash_token(user_token.token)
+    _ = redis_service.delete_auth_cache(token_hash, str(user.id))
+
     return {"message": "User logged out successfully"}
 
 
 @router.post("/disconnect", response_class=JSONResponse, status_code=200)
 async def disconnect(
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
+    user_crud: Annotated[UserCRUD, Depends()],
+    redis_service: RedisService = Depends(get_redis_service),  # noqa: B008
     db: Session = Depends(get_db_session),  # noqa: B008
 ):
     try:
+        user = user_crud.get_user_by_id(user_data["user_id"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Invalidate user cache before deletion
+        user_token = user.token.token
+        token_hash = redis_service.hash_token(user_token)
+        _ = redis_service.delete_auth_cache(token_hash, str(user.id))
+
         db.delete(user)
 
         delete_audit = DeleteAudit(
