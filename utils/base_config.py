@@ -11,6 +11,7 @@ class Config(BaseSettings):
     nhs_api_url: str
     nhs_api_key: str
     auth_jwt_secret: str
+    auth_jwt_expiry_in_seconds: int = 2592000  # 30 days
     nhs_pds_jwt_private_key: str
     db_host: str
     db_port: str
