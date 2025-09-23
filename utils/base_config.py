@@ -30,6 +30,7 @@ class Config(BaseSettings):
     redis_port: int = 6379
     redis_db: int = 0
     redis_password: str = ""
+    redis_use_ssl: bool = False
 
     test_nhs_login_api: str | None = None
     test_nhs_email: str | None = None
