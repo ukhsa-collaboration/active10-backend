@@ -3,6 +3,7 @@ import pickle
 from typing import Any
 
 import redis
+from redis.connection import Connection, SSLConnection
 
 from utils.base_config import config, logger
 
@@ -31,17 +32,25 @@ class RedisService:
         """
         if cls._pool is None:
             try:
-                cls._pool = redis.ConnectionPool(
-                    host=config.redis_host,
-                    port=config.redis_port,
-                    db=config.redis_db,
-                    password=config.redis_password if config.redis_password else None,
-                    socket_connect_timeout=5,
-                    socket_timeout=5,
-                    retry_on_timeout=True,
-                    decode_responses=False,
-                )
-                cls._client = redis.Redis(connection_pool=cls._pool, ssl=True)
+                pool_kwargs = {
+                    "connection_class": SSLConnection if config.redis_use_ssl else Connection,
+                    "host": config.redis_host,
+                    "port": config.redis_port,
+                    "db": config.redis_db,
+                    "password": config.redis_password if config.redis_password else None,
+                    "socket_connect_timeout": 5,
+                    "socket_timeout": 5,
+                    "retry_on_timeout": True,
+                    "decode_responses": False,
+                }
+
+                cls._pool = redis.ConnectionPool(**pool_kwargs)
+
+                client_kwargs = {"connection_pool": cls._pool}
+                if config.redis_use_ssl:
+                    client_kwargs["ssl"] = True
+
+                cls._client = redis.Redis(**client_kwargs)
                 cls._client.ping()
                 logger.info("Redis connection pool and client created successfully")
             except Exception as e:
