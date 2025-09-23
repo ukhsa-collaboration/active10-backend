@@ -40,9 +40,8 @@ class RedisService:
                     socket_timeout=5,
                     retry_on_timeout=True,
                     decode_responses=False,
-                    ssl=True,
                 )
-                cls._client = redis.Redis(connection_pool=cls._pool)
+                cls._client = redis.Redis(connection_pool=cls._pool, ssl=True)
                 cls._client.ping()
                 logger.info("Redis connection pool and client created successfully")
             except Exception as e:
