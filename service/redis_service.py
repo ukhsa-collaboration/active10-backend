@@ -40,6 +40,7 @@ class RedisService:
                     socket_timeout=5,
                     retry_on_timeout=True,
                     decode_responses=False,
+                    ssl=True,
                 )
                 cls._client = redis.Redis(connection_pool=cls._pool)
                 cls._client.ping()
