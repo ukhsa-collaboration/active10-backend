@@ -51,13 +51,13 @@ class LogoutUserEmailLogs(Base):
     created_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017
+        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
     )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017
-        onupdate=datetime.now(timezone.utc),  # noqa: UP017
+        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
     )
 
 
@@ -81,11 +81,11 @@ class MonthlyReportEmailLogs(Base):
     created_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017
+        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
     )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017
-        onupdate=datetime.now(timezone.utc),  # noqa: UP017
+        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        onupdate=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
     )

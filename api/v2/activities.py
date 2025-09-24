@@ -4,7 +4,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
-from models import User
 from schemas.activity import UserActivityRequestSchema
 from service.activity_service import load_activities_data_in_sns
 
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/activities", tags=["activities"])
 async def save_activity(
     background_task: BackgroundTasks,
     activity_payload: UserActivityRequestSchema,
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
 ):
-    background_task.add_task(load_activities_data_in_sns, activity_payload, str(user.id))
+    background_task.add_task(load_activities_data_in_sns, activity_payload, user_data["user_id"])
     return {"message": "Success"}

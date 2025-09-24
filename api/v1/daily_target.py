@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from auth.auth_bearer import get_authenticated_user_data
 from crud.daily_target_crud import UserDailyTargetCRUD
-from models import User
 from models.daily_target import UserDailyTarget
 from schemas.daily_target import DailyTargetRequestSchema, DailyTargetResponseSchema
 
@@ -14,12 +13,12 @@ router = APIRouter(prefix="/daily_targets", tags=["daily target"])
 
 @router.post("", response_model=DailyTargetResponseSchema, status_code=201)
 async def create_daily_target(
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     payload: DailyTargetRequestSchema,
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
 ):
     existing_target = daily_target_crud.get_user_target_by_payload_data(
-        user_id=user.id, data=payload
+        user_id=user_data["user_id"], data=payload
     )
 
     if existing_target:
@@ -28,15 +27,17 @@ async def create_daily_target(
         )
 
     new_daily_target = UserDailyTarget(
-        user_id=user.id, date=payload.date, daily_target=payload.daily_target
+        user_id=user_data["user_id"],
+        date=payload.date,
+        daily_target=payload.daily_target,
     )
     created_daily_target = daily_target_crud.create_daily_target(new_daily_target)
     return created_daily_target
 
 
-@router.get("", response_model=list[DailyTargetResponseSchema], status_code=200)
+@router.get("/", response_model=list[DailyTargetResponseSchema], status_code=200)
 async def get_user_daily_targets_list(  # noqa: PLR0913
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
     date: int | None = Query(None, description="Filter by exact date (UNIX timestamp)"),
     start_date: int | None = Query(None, description="Filter by start date (UNIX timestamp)"),
@@ -54,7 +55,7 @@ async def get_user_daily_targets_list(  # noqa: PLR0913
 
     filters = {k: v for k, v in filters.items() if v is not None}
 
-    daily_targets = daily_target_crud.get_daily_targets_by_filters(user.id, filters)
+    daily_targets = daily_target_crud.get_daily_targets_by_filters(user_data["user_id"], filters)
 
     if not daily_targets:
         raise HTTPException(status_code=404, detail="Data not found")
@@ -65,11 +66,11 @@ async def get_user_daily_targets_list(  # noqa: PLR0913
 @router.get("/{target_id}", response_model=DailyTargetResponseSchema, status_code=200)
 async def get_user_daily_target(
     target_id: UUID,
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
 ):
     daily_target = daily_target_crud.get_user_daily_target_by_id(
-        user_id=user.id, target_id=target_id
+        user_id=user_data["user_id"], target_id=target_id
     )
 
     if not daily_target:
@@ -81,12 +82,12 @@ async def get_user_daily_target(
 @router.put("/{target_id}", response_model=DailyTargetResponseSchema, status_code=200)
 async def update_daily_target(
     target_id: UUID,
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     payload: DailyTargetRequestSchema,
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
 ):
     user_daily_target = daily_target_crud.get_user_daily_target_by_id(
-        user_id=user.id, target_id=target_id
+        user_id=user_data["user_id"], target_id=target_id
     )
 
     if not user_daily_target:
@@ -99,11 +100,11 @@ async def update_daily_target(
 @router.delete("/{target_id}", status_code=204)
 async def delete_daily_target(
     target_id: UUID,
-    user: Annotated[User, Depends(get_authenticated_user_data)],
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],
 ):
     user_daily_target = daily_target_crud.get_user_daily_target_by_id(
-        user_id=user.id, target_id=target_id
+        user_id=user_data["user_id"], target_id=target_id
     )
 
     if not user_daily_target:

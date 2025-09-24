@@ -26,6 +26,11 @@ class Config(BaseSettings):
     aws_sns_activity_topic_arn: str
     aws_sns_activities_migration_topic_arn: str
     sendgrid_webhook_public_key: str
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str = ""
+    redis_use_ssl: bool = False
 
     test_nhs_login_api: str | None = None
     test_nhs_email: str | None = None
