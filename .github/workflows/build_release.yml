@@ -54,7 +54,7 @@ jobs:
       aws_region: ${{ vars.AWS_REGION }}
       runner_labels: '["ohid-runners"]'
       run_unit_tests: ${{ vars.RUN_UNIT_TESTS == 'true' }}
-      unit_test_command: sudo apt-get -y install make && make unit-tests
+      unit_test_command: sudo apt-get update && apt-get -y install make && make unit-tests
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
       sign_release: true
