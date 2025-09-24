@@ -21,6 +21,9 @@ omit = ["tests/*","**/migrations/*"]
 show_missing = true
 omit = ["tests/*","**/migrations/*"]
 
+[tool.setuptools]
+packages = []
+py-modules = []
 
 [tool.ruff]
 target-version = "py311"
