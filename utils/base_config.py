@@ -38,7 +38,11 @@ class Config(BaseSettings):
     test_nhs_otp: str | None = None
 
     # Extra allowed for adding AWS_ local dummy secrets in the .env file
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
+    model_config = SettingsConfigDict(
+        env_file=(".env", "tests/tests.env"),
+        env_file_encoding="utf-8",
+        extra="allow",
+    )
 
 
 config = Config()
