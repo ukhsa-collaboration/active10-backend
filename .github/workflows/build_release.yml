@@ -47,7 +47,7 @@ jobs:
       id-token: write
       actions: read
       pull-requests: write
-    uses: ukhsa-collaboration/devops-github-reusable-workflows/.github/workflows/container-image-build-python.yml@650727a12a260b9f160e5c11138abc22ebf340fa
+    uses: ukhsa-collaboration/devops-github-reusable-workflows/.github/workflows/container-image-build-python-aws-ecs.yml@6af49b74eb18b2b1048b39375c3cc403a0af8353
     with:
       app_name: ${{ vars.APP_NAME }}
       service_identifier: ${{ vars.ECR_NAMESPACE }}
