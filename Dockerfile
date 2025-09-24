@@ -19,7 +19,9 @@ COPY . .
 
 RUN chmod +x /app/entrypoint.sh
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade pip \
+  && pip install --no-cache-dir uv \
+  && uv pip install --no-cache-dir --system .
 
 RUN useradd --user-group --system --create-home --no-log-init app && chown -R app /app
 
