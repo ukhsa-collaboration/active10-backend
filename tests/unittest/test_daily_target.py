@@ -46,7 +46,7 @@ def test_get_user_all_daily_targets_by_unauthenticated_user(
     unauthenticated_user,  # noqa
 ):
     response = client.get(
-        "/v1/daily_targets",
+        "/v1/daily_targets/",
         headers={"Authorization": f"Bearer {unauthenticated_user.token.token}"},
     )
 
@@ -55,7 +55,7 @@ def test_get_user_all_daily_targets_by_unauthenticated_user(
 
 def test_get_user_all_daily_target(client, authenticated_user):  # noqa: F811
     response = client.get(
-        "/v1/daily_targets",
+        "/v1/daily_targets/",
         headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
     )
 

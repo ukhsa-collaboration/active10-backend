@@ -6,5 +6,5 @@ include ./tests/tests.env
 .PHONY: unit-tests
 unit-tests: 
 	@GOJAUNTLY_PRIVATE_KEY=$$(openssl ecparam -genkey -name prime256v1 -noout); \
-	pytest tests/unittest
+	pytest
 

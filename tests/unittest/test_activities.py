@@ -1,8 +1,32 @@
+import time
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
+
 from service.activity_service import load_activity_data
 from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
+
+
+@pytest.fixture
+def add_activity(client, authenticated_user, db_session):
+    with patch(
+        "crud.activities_crud.get_db_context_session",
+        lambda: override_get_db_context_session(db_session),
+    ):
+        payload = {
+            "date": int(time.time()),
+            "user_postcode": "HD81",
+            "user_age_range": "23-39",
+            "rewards": [{"earned": 63, "slug": "high_five"}],
+            "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
+        }
+        r = client.post(
+            "/v1/activities",
+            json=payload,
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        )
+        assert r.status_code == 201  # noqa: PLR2004
 
 
 def test_create_activities(client, authenticated_user, db_session):
@@ -105,7 +129,7 @@ def test_create_activities_invalid_data_types(client, authenticated_user):
     assert response.status_code == 422  # noqa: PLR2004
 
 
-def test_list_activities(client, authenticated_user, db_session):
+def test_list_activities(client, authenticated_user, db_session, add_activity):
     with patch(
         "crud.activities_crud.get_db_context_session",
         lambda: override_get_db_context_session(db_session),

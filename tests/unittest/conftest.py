@@ -6,9 +6,10 @@ import jwt
 import pytest
 from alembic import command
 from alembic.config import Config
+from docker.errors import DockerException
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from sqlalchemy import StaticPool, create_engine
+from sqlalchemy import NullPool, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import drop_database
 from testcontainers.postgres import PostgresContainer
@@ -22,9 +23,16 @@ from utils.base_config import config as settings
 
 user_uuid_pk = uuid4()
 
-postgres = PostgresContainer("postgres:16")
-postgres.start()
-engine = create_engine(postgres.get_connection_url(), poolclass=StaticPool)
+try:
+    postgres = PostgresContainer("postgres:16")
+    postgres.start()
+except DockerException as exc:  # pragma: no cover - only exercised when docker unavailable
+    pytest.skip(
+        f"Docker not available for Postgres test container: {exc}",
+        allow_module_level=True,
+    )
+
+engine = create_engine(postgres.get_connection_url(), poolclass=NullPool)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -67,8 +75,8 @@ def db_session(db_engine):
         _ = user_crud.create_user(default_user)
 
     yield session
-    session.close()
     transaction.rollback()
+    session.close()
     connection.close()
 
 

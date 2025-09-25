@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import pytest
@@ -6,6 +7,12 @@ from seleniumbase import BaseCase
 
 from main import app
 from utils.base_config import config as settings
+
+if os.environ.get("RUN_NHS_LOGIN_INTEGRATION") != "1":  # pragma: no cover - integration guard
+    pytest.skip(
+        "Skipping NHS Login integration tests; set RUN_NHS_LOGIN_INTEGRATION=1 to enable.",
+        allow_module_level=True,
+    )
 
 BaseCase.main(__name__, __file__)
 

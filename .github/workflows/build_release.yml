@@ -10,293 +10,59 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   actions: read
-
-env:
-  APP_NAME: ${{ vars.APP_NAME }}
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  ECR_NAMESPACE: ${{ vars.ECR_NAMESPACE }}
-  RUN_UNIT_TESTS: ${{ vars.RUN_UNIT_TESTS }}
+  pull-requests: write
 
 jobs:
-  build:
-    name: Build and test container image
-    runs-on: ohid-runners
-    timeout-minutes: 30
+  prepare-release-tag:
+    runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
-      actions: read
-    environment: dev
+      contents: write
     outputs:
-      image_digest: ${{ steps.build.outputs.digest }}
-      image_uri: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}
+      release_tag: ${{ steps.export.outputs.release_tag }}
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+      - name: Checkout repository
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        if: ${{ env.RUN_UNIT_TESTS == 'true' }}
-        with:
-          cache: 'pip'
-
-      - name: Ruff Formatting
-        uses: astral-sh/ruff-action@5071c37a33310f49513a2709d057ea5cf4806793
-        with:
-          args: format --check --diff
-
-      - name: Ruff Linting
-        uses: astral-sh/ruff-action@5071c37a33310f49513a2709d057ea5cf4806793
-        with:
-          args: check --diff
-
-      - name: Unit tests
-        if: ${{ env.RUN_UNIT_TESTS == 'true' }}
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          PYTHONPATH=. pytest tests/unit/
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/${{ secrets.AWS_DEPLOY_ROLE }}
-          role-session-name: build-${{ github.sha }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
-        with:
-          registries: "${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }}"
-
-      - name: Extract Docker metadata (labels, tags)
-        id: meta
-        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f
-        with:
-          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}
-          tags: |
-            type=raw,value=${{ github.sha }}
-          labels: |
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.source=${{ github.repository }}
-
-      - uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@52f31c5544ee5204dd0e169728c595b6a402205f
-        id: tag_bump
+      - name: Bump tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: bump
+        uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@52f31c5544ee5204dd0e169728c595b6a402205f
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
-          DRY_RUN: true
 
-      - name: Build container image
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
-        id: build
-        env:
-            ECR_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}
-        with:
-            context: .
-            push: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-            tags: ${{ env.ECR_URI }}:build-${{ github.sha }}
-            cache-from: type=registry,ref=${{ env.ECR_URI }}:latest
-            cache-to: type=inline
-            build-args: |
-              APP_CODE_COMMIT_HASH=${{ github.sha }}
-              APP_VERSION=${{ steps.tag_bump.outputs.new_tag }}
+      - name: Export release tag
+        id: export
+        run: echo "release_tag=${{ steps.bump.outputs.new_tag }}" >> "$GITHUB_OUTPUT"
 
-        # TODO: I think Snyk has been approved. We should switch to that if it has been.
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
-        env:
-          ECR_URI: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}
-        with:
-          image-ref: '${{ env.ECR_URI }}:build-${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-
-  release:
-    name: Tag and release container image
-    runs-on: ohid-runners
-    timeout-minutes: 15
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: dev
+  container-image:
+    name: Build, Test and Release
+    needs: prepare-release-tag
     permissions:
       contents: write
       id-token: write
       actions: read
-    needs: [build]
-    outputs:
-      release_tag: ${{ steps.tag_bump.outputs.new_tag }}
-    steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
-
-      - uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@52f31c5544ee5204dd0e169728c595b6a402205f
-        id: tag_bump
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_DEV }}:role/${{ secrets.AWS_DEPLOY_ROLE }}
-          role-session-name: retag-image-${{ github.sha }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Tag existing image digest in ECR with latest and semver
-        id: retag
-        env:
-          DIGEST: ${{ needs.build.outputs.image_digest }}
-          NEW_TAG: ${{ steps.tag_bump.outputs.new_tag }}
-        run: |
-          test -n "$DIGEST" || { echo "Missing image digest from build"; exit 1; }
-          test -n "$NEW_TAG" || { echo "Missing new tag"; exit 1; }
-          aws ecr batch-get-image --registry-id ${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }} --repository-name "${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}" --image-ids imageDigest="$DIGEST" --query 'images[0].imageManifest' --output text > manifest.json
-          NEWTAG_DIGEST=$(
-            aws ecr put-image \
-              --registry-id ${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }} \
-              --repository-name "${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}" \
-              --image-tag "$NEW_TAG" \
-              --image-manifest file://manifest.json \
-              --query 'image.imageId.imageDigest' \
-              --output text
-          )
-          echo "retag_digest=$NEWTAG_DIGEST" >> "$GITHUB_OUTPUT"
-
-          aws ecr put-image \
-          --registry-id ${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }} \
-          --repository-name "${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}" \
-          --image-tag latest \
-          --image-manifest file://manifest.json
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
-        with:
-          registries: "${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }}"
-
-      - name: Install cosign
-        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159
-
-      - name: Sign the images with GitHub OIDC Token
-        env:
-          DIGEST: ${{ steps.retag.outputs.retag_digest }}
-          ECR_URI: ${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}
-        run: |
-          test -n "$ECR_URI" || { echo "ECR_URI empty"; exit 1; }
-          test -n "$DIGEST"  || { echo "DIGEST empty"; exit 1; }
-          echo "Signing ${ECR_URI}@${DIGEST}"
-          cosign sign --yes \
-            "${ECR_URI}@${DIGEST}"
-
-  deploy:
-    name: Deploy build to ${{ matrix.environment }}
-    runs-on: ohid-runners
-    timeout-minutes: 30
-    environment: ${{ matrix.environment }}
-    strategy:
-      max-parallel: 1
-      matrix:
-        environment: ["dev", "uat", "prd"]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: read
-      id-token: write
-      actions: read
-    env:
-      AWS_ACCOUNT_ID: ${{ secrets[format('{0}{1}', 'AWS_ACCOUNT_ID_', matrix.environment)] }}
-    needs: [release]
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355
-        with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_DEPLOY_ROLE }}
-          role-session-name: deploy-${{ github.sha }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Update Parameter Store with new value
-        env:
-          NEW_TAG: ${{ needs.release.outputs.release_tag }}
-        run: |
-          test -n "$NEW_TAG" || { echo "Missing release tag"; exit 1; }
-          aws ssm put-parameter --name "/active10/$APP_NAME/image_tag" --type "String" --value "$NEW_TAG" --overwrite
-
-      - name: Download task definition
-        run: |
-          aws ecs describe-task-definition --task-definition aw-active10-euw2-${{ matrix.environment }}-ecssvc-$APP_NAME --query taskDefinition > task-definition.json
-
-      - name: Modify Amazon ECS task definition with updated image URI
-        id: render-task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@5cb8c74c1b1ecaec4c8ea82eff82c009333509ce
-        with:
-          task-definition: task-definition.json
-          container-name: app
-          image: ${{ secrets.AWS_ACCOUNT_ID_ECR_REGISTRY }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_NAMESPACE }}/${{ env.APP_NAME }}:${{ needs.release.outputs.release_tag }}
-
-      - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@4b08990e8909cf36bc2ca95f994312f090c41865
-        with:
-          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: aw-active10-euw2-${{ matrix.environment }}-ecssvc-${{ env.APP_NAME }}
-          cluster: aw-active10-euw2-${{ matrix.environment }}-ecscluster
-          wait-for-service-stability: true
-
-      - name: Determine Base URL
-        id: url
-        env:
-          environment: ${{ matrix.environment }}
-        run: |
-          if [ "$environment" == "prd" ]; then
-            prefix=prd
-          elif [ "$environment" == "qat" ]; then
-            prefix=uat
-          elif [ "$environment" == "dev" ]; then
-            prefix=dev
-          else
-            echo "Unknown environment. Unable to run tests."
-            exit 1
-          fi
-          echo "prefix=$prefix" >> "$GITHUB_OUTPUT"
-
-        # Below steps are for running e2e integration tests.
-        # Don't run end-to-end tests in production unless they are safe to do so.
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
-        if: ${{ matrix.environment != 'prd' }}
-
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        if: ${{ matrix.environment != 'prd' }}
-        with:
-          cache: 'pip'
-
-      - name: End-to-end tests
-        if: ${{ matrix.environment != 'prd' }}
-        env:
-          BASE_URL: "https://${{ steps.url.outputs.prefix }}.active10.betterhealthapps.com"
-          PYTHONPATH: .
-        run: |
-        #   python -m pip install --upgrade pip
-        #   pip install -r requirements.txt
-        #   playwright install --with-deps
-        #   pytest --tracing=retain-on-failure --browser=chromium tests/integration
-
-      - name: Upload test results
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-traces
-          path: test-results/
-
-      - name: Post-Deployment Smoke Test
-        shell: bash
-        env:
-          URL: "https://${{ steps.url.outputs.prefix }}.active10.betterhealthapps.com/healthcheck"
-        run: |
-          code=$(curl -H "user-agent: Mozilla/5.0 (compatible; PostDeploymentHealthCheck)" -L -s -o /dev/null -w "%{http_code}" "$URL")
-          if [ "$code" -ne 200 ]; then
-            echo "Post-Deployment tests failed! Got $code from $URL"
-            exit 1
-          fi
-          echo "Smoke OK: $URL"
+      pull-requests: write
+    uses: ukhsa-collaboration/devops-github-reusable-workflows/.github/workflows/container-image-build-python-aws-ecs.yml@6af49b74eb18b2b1048b39375c3cc403a0af8353
+    with:
+      app_name: ${{ vars.APP_NAME }}
+      service_identifier: ${{ vars.ECR_NAMESPACE }}
+      aws_region: ${{ vars.AWS_REGION }}
+      runner_labels: '["ohid-runners"]'
+      run_unit_tests: ${{ vars.RUN_UNIT_TESTS == 'true' }}
+      unit_test_command: sudo apt-get update && sudo apt-get -y install make && make unit-tests
+      push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
+      sign_release: true
+      lint_dockerfile: false
+      deploy_environments: >-
+        [
+          { "name": "dev", "base_url": "https://dev.active10.betterhealthapps.com", "smoke_test_url": "https://dev.active10.betterhealthapps.com/healthcheck" },
+          { "name": "uat", "base_url": "https://uat.active10.betterhealthapps.com", "smoke_test_url": "https://uat.active10.betterhealthapps.com/healthcheck" },
+          { "name": "prd", "base_url": "https://prd.active10.betterhealthapps.com", "smoke_test_url": "https://prd.active10.betterhealthapps.com/healthcheck" }
+        ]
+    secrets: inherit
