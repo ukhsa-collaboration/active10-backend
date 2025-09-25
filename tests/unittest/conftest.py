@@ -12,12 +12,14 @@ from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import drop_database
 from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
 
 from crud.user_crud import UserCRUD
 from db.session import Base, get_db_session
 from main import app
 from models import User, UserToken
 from service.nhs_login_service import NHSLoginService
+from service.redis_service import RedisService, get_redis_service
 from utils.base_config import config as settings
 
 user_uuid_pk = uuid4()
@@ -26,6 +28,10 @@ postgres = PostgresContainer("postgres:16")
 postgres.start()
 engine = create_engine(postgres.get_connection_url(), poolclass=StaticPool)
 TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Start a Redis container for tests
+redis_container = RedisContainer("redis:7-alpine")
+redis_container.start()
 
 
 @pytest.fixture(scope="session")
@@ -43,6 +49,38 @@ def db_engine():
     yield engine
     Base.metadata.drop_all(bind=engine)
     drop_database(database_url)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def redis_engine():
+    """
+    Initialize Redis client settings to point at the testcontainer Redis.
+
+    This overrides runtime settings so RedisService connects to the container.
+    """
+    host = redis_container.get_container_host_ip()
+    port = redis_container.get_exposed_port(6379)
+
+    # Point config at test Redis
+    settings.redis_host = host
+    settings.redis_port = int(port)
+    settings.redis_db = 0
+    settings.redis_password = ""
+
+    # Initialize Redis client
+    RedisService._pool = None
+    RedisService._client = None
+    RedisService.initialize_pool()
+
+    yield RedisService
+
+    # Teardown Redis client
+    redis_client = RedisService.get_client()
+    if redis_client:
+        redis_client.flushdb()
+
+    RedisService._pool = None
+    RedisService._client = None
 
 
 @pytest.fixture(scope="module")
@@ -93,12 +131,13 @@ class MockNHSLoginService(NHSLoginService):
 
 
 @pytest.fixture(scope="module")
-def client(db_session):
+def client(db_session, redis_engine):
     def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db_session] = override_get_db
     app.dependency_overrides[NHSLoginService] = MockNHSLoginService
+    app.dependency_overrides[get_redis_service] = lambda: RedisService()
 
     with TestClient(app) as client:
         yield client

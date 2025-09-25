@@ -25,10 +25,7 @@ def get_authenticated_user_data(
         logger.info(f"Cache hit for auth - user_id: {cached_auth_data['user_id']}")
         return cached_auth_data
 
-    try:
-        decoded_data = decode_jwt(token.credentials)
-    except Exception as e:
-        raise HTTPException(status_code=403, detail=str(e))  # noqa: B904 - will likely need to be changed to avoid returning raw exceptions to clients
+    decoded_data = decode_jwt(token.credentials)
 
     user_id = decoded_data.get("user_id")
     if not user_id:
@@ -48,8 +45,8 @@ def get_authenticated_user_data(
                 logger.warning("Token mismatch")
                 raise HTTPException(status_code=403, detail="Token is not valid")
 
-            payload = decode_jwt(user_token.token)
-            expires_in = payload.get("exp")
+            decoded_data = decode_jwt(user_token.token)
+            expires_in = decoded_data.get("exp")
             cache_ttl = int(expires_in - datetime.now(timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
             auth_cached = redis_service.set_auth_cache(user_token_hash, user_id, cache_ttl)
 
