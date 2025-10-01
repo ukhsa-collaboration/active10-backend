@@ -171,13 +171,16 @@ class RedisService:
             return False
 
     @classmethod
-    def set_auth_cache(cls, token_hash: str, user_id: str, ttl: int = DEFAULT_AUTH_TTL) -> bool:
+    def set_auth_cache(
+        cls, token_hash: str, user_id: str, ttl: int = DEFAULT_AUTH_TTL, valid: bool = True
+    ) -> bool:
         """
         Store authentication data in the cache using a hashed token as the key.
 
         Args:
             token_hash (str): The hashed authentication token.
             user_id (str): The identifier of the user associated with the token.
+            valid (bool, optional): Whether the token should be valid (True) or not (False).
             ttl (int, optional): Time-to-live in seconds for the cache entry.
                 Defaults to DEFAULT_AUTH_TTL.
 
@@ -185,7 +188,7 @@ class RedisService:
             bool: True if the data was successfully cached, False otherwise.
         """
         key = f"{token_hash}"
-        cache_data = {"user_id": user_id}
+        cache_data = {"user_id": user_id, "valid": valid}
         return cls.set(key, cache_data, ttl)
 
     @classmethod

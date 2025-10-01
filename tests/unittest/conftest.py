@@ -10,7 +10,6 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_utils import drop_database
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
@@ -48,7 +47,8 @@ def db_engine():
 
     yield engine
     Base.metadata.drop_all(bind=engine)
-    drop_database(database_url)
+    engine.dispose()
+    postgres.stop()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -81,6 +81,7 @@ def redis_engine():
 
     RedisService._pool = None
     RedisService._client = None
+    redis_container.stop()
 
 
 @pytest.fixture(scope="module")
