@@ -10,6 +10,7 @@ class Config(BaseSettings):
     nhs_login_scopes: str
     nhs_api_url: str
     nhs_api_key: str
+    nhs_vectors: str = '["P5.Cp.Cd"]'
     auth_jwt_secret: str
     nhs_pds_jwt_private_key: str
     db_host: str
