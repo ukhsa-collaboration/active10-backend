@@ -88,19 +88,13 @@ class RedisService:
     @classmethod
     def is_available(cls) -> bool:
         """
-        Check if the Redis client is connected and available.
+        Check if the Redis client is available.
 
         Returns:
-            bool: True if Redis client responds to ping, False otherwise.
+            bool: True if Redis client is initialized, False otherwise.
         """
         client = cls.get_client()
-        if not client:
-            return False
-        try:
-            client.ping()
-            return True
-        except Exception:
-            return False
+        return client is not None
 
     @classmethod
     def set(cls, key: str, value: Any, ttl: int | None = DEFAULT_AUTH_TTL) -> bool:
