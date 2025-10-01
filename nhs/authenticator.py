@@ -24,7 +24,7 @@ class Authenticator:
 
         # vtr='["P0.Cp.Cd", "P0.Cp.Ck", "P0.Cm"]'
 
-    def get_authorization_url(self, state, vtr='["P5.Cp.Cd"]'):
+    def get_authorization_url(self, state, vtr: str):
         claims_request = ClaimsRequest(
             id_token=Claims(email={"essential": None}, phone_number=None),
             userinfo=Claims(

@@ -39,7 +39,7 @@ class NHSLoginService:
         :return: A URL to redirect to NHS Login auth flow.
         """
         state = self.__create_state(app_name, app_internal_id)
-        url = auth_nhs.get_authorization_url(state=state)
+        url = auth_nhs.get_authorization_url(state=state, vtr=config.nhs_vectors)
         return url
 
     @staticmethod
