@@ -35,7 +35,7 @@ async def create_daily_target(
     return created_daily_target
 
 
-@router.get("/", response_model=list[DailyTargetResponseSchema], status_code=200)
+@router.get("", response_model=list[DailyTargetResponseSchema], status_code=200)
 async def get_user_daily_targets_list(  # noqa: PLR0913
     user_data: Annotated[dict, Depends(get_authenticated_user_data)],
     daily_target_crud: Annotated[UserDailyTargetCRUD, Depends()],

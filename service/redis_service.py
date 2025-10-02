@@ -88,19 +88,13 @@ class RedisService:
     @classmethod
     def is_available(cls) -> bool:
         """
-        Check if the Redis client is connected and available.
+        Check if the Redis client is available.
 
         Returns:
-            bool: True if Redis client responds to ping, False otherwise.
+            bool: True if Redis client is initialized, False otherwise.
         """
         client = cls.get_client()
-        if not client:
-            return False
-        try:
-            client.ping()
-            return True
-        except Exception:
-            return False
+        return client is not None
 
     @classmethod
     def set(cls, key: str, value: Any, ttl: int | None = DEFAULT_AUTH_TTL) -> bool:
@@ -171,13 +165,16 @@ class RedisService:
             return False
 
     @classmethod
-    def set_auth_cache(cls, token_hash: str, user_id: str, ttl: int = DEFAULT_AUTH_TTL) -> bool:
+    def set_auth_cache(
+        cls, token_hash: str, user_id: str, ttl: int = DEFAULT_AUTH_TTL, valid: bool = True
+    ) -> bool:
         """
         Store authentication data in the cache using a hashed token as the key.
 
         Args:
             token_hash (str): The hashed authentication token.
             user_id (str): The identifier of the user associated with the token.
+            valid (bool, optional): Whether the token should be valid (True) or not (False).
             ttl (int, optional): Time-to-live in seconds for the cache entry.
                 Defaults to DEFAULT_AUTH_TTL.
 
@@ -185,7 +182,7 @@ class RedisService:
             bool: True if the data was successfully cached, False otherwise.
         """
         key = f"{token_hash}"
-        cache_data = {"user_id": user_id}
+        cache_data = {"user_id": user_id, "valid": valid}
         return cls.set(key, cache_data, ttl)
 
     @classmethod

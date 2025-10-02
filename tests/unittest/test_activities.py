@@ -7,6 +7,8 @@ import pytest
 from service.activity_service import load_activity_data
 from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
 
+current_timestamp = int(datetime.now().timestamp())
+
 
 @pytest.fixture
 def add_activity(client, authenticated_user, db_session):
@@ -38,7 +40,7 @@ def test_create_activities(client, authenticated_user, db_session):
         ),
     ):
         activity_payload = {
-            "date": 1714637586,
+            "date": current_timestamp,
             "user_postcode": "HD81",
             "user_age_range": "23-39",
             "rewards": [{"earned": 63, "slug": "high_five"}],
@@ -53,11 +55,11 @@ def test_create_activities(client, authenticated_user, db_session):
 
         assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
-        assert created_data["date"] == 1714637586  # noqa: PLR2004
+        assert created_data["date"] == current_timestamp
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args  # noqa: RUF059
+        args, kwargs = mock_add_task.call_args
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
@@ -71,7 +73,7 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
         ),
     ):
         activity_payload = {
-            "date": 1714637586,
+            "date": current_timestamp,
             "user_postcode": "HD81",
             "user_age_range": "23-39",
             "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
@@ -85,11 +87,11 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
 
         assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
-        assert created_data["date"] == 1714637586  # noqa: PLR2004
+        assert created_data["date"] == current_timestamp
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args  # noqa: RUF059
+        args, kwargs = mock_add_task.call_args
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
