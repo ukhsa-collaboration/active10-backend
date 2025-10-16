@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from fastapi import Depends
@@ -13,6 +12,8 @@ from nhs.authenticator import Authenticator
 from nhs.pds import PDSClient
 from schemas.user import NHSUser
 from utils.base_config import config
+
+import json
 
 auth_nhs = Authenticator(
     config.nhs_login_client_id,
@@ -78,7 +79,7 @@ class NHSLoginService:
 
         parsed = json.loads(user_info)
         print(json.dumps(parsed, indent=4))
-
+        
         user = User(
             unique_id=user_info["sub"],
             nhs_number=user_info["nhs_number"],
