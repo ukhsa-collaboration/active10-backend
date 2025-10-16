@@ -19,24 +19,16 @@ async def save_activity(
     activity_payload: UserActivityRequestSchema,
     user_data: Annotated[dict, Depends(get_authenticated_user_data)],
 ):
-    background_task.add_task(
-        load_activities_data_in_sns, activity_payload, user_data["user_id"]
-    )
+    background_task.add_task(load_activities_data_in_sns, activity_payload, user_data["user_id"])
     return {"message": "Success"}
 
 
 @router.get("", response_model=list[ActivityResponseSchema], status_code=200)
 async def list_activities(
     user_data: Annotated[dict, Depends(get_authenticated_user_data)],
-    date: int | None = Query(
-        None, gt=0, description="Filter by exact date (UNIX timestamp)"
-    ),
-    start_date: int | None = Query(
-        None, gt=0, description="Filter by start date (UNIX timestamp)"
-    ),
-    end_date: int | None = Query(
-        None, gt=0, description="Filter by end date (UNIX timestamp)"
-    ),
+    date: int | None = Query(None, gt=0, description="Filter by exact date (UNIX timestamp)"),
+    start_date: int | None = Query(None, gt=0, description="Filter by start date (UNIX timestamp)"),
+    end_date: int | None = Query(None, gt=0, description="Filter by end date (UNIX timestamp)"),
 ):
     if date and (start_date or end_date):
         raise HTTPException(
@@ -59,15 +51,11 @@ async def list_activities(
         unix_one_year = 31536000
 
         if end_date - start_date > unix_one_year:
-            raise HTTPException(
-                status_code=400, detail="Date range cannot be greater than 1 year"
-            )
+            raise HTTPException(status_code=400, detail="Date range cannot be greater than 1 year")
 
     if not date and not start_date and not end_date:
         start_date = int(
-            (
-                datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)
-            ).timestamp()  # noqa: UP017 Not supported in Python 3.10
+            (datetime.now(timezone.utc).replace(tzinfo=None) - relativedelta(years=1)).timestamp()  # noqa: UP017 Not supported in Python 3.10
         )
 
     filters = {
@@ -80,9 +68,7 @@ async def list_activities(
         if v is not None
     }
 
-    activities = get_activities_by_filters(
-        user_id=user_data["user_id"], filters=filters
-    )
+    activities = get_activities_by_filters(user_id=user_data["user_id"], filters=filters)
 
     if not activities:
         raise HTTPException(status_code=404, detail="Data not found")
