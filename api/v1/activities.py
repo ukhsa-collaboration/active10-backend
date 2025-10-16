@@ -3,25 +3,24 @@ from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
-from crud.activities_crud import create_activity, get_activities_by_filters
+from crud.activities_crud import get_activities_by_filters
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
-from service.activity_service import load_activity_data
+from service.activity_service import load_activities_data_in_sns
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
 
-@router.post("", status_code=201, response_model=ActivityResponseSchema)
+@router.post("", status_code=201, response_class=JSONResponse)
 async def save_activity(
     background_task: BackgroundTasks,
     activity_payload: UserActivityRequestSchema,
     user_data: Annotated[dict, Depends(get_authenticated_user_data)],
 ):
-    background_task.add_task(load_activity_data, activity_payload, user_data["user_id"])
-    activity = create_activity(activity_payload, user_id=user_data["user_id"])
-
-    return activity
+    background_task.add_task(load_activities_data_in_sns, activity_payload, user_data["user_id"])
+    return {"message": "Success"}
 
 
 @router.get("", response_model=list[ActivityResponseSchema], status_code=200)
