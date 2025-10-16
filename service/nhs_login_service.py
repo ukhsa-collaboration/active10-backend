@@ -13,6 +13,8 @@ from nhs.pds import PDSClient
 from schemas.user import NHSUser
 from utils.base_config import config
 
+import json
+
 auth_nhs = Authenticator(
     config.nhs_login_client_id,
     config.nhs_login_authority_url,
@@ -75,6 +77,9 @@ class NHSLoginService:
         if not user_info:
             raise ValueError("Failed to retrieve user information from NHS Login.")
 
+        parsed = json.loads(user_info)
+        print(json.dumps(parsed, indent=4))
+        
         user = User(
             unique_id=user_info["sub"],
             nhs_number=user_info["nhs_number"],
