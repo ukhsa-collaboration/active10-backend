@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 
 from auth.auth_bearer import get_authenticated_user_data
-from crud.activities_crud import create_activity, get_activities_by_filters
+from crud.activities_crud import get_activities_by_filters
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activities_data_in_sns
 
@@ -87,5 +87,4 @@ async def list_activities(
     if not activities:
         raise HTTPException(status_code=404, detail="Data not found")
 
-    return activities
     return activities
