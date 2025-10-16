@@ -59,7 +59,7 @@ def test_create_activities(client, authenticated_user, db_session):
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args
+        args, _ = mock_add_task.call_args
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
@@ -91,7 +91,7 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
         assert created_data["user_postcode"] == "HD81"
 
         mock_add_task.assert_called_once()
-        args, kwargs = mock_add_task.call_args
+        args, _ = mock_add_task.call_args
         assert str(args[2]) == str(user_uuid_pk)
         assert args[0] == load_activity_data
 
