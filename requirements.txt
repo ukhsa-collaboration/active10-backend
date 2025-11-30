@@ -115,3 +115,4 @@ watchfiles==0.24.0
 websocket-client==1.8.0
 websockets==15.0.1
 wsproto==1.2.0
+werkzeug>=3.1.4 # not directly required, pinned by Snyk to avoid a vulnerability
