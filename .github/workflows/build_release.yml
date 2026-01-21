@@ -52,7 +52,6 @@ jobs:
       app_name: ${{ vars.APP_NAME }}
       service_identifier: ${{ vars.ECR_NAMESPACE }}
       aws_region: ${{ vars.AWS_REGION }}
-      runner_labels: '["ohid-runners"]'
       run_unit_tests: ${{ vars.RUN_UNIT_TESTS == 'true' }}
       unit_test_command: sudo apt-get update && sudo apt-get -y install make && make unit-tests
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
