@@ -1,10 +1,42 @@
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-active10}
+      POSTGRES_USER: ${DB_USER:-active10}
+      POSTGRES_PASSWORD: ${DB_PASS:-active10}
+    ports:
+      - "5433:5432"
+    networks:
+      - proxy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8.0-alpine
+    command: redis-server --appendonly yes
+    networks:
+      - proxy
+    ports:
+      - "6379:6379"
+
   app:
     build: .
-    ports:
-      - "8000:8000"
-    env_file: .env
+    command: "./entrypoint.sh"
     environment:
+      APP_URI: ${APP_URI:-http://localhost:8000}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-local-secret}
+      GOJAUNTLY_KEY_ID: ${GOJAUNTLY_KEY_ID:-dummy}
+      GOJAUNTLY_PRIVATE_KEY: ${GOJAUNTLY_PRIVATE_KEY}
+      GOJAUNTLY_ISSUER_ID: ${GOJAUNTLY_ISSUER_ID:-dummy}
+      NHS_API_KEY: ${NHS_API_KEY:-dummy}
+      NHS_API_URL: ${NHS_API_URL:-http://localhost}
+      NHS_LOGIN_AUTHORITY_URL: ${NHS_LOGIN_AUTHORITY_URL:-https://auth.sandpit.signin.nhs.uk}
+      NHS_LOGIN_CALLBACK_URL: ${NHS_LOGIN_CALLBACK_URL:-https://active10.localhost}
+      NHS_LOGIN_CLIENT_ID: ${NHS_LOGIN_CLIENT_ID:-dummy}
+      NHS_LOGIN_SCOPES: ${NHS_LOGIN_SCOPES:-dummy}
+      NHS_PDS_JWT_PRIVATE_KEY: ${NHS_PDS_JWT_PRIVATE_KEY:-dummy}
+      SENDGRID_WEBHOOK_PUBLIC_KEY: ${SENDGRID_WEBHOOK_PUBLIC_KEY:-dummy}
       AWS_SQS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/aw-active10-local-sqs-active10.fifo"
       AWS_SQS_ACTIVITIES_MIGRATIONS_QUEUE_URL: "http://sqs.eu-west-2.localhost.localstack:4566/000000000000/aw-active10-local-sqs-activities-migrations.fifo"
       AWS_SNS_ACTIVITY_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-sns-activity-topic"
@@ -15,42 +47,50 @@ services:
       AWS_REGION: "eu-west-2"
       AWS_ACCESS_KEY_ID: "dummy"
       AWS_SECRET_ACCESS_KEY: "dummy"
-    command: "./entrypoint.sh"
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-active10}
+      DB_USER: ${DB_USER:-active10}
+      DB_PASS: ${DB_PASS:-active10}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`active10.localhost`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+    networks:
+      - proxy
+    ports:
+      - "8000:8000"
     volumes:
       - .:/app
     depends_on:
       - db
       - redis
 
-  db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+  traefik:
+    image: "traefik:v3.5"
+    container_name: "traefik"
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.websecure.http.tls=true"
+    networks:
+      - proxy
     ports:
-      - "5433:5432"
+      - "80:80"
+      - "443:443"
+    security_opt:
+      - no-new-privileges:true
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:8.0-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-
-  localstack:
-    image: localstack/localstack:3.8.1
-    environment:
-      - SERVICES=sqs,sns
-      - AWS_DEFAULT_REGION=eu-west-2
-    ports:
-      - "4566:4566"
-    volumes:
-      - ./localstack_bootstrap:/etc/localstack/init/ready.d/
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
 volumes:
   postgres_data:
-  redis_data:
+
+networks:
+  proxy:
+    name: proxy
