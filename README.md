@@ -38,7 +38,7 @@ A FastAPI-based backend service for the Active10 mobile app, providing activity 
 
 2. **Start services:**
    ```bash
-   make docker-up
+   docker compose up
    ```
 
 3. **Access the application:**
