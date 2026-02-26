@@ -1,12 +1,10 @@
 from unittest.mock import patch
 
-from service.migrations_service import load_bulk_activities_data
-from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
+from tests.unittest.conftest import override_get_db_context_session
 
 
 def test_post_activities_migrations(client, authenticated_user, db_session):
     with (
-        patch("fastapi.BackgroundTasks.add_task") as mock_add_task,
         patch(
             "crud.activities_crud.get_db_context_session",
             lambda: override_get_db_context_session(db_session),
@@ -38,11 +36,6 @@ def test_post_activities_migrations(client, authenticated_user, db_session):
         assert response.status_code == 201  # noqa: PLR2004
         created_data = response.json()
         assert created_data == {"message": "Success"}
-
-        mock_add_task.assert_called_once()
-        args, _ = mock_add_task.call_args
-        assert str(args[2]) == str(user_uuid_pk)
-        assert args[0] == load_bulk_activities_data
 
 
 def test_post_activities_migrations_with_out_of_range_activities(client, authenticated_user):

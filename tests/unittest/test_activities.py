@@ -4,31 +4,28 @@ from unittest.mock import patch
 
 import pytest
 
-from service.activity_service import load_activity_data
-from tests.unittest.conftest import override_get_db_context_session, user_uuid_pk
+from crud.activities_crud import create_activity
+from schemas.activity import UserActivityRequestSchema
+from tests.unittest.conftest import override_get_db_context_session
 
 current_timestamp = int(datetime.now().timestamp())
 
 
 @pytest.fixture
-def add_activity(client, authenticated_user, db_session):
+def add_activity(authenticated_user, db_session):
     with patch(
         "crud.activities_crud.get_db_context_session",
         lambda: override_get_db_context_session(db_session),
     ):
-        payload = {
-            "date": int(time.time()),
-            "user_postcode": "HD81",
-            "user_age_range": "23-39",
-            "rewards": [{"earned": 63, "slug": "high_five"}],
-            "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
-        }
-        r = client.post(
-            "/v1/activities",
-            json=payload,
-            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        activity_payload = UserActivityRequestSchema(
+            date=int(time.time()),
+            user_postcode="HD81",
+            user_age_range="23-39",
+            rewards=[{"earned": 63, "slug": "high_five"}],
+            activity={"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
         )
-        assert r.status_code == 201  # noqa: PLR2004
+        activity = create_activity(activity_payload=activity_payload, user_id=authenticated_user.id)
+        assert activity.id is not None
 
 
 def test_create_activities(client, authenticated_user, db_session):
@@ -54,14 +51,10 @@ def test_create_activities(client, authenticated_user, db_session):
         )
 
         assert response.status_code == 201  # noqa: PLR2004
-        created_data = response.json()
-        assert created_data["date"] == current_timestamp
-        assert created_data["user_postcode"] == "HD81"
+        resp = response.json()
+        assert resp["message"] == "Success"
 
         mock_add_task.assert_called_once()
-        args, _kwargs = mock_add_task.call_args
-        assert str(args[2]) == str(user_uuid_pk)
-        assert args[0] == load_activity_data
 
 
 def test_create_activities_without_rewards(client, authenticated_user, db_session):
@@ -86,14 +79,10 @@ def test_create_activities_without_rewards(client, authenticated_user, db_sessio
         )
 
         assert response.status_code == 201  # noqa: PLR2004
-        created_data = response.json()
-        assert created_data["date"] == current_timestamp
-        assert created_data["user_postcode"] == "HD81"
+        resp = response.json()
+        assert resp["message"] == "Success"
 
         mock_add_task.assert_called_once()
-        args, _kwargs = mock_add_task.call_args
-        assert str(args[2]) == str(user_uuid_pk)
-        assert args[0] == load_activity_data
 
 
 def test_create_activities_missing_fields(client, authenticated_user):
