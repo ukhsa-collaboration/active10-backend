@@ -57,7 +57,7 @@ jobs:
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
       registry_account_id: "636728427214"
-      register_account_role_name: "active10-backend-ecr"
+      registry_account_role_name: "active10-backend-ecr"
       sign_release: true
       lint_dockerfile: false
       deploy_environments: >-
