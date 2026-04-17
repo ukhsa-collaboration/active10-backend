@@ -47,7 +47,7 @@ jobs:
       id-token: write
       actions: read
       pull-requests: write
-    uses: ukhsa-collaboration/devops-application-cicd/.github/workflows/container-image-build-python-aws-ecs.yml@3442143e1c39c1b5508f24f01c03c9304d5d53ff # v0.0.2
+    uses: ukhsa-collaboration/devops-application-cicd/.github/workflows/container-image-build-python-aws-ecs.yml@5816560d4e147ab976b64964103bd61d2e811042 # v0.0.3
     with:
       app_name: ${{ vars.APP_NAME }}
       service_identifier: ${{ vars.ECR_NAMESPACE }}
@@ -58,7 +58,7 @@ jobs:
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
       registry_account_id: "636728427214"
       aws_registry_role_name: "github-active-10-backend-ecr"
-      sign_release: true
+      sign_release: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       lint_dockerfile: false
       deploy_environments: >-
         [
