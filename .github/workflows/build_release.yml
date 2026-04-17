@@ -56,6 +56,7 @@ jobs:
       unit_test_command: sudo apt-get update && sudo apt-get -y install make && make unit-tests
       push_image: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       release_tag: ${{ needs.prepare-release-tag.outputs.release_tag }}
+      registry_account_id: "636728427214"
       sign_release: true
       lint_dockerfile: false
       deploy_environments: >-
