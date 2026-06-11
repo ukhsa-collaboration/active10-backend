@@ -1,9 +1,14 @@
+import base64
+import hashlib
+import secrets
 from datetime import datetime
+from typing import Annotated
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from pydantic import HttpUrl
 
-from auth.jwt_handler import sign_jwt
+from auth.jwt_handler import TOKEN_EXPIRY_30_DAY_AS_SEC, sign_jwt
 from crud.token_crud import TokenCRUD
 from crud.user_crud import UserCRUD
 from models import UserStatus
@@ -11,6 +16,7 @@ from models.user import User
 from nhs.authenticator import Authenticator
 from nhs.pds import PDSClient
 from schemas.user import NHSUser
+from service.redis_service import RedisService, get_redis_service
 from utils.base_config import config
 
 auth_nhs = Authenticator(
@@ -20,54 +26,92 @@ auth_nhs = Authenticator(
     config.nhs_login_callback_url,
 )
 
+REDIS_UNAVAILABLE_DETAIL = "Redis unavailable"
+
 
 class NHSLoginService:
     def __init__(
         self,
-        user_crud: UserCRUD = Depends(),  # noqa: B008
-        user_token_crud: TokenCRUD = Depends(),  # noqa: B008
+        user_crud: Annotated[UserCRUD, Depends()],
+        user_token_crud: Annotated[TokenCRUD, Depends()],
+        redis_service: Annotated[RedisService, Depends(get_redis_service)],
     ) -> None:
         self.userCRUD = user_crud
         self.token_crud = user_token_crud
+        self.redis_service = redis_service
         self.pds_client = PDSClient(config.nhs_api_key, config.nhs_api_url)
 
-    def get_nhs_login_url(self, app_name: str, app_internal_id: str) -> HttpUrl:
+    STATE_TTL_SECONDS = 600
+    AUTH_CODE_TTL_SECONDS = 600
+
+    def start_authorization(  # noqa: PLR0913
+        self,
+        response_type: str,
+        client_id: str,
+        redirect_uri: str,
+        code_challenge: str,
+        code_challenge_method: str,
+        client_state: str | None,
+        scope: str | None,
+    ) -> HttpUrl:
         """
-        Generate a URL for NHS login service with app name and app internal ID.
-        :param app_name: App name.
-        :param app_internal_id: App internal ID.
-        :return: A URL to redirect to NHS Login auth flow.
+        Start OAuth authorization with NHS Login and store PKCE data.
+
+        Returns NHS Login authorization URL.
         """
-        state = self.__create_state(app_name, app_internal_id)
+        if response_type != "code":
+            raise HTTPException(status_code=400, detail="Unsupported response_type")
+        if not code_challenge:
+            raise HTTPException(status_code=400, detail="Missing code_challenge")
+        if code_challenge_method not in {"S256"}:
+            raise HTTPException(status_code=400, detail="Unsupported code_challenge_method")
+        if not self.redis_service.is_available():
+            raise HTTPException(status_code=503, detail=REDIS_UNAVAILABLE_DETAIL)
+
+        state = secrets.token_urlsafe(32)
+        state_data = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code_challenge": code_challenge,
+            "code_challenge_method": code_challenge_method,
+            "client_state": client_state,
+            "scope": scope,
+        }
+
+        stored = self.redis_service.set_json(
+            self._state_key(state), state_data, ttl=self.STATE_TTL_SECONDS
+        )
+        if not stored:
+            raise HTTPException(status_code=500, detail="Failed to store OAuth state")
+
         url = auth_nhs.get_authorization_url(state=state, vtr=config.nhs_vectors)
         return url
 
-    @staticmethod
-    def __create_state(app_name: str, app_internal_id: str) -> str:
-        """
-        Create a state for NHS Login Service using the app name and app internal ID.
-
-        :param app_name: App name.
-        :param app_internal_id: App internal ID.
-        :return: A state string in the format "app_name_app_internal_id".
-        """
-        return f"{app_name}_{app_internal_id}"
-
     def process_callback(self, req_args: dict) -> str:
         """
-        Process callback from NHS Login Service.It stores the user information
-        in DB and return deeplink URL for mobile app.
+        Process callback from NHS Login Service, create local user, and issue auth code.
 
         :param req_args: The request arguments from the NHS login callback.
-        :return: A deeplink URL containing a signed JWT token.
+        :return: A redirect URL back to the client with auth code.
         """
 
         error = req_args.get("error")
-        if error:  # noqa: SIM102
-            # if access denied return no consent deeplink and force user
-            # to use app without NHS login
-            if error == "access_denied":
-                return f"{config.app_uri}nhs_noconsent"
+        state = req_args.get("state")
+        if not state:
+            raise HTTPException(status_code=400, detail="Missing state")
+        if not self.redis_service.is_available():
+            raise HTTPException(status_code=503, detail=REDIS_UNAVAILABLE_DETAIL)
+
+        state_data = self.redis_service.get_json(self._state_key(state))
+        if not state_data:
+            raise HTTPException(status_code=400, detail="Invalid or expired state")
+        redirect_uri = state_data["redirect_uri"]
+
+        if error:
+            self.redis_service.delete(self._state_key(state))
+            return self._build_redirect_url(
+                redirect_uri, {"error": error, "state": state_data.get("client_state")}
+            )
 
         # Extract logged-in user information from NHS
         user_info = self.get_user_info(req_args)
@@ -104,13 +148,67 @@ class NHSLoginService:
             # Insert the new user
             result = self.userCRUD.create_user(user)
 
-        # Generate and return new redirect URL for mobile app
-        generated_data = self.generate_redirect_url(result)
-        _ = self.token_crud.create_or_update_user_token(
-            user_id=result.id, token=generated_data.get("token")
+        auth_code = secrets.token_urlsafe(32)
+        code_data = {
+            "user_id": str(result.id),
+            "code_challenge": state_data["code_challenge"],
+            "code_challenge_method": state_data["code_challenge_method"],
+            "client_id": state_data["client_id"],
+            "redirect_uri": redirect_uri,
+        }
+        stored = self.redis_service.set_json(
+            self._code_key(auth_code), code_data, ttl=self.AUTH_CODE_TTL_SECONDS
+        )
+        if not stored:
+            raise HTTPException(status_code=500, detail="Failed to store authorization code")
+
+        self.redis_service.delete(self._state_key(state))
+
+        return self._build_redirect_url(
+            redirect_uri,
+            {"code": auth_code, "state": state_data.get("client_state")},
         )
 
-        return generated_data.get("redirect_url")
+    def exchange_code_for_token(
+        self,
+        code: str,
+        code_verifier: str,
+        client_id: str | None,
+        redirect_uri: str | None,
+    ) -> dict[str, object]:
+        if not self.redis_service.is_available():
+            raise HTTPException(status_code=503, detail=REDIS_UNAVAILABLE_DETAIL)
+
+        code_key = self._code_key(code)
+        code_data = self.redis_service.getdel_json(code_key)
+        if not code_data:
+            raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+        if client_id and client_id != code_data["client_id"]:
+            raise HTTPException(status_code=400, detail="Invalid client_id")
+        if redirect_uri and redirect_uri != code_data["redirect_uri"]:
+            raise HTTPException(status_code=400, detail="Invalid redirect_uri")
+
+        if not self._verify_pkce(
+            code_verifier,
+            code_data["code_challenge"],
+            code_data["code_challenge_method"],
+        ):
+            raise HTTPException(status_code=400, detail="Invalid code_verifier")
+
+        user = self.userCRUD.get_user_by_id(code_data["user_id"])
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        token = sign_jwt(str(user.id), extra_claims=self._user_claims(user))
+        _ = self.token_crud.create_or_update_user_token(user_id=user.id, token=token)
+
+        return {
+            "access_token": token,
+            "token_type": "Bearer",
+            "expires_in": TOKEN_EXPIRY_30_DAY_AS_SEC,
+            "user": self._serialize_user(user),
+        }
 
     def get_user_info(self, req_args: dict) -> NHSUser:
         """
@@ -130,14 +228,54 @@ class NHSLoginService:
         return user_info
 
     @staticmethod
-    def generate_redirect_url(user_info: User) -> dict[str, str]:
-        """
-        Generate a redirect URL for the user after successful login.
-        This URL is consumed by the mobile app.
+    def _state_key(state: str) -> str:
+        return f"oauth_state:{state}"
 
-        :param user_info: An NHSUser instance with user information.
-        :return: A dict of redirect URL containing a signed JWT token and token as string.
-        """
-        token = sign_jwt(str(user_info.id))
-        redirect_url = f"{config.app_uri}nhs_user_logged_in?token={token}"
-        return {"redirect_url": redirect_url, "token": token}
+    @staticmethod
+    def _code_key(code: str) -> str:
+        return f"oauth_code:{code}"
+
+    @staticmethod
+    def _build_redirect_url(base_url: str, params: dict[str, str | None]) -> str:
+        url_parts = urlsplit(base_url)
+        query = dict(parse_qsl(url_parts.query, keep_blank_values=True))
+        for key, value in params.items():
+            if value is not None:
+                query[key] = value
+        new_query = urlencode(query)
+        return urlunsplit(
+            (url_parts.scheme, url_parts.netloc, url_parts.path, new_query, url_parts.fragment)
+        )
+
+    @staticmethod
+    def _create_code_challenge(verifier: str) -> str:
+        digest = hashlib.sha256(verifier.encode("ascii")).digest()
+        return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+    def _verify_pkce(self, verifier: str, challenge: str, method: str) -> bool:
+        if method == "S256":
+            return self._create_code_challenge(verifier) == challenge
+        return False
+
+    @staticmethod
+    def _serialize_user(user: User) -> dict[str, object]:
+        return {
+            "id": str(user.id),
+            "unique_id": user.unique_id,
+            "nhs_number": user.nhs_number,
+            "first_name": user.first_name,
+            "email": user.email,
+            "date_of_birth": user.date_of_birth.isoformat() if user.date_of_birth else None,
+            "gender": user.gender,
+            "postcode": user.postcode,
+            "identity_level": user.identity_level,
+        }
+
+    @staticmethod
+    def _user_claims(user: User) -> dict[str, object]:
+        return {
+            "email": user.email,
+            "nhs_number": user.nhs_number,
+            "first_name": user.first_name,
+            "identity_level": user.identity_level,
+        }

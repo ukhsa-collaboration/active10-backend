@@ -10,7 +10,7 @@ from schemas.activity_level import ActivityLevelRequestSchema
 
 
 class UserActivityLevelCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
     def get_latest_by_user(self, user_id: UUID) -> UserActivityLevel | None:

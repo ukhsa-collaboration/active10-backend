@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from api.healthcheck import router as healthcheck
 from api.nhs_login import router as nhs_login
+from api.oauth import router as oauth
 from api.unsubscribe import router as unsubscribe
 from api.v1 import router as api_v1
 from api.v2 import router as api_v2
@@ -57,5 +58,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(api_v1.router)
 app.include_router(api_v2.router)
 app.include_router(nhs_login)
+app.include_router(oauth)
 app.include_router(healthcheck)
 app.include_router(unsubscribe)

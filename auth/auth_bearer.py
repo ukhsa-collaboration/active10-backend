@@ -16,7 +16,7 @@ security = HTTPBearer()
 def get_authenticated_user_data(
     token: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_crud: Annotated[UserCRUD, Depends()],
-    redis_service: RedisService = Depends(get_redis_service),  # noqa: B008
+    redis_service: RedisService = Depends(get_redis_service),
 ) -> dict[str, Any]:
     """
     Validate a JWT-based user token against cache and database.

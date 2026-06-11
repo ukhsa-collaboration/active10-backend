@@ -1,4 +1,5 @@
 import time
+from typing import Any
 
 import jwt
 from fastapi import HTTPException
@@ -10,8 +11,10 @@ JWT_ALGORITHM = "HS256"
 TOKEN_EXPIRY_30_DAY_AS_SEC = 2592000
 
 
-def sign_jwt(user_id: str) -> dict[str, str]:
+def sign_jwt(user_id: str, extra_claims: dict[str, Any] | None = None) -> str:
     payload = {"user_id": user_id, "exp": time.time() + TOKEN_EXPIRY_30_DAY_AS_SEC}
+    if extra_claims:
+        payload.update(extra_claims)
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     return token

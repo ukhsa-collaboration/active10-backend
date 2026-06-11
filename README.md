@@ -27,6 +27,7 @@ A FastAPI-based backend service for the Active10 mobile app, providing activity 
 - Python 3.11+
 - PostgreSQL 16+
 - Docker
+- Redis 6.2+
 
 ### Quick Start with Docker
 

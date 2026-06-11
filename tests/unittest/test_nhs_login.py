@@ -1,42 +1,64 @@
 from tests.unittest.conftest import unauthenticated_user, authenticated_user  # noqa
 
 
-def test_nhs_login_redirect(client):
-    response = client.get("/nhs_login/test_app/12345", follow_redirects=False)
+def test_authorize_redirect(client):
+    response = client.get(
+        "/authorize",
+        params={
+            "response_type": "code",
+            "client_id": "client_1",
+            "redirect_uri": "active10dev://oauth_callback",
+            "code_challenge": "challenge",
+            "code_challenge_method": "S256",
+            "state": "client_state",
+        },
+        follow_redirects=False,
+    )
 
     assert response.status_code == 307  # noqa: PLR2004
     assert "https://auth.aos.signin.nhs.uk/authorize?" in response.headers["location"]
 
 
-def test_nhs_login_missing_app_internal_id(client):
-    response = client.get("/nhs_login/test_app", follow_redirects=False)
+def test_authorize_missing_code_challenge(client):
+    response = client.get(
+        "/authorize",
+        params={
+            "response_type": "code",
+            "client_id": "client_1",
+            "redirect_uri": "active10dev://oauth_callback",
+            "code_challenge_method": "S256",
+        },
+        follow_redirects=False,
+    )
 
-    assert response.status_code == 404  # noqa: PLR2004
+    assert response.status_code == 422  # noqa: PLR2004
 
 
 def test_nhs_login_callback_success(client):
+    _ = client.get(
+        "/authorize",
+        params={
+            "response_type": "code",
+            "client_id": "client_1",
+            "redirect_uri": "active10dev://oauth_callback",
+            "code_challenge": "challenge",
+            "code_challenge_method": "S256",
+            "state": "client_state",
+        },
+        follow_redirects=False,
+    )
+
     response = client.get(
         "/nhs_login/callback",
-        params={"code": "123", "state": "test_app_12345"},
+        params={"code": "123", "state": "mock_state"},
         follow_redirects=False,
     )
 
     assert response.status_code == 307  # noqa: PLR2004
     assert (
         response.headers["location"]
-        == "active10dev://nhs_login_callback?code=123&state=test_app_12345"
+        == "active10dev://oauth_callback?code=mock_code&state=client_state"
     )
-
-
-def test_nhs_login_callback_missing_code(client):
-    response = client.get(
-        "/nhs_login/callback",
-        params={"state": "test_app_12345"},
-        follow_redirects=False,
-    )
-
-    assert response.status_code == 400  # noqa: PLR2004
-    assert response.json() == {"detail": "Missing code"}
 
 
 def test_nhs_login_callback_missing_state(client):
@@ -50,11 +72,39 @@ def test_nhs_login_callback_missing_state(client):
     assert response.json() == {"detail": "Missing state"}
 
 
-def test_nhs_login_callback_empty_query_params(client):
-    response = client.get("/nhs_login/callback", follow_redirects=False, params={})
+def test_token_exchange_success(client):
+    _ = client.get(
+        "/authorize",
+        params={
+            "response_type": "code",
+            "client_id": "client_1",
+            "redirect_uri": "active10dev://oauth_callback",
+            "code_challenge": "challenge",
+            "code_challenge_method": "S256",
+            "state": "client_state",
+        },
+        follow_redirects=False,
+    )
 
-    assert response.status_code == 400  # noqa: PLR2004
-    assert response.json() == {"detail": "Missing state and code"}
+    _ = client.get(
+        "/nhs_login/callback",
+        params={"code": "123", "state": "mock_state"},
+        follow_redirects=False,
+    )
+
+    response = client.post(
+        "/token",
+        data={
+            "grant_type": "authorization_code",
+            "code": "mock_code",
+            "code_verifier": "verifier",
+            "client_id": "client_1",
+            "redirect_uri": "active10dev://oauth_callback",
+        },
+    )
+
+    assert response.status_code == 200  # noqa: PLR2004
+    assert response.json()["access_token"] == "mock_jwt"
 
 
 def test_logout_user_without_token(client):

@@ -41,6 +41,7 @@ exclude = [
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "PL", "RUF"]
+ignore = ["B008"]
 preview = false
 
 # Ignore long lines in Django migration autogen files, etc.

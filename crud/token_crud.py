@@ -12,8 +12,8 @@ from utils.base_config import logger
 class TokenCRUD:
     def __init__(
         self,
-        db: Session = Depends(get_db_session),  # noqa: B008
-        redis_service: RedisService = Depends(get_redis_service),  # noqa: B008
+        db: Session = Depends(get_db_session),
+        redis_service: RedisService = Depends(get_redis_service),
     ) -> None:
         redis_client = redis_service.get_client()
         if redis_client is None:

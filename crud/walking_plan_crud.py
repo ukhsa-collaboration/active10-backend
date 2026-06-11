@@ -7,7 +7,7 @@ from schemas.walking_plan import WalkingPlanRequestSchema
 
 
 class UserWalkingPlanCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
     def create_walking_plan(self, walking_plan) -> UserWalkingPlan:

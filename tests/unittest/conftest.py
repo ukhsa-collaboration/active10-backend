@@ -1,5 +1,6 @@
 import time
 from contextlib import contextmanager
+from typing import ClassVar
 from uuid import uuid4
 
 import jwt
@@ -120,23 +121,77 @@ def db_session(db_engine):
 
 
 class MockNHSLoginService(NHSLoginService):
+    state_store: ClassVar[dict[str, dict]] = {}
+    code_store: ClassVar[dict[str, dict]] = {}
+
     def __init__(self):
-        super().__init__(UserCRUD())
+        self.userCRUD = UserCRUD()
+        self.token_crud = None
+        self.redis_service = None
+        self.pds_client = None
+
+    def start_authorization(  # noqa: PLR0913
+        self,
+        response_type: str,
+        client_id: str,
+        redirect_uri: str,
+        code_challenge: str,
+        code_challenge_method: str,
+        client_state: str | None,
+        scope: str | None,
+    ) -> str:
+        state = "mock_state"
+        self.__class__.state_store[state] = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code_challenge": code_challenge,
+            "code_challenge_method": code_challenge_method,
+            "client_state": client_state,
+            "scope": scope,
+        }
+        return f"https://auth.aos.signin.nhs.uk/authorize?state={state}"
 
     def process_callback(self, req_args: dict) -> str:
-        code = req_args.get("code")
         state = req_args.get("state")
-
-        if not state and not code:
-            raise HTTPException(status_code=400, detail="Missing state and code")
-
-        if not code:
-            raise HTTPException(status_code=400, detail="Missing code")
-
         if not state:
             raise HTTPException(status_code=400, detail="Missing state")
 
-        return f"active10dev://nhs_login_callback?code={code}&state={state}"
+        state_data = self.__class__.state_store.get(state)
+        if not state_data:
+            raise HTTPException(status_code=400, detail="Invalid or expired state")
+
+        if req_args.get("error"):
+            return (
+                f"{state_data['redirect_uri']}?error={req_args.get('error')}"
+                f"&state={state_data.get('client_state')}"
+            )
+
+        code = "mock_code"
+        self.__class__.code_store[code] = {
+            "user_id": str(user_uuid_pk),
+            "code_challenge": state_data["code_challenge"],
+            "code_challenge_method": state_data["code_challenge_method"],
+            "client_id": state_data["client_id"],
+            "redirect_uri": state_data["redirect_uri"],
+        }
+        return f"{state_data['redirect_uri']}?code={code}&state={state_data.get('client_state')}"
+
+    def exchange_code_for_token(
+        self,
+        code: str,
+        code_verifier: str,
+        client_id: str | None,
+        redirect_uri: str | None,
+    ) -> dict:
+        if code not in self.__class__.code_store:
+            raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+        return {
+            "access_token": "mock_jwt",
+            "token_type": "Bearer",
+            "expires_in": 300,
+            "user": {"id": str(user_uuid_pk), "email": "default@example.com"},
+        }
 
 
 @pytest.fixture(scope="module")

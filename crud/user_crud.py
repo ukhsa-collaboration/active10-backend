@@ -6,7 +6,7 @@ from models.user import User
 
 
 class UserCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
     def create_user(self, user: User) -> User:

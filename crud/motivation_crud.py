@@ -10,7 +10,7 @@ from schemas.motivation import CreateUpdateUserMotivationRequest
 
 
 class UserMotivationCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
     def get_by_id(self, motivation_id: UUID) -> UserMotivation | None:

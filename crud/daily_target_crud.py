@@ -7,7 +7,7 @@ from schemas.daily_target import DailyTargetRequestSchema
 
 
 class UserDailyTargetCRUD:
-    def __init__(self, db: Session = Depends(get_db_session)) -> None:  # noqa: B008
+    def __init__(self, db: Session = Depends(get_db_session)) -> None:
         self.db = db
 
     def create_daily_target(self, daily_target) -> UserDailyTarget:

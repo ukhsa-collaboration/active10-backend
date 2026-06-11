@@ -1,4 +1,5 @@
 import hashlib
+import json
 import pickle
 from typing import Any
 
@@ -124,6 +125,31 @@ class RedisService:
             return False
 
     @classmethod
+    def set_json(cls, key: str, value: Any, ttl: int | None = DEFAULT_AUTH_TTL) -> bool:
+        """
+        Set a key-value pair in Redis using JSON serialization.
+
+        Args:
+            key (str): The Redis key to set.
+            value (Any): JSON-serializable object to store.
+            ttl (int, optional): Time-to-live in seconds. If None, no expiry.
+
+        Returns:
+            bool: True if operation succeeded, False on failure.
+        """
+        if not cls.is_available():
+            return False
+        try:
+            serialized_value = json.dumps(value).encode("utf-8")
+            if ttl:
+                return cls._client.setex(key, ttl, serialized_value)
+            else:
+                return cls._client.set(key, serialized_value)
+        except Exception as e:
+            logger.error(f"Error setting JSON Redis key {key}: {e}")
+            return False
+
+    @classmethod
     def get(cls, key: str) -> Any | None:
         """
         Retrieve and deserialize a value stored by key from Redis.
@@ -143,6 +169,72 @@ class RedisService:
             return pickle.loads(serialized_value)
         except Exception as e:
             logger.error(f"Error getting Redis key {key}: {e}")
+            return None
+
+    @classmethod
+    def get_json(cls, key: str) -> Any | None:
+        """
+        Retrieve and deserialize a JSON value stored by key from Redis.
+
+        Args:
+            key (str): The Redis key to fetch.
+
+        Returns:
+            Any: The deserialized JSON value, or None if key does not exist or on error.
+        """
+        if not cls.is_available():
+            return None
+        try:
+            serialized_value = cls._client.get(key)
+            if serialized_value is None:
+                return None
+            return json.loads(serialized_value.decode("utf-8"))
+        except Exception as e:
+            logger.error(f"Error getting JSON Redis key {key}: {e}")
+            return None
+
+    @classmethod
+    def getdel(cls, key: str) -> Any | None:
+        """
+        Atomically get and delete a key from Redis.
+
+        Args:
+            key (str): The Redis key to fetch and delete.
+
+        Returns:
+            Any: The deserialized value, or None if key does not exist or on error.
+        """
+        if not cls.is_available():
+            return None
+        try:
+            serialized_value = cls._client.getdel(key)
+            if serialized_value is None:
+                return None
+            return pickle.loads(serialized_value)
+        except Exception as e:
+            logger.error(f"Error getdel Redis key {key}: {e}")
+            return None
+
+    @classmethod
+    def getdel_json(cls, key: str) -> Any | None:
+        """
+        Atomically get and delete a JSON key from Redis.
+
+        Args:
+            key (str): The Redis key to fetch and delete.
+
+        Returns:
+            Any: The deserialized JSON value, or None if key does not exist or on error.
+        """
+        if not cls.is_available():
+            return None
+        try:
+            serialized_value = cls._client.getdel(key)
+            if serialized_value is None:
+                return None
+            return json.loads(serialized_value.decode("utf-8"))
+        except Exception as e:
+            logger.error(f"Error getdel JSON Redis key {key}: {e}")
             return None
 
     @classmethod
