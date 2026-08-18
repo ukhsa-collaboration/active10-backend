@@ -10,13 +10,21 @@ from opentelemetry.trace import StatusCode
 from main import _drop_query_string
 from models import User
 from service.open_telemetry_service import (
+    ACTIVITIES_FLOW,
     AUTH_FLOW_KEY,
     AUTH_STEP_KEY,
+    FLOW_KEY,
+    MIGRATIONS_FLOW,
     NHS_LOGIN_FLOW,
+    STEP_ACTIVITY_PUBLISH,
     STEP_JWT_VALIDATION,
+    STEP_KEY,
+    STEP_MIGRATION_PUBLISH,
     STEP_TOKEN_EXCHANGE,
     _strip_query,
     auth_step_span,
+    message_trace_attributes,
+    step_span,
     tracer,
 )
 
@@ -52,6 +60,28 @@ def test_auth_step_span_error_status(span_exporter) -> None:
     assert "foo" not in str(span.attributes)
 
 
+def test_step_span_attributes(span_exporter) -> None:
+    with step_span(STEP_MIGRATION_PUBLISH, MIGRATIONS_FLOW) as span:
+        assert span.is_recording()
+
+    finished = span_exporter.get_finished_spans()[-1]
+    assert finished.name == STEP_MIGRATION_PUBLISH
+    assert finished.attributes[STEP_KEY] == STEP_MIGRATION_PUBLISH
+    assert finished.attributes[FLOW_KEY] == MIGRATIONS_FLOW
+
+
+def test_step_span_error_status(span_exporter) -> None:
+    with pytest.raises(ValueError), step_span(STEP_ACTIVITY_PUBLISH, ACTIVITIES_FLOW):
+        raise ValueError("boom")
+
+    span = span_exporter.get_finished_spans()[-1]
+    assert span.status.status_code == StatusCode.ERROR
+    assert span.status.description == "ValueError"
+    # only the exception type should end up on the span, not the message
+    assert not span.events
+    assert "boom" not in str(span.attributes)
+
+
 def test_query_string_redaction(span_exporter) -> None:
     scope = {"path": "/nhs_login/callback"}
     with tracer.start_as_current_span("server-span") as span:
@@ -77,6 +107,16 @@ def test_outbound_url_redaction(span_exporter) -> None:
     recorded = span_exporter.get_finished_spans()[-1]
     assert recorded.attributes["http.url"] == "https://auth.example.nhs.uk/token"
     assert recorded.attributes["url.full"] == "https://auth.example.nhs.uk/token"
+
+
+def test_message_trace_attributes(span_exporter) -> None:
+    with tracer.start_as_current_span("message-producer"):
+        attributes = message_trace_attributes()
+
+    assert len(attributes) == 1
+    attribute = next(iter(attributes.values()))
+    assert attribute["DataType"] == "String"
+    assert "Root=" in attribute["StringValue"]
 
 
 def test_jwt_validation_span(client: TestClient, authenticated_user: User, span_exporter) -> None:

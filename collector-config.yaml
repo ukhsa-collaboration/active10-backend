@@ -19,6 +19,8 @@ exporters:
       - auth.flow
       - auth.cache_hit
       - auth.user_exists
+      - app.flow
+      - app.step
 
 service:
   pipelines:

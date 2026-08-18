@@ -54,6 +54,7 @@ opentelemetry-sdk-extension-aws>=2.1
 opentelemetry-propagator-aws-xray>=1.0
 opentelemetry-instrumentation-requests>=0.64b0
 opentelemetry-instrumentation-redis>=0.64b0
+opentelemetry-instrumentation-sqlalchemy==0.64b0
 orjson==3.11.3
 outcome==1.3.0.post0
 packaging==25.0

@@ -1,6 +1,11 @@
 from schemas.migrations_schema import ActivitiesMigrationsRequestSchema
 from service.aws_sns_service import send_message_to_sns_topic
 from service.aws_sqs_service import send_message_to_sqs_queue
+from service.open_telemetry_service import (
+    MIGRATIONS_FLOW,
+    STEP_MIGRATION_PUBLISH,
+    step_span,
+)
 from utils.base_config import config as settings
 
 
@@ -35,4 +40,6 @@ def publish_bulk_activities_data_to_sns(
     activities_migration_payload["user_id"] = str(user_id)
     target_sns_topic_arn = settings.aws_sns_activities_migration_topic_arn
 
-    send_message_to_sns_topic(topic=target_sns_topic_arn, record=activities_migration_payload)
+    with step_span(STEP_MIGRATION_PUBLISH, MIGRATIONS_FLOW) as span:
+        span.set_attribute("migration.activity_count", len(data.activities))
+        send_message_to_sns_topic(topic=target_sns_topic_arn, record=activities_migration_payload)
