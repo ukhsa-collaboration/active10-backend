@@ -75,7 +75,7 @@ pydantic-settings==2.10.1
 pydantic_core==2.33.2
 Pygments==2.19.2
 pyjwkest==1.4.2
-PyJWT==2.10.1
+PyJWT==2.13.0
 pynose==1.5.5
 pyotp==2.9.0
 PySocks==1.7.1
