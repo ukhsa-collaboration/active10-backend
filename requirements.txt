@@ -27,7 +27,7 @@ fastapi==0.116.1
 fastapi-cli==0.0.11
 fastapi-cprofile==0.0.2
 fasteners==0.20
-filelock==3.19.1
+filelock==3.20.3
 future==1.0.0
 greenlet==3.2.4
 h11==0.16.0
