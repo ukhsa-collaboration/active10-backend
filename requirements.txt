@@ -87,7 +87,7 @@ pytest-ordering==0.6
 pytest-rerunfailures==16.0.1
 pytest-xdist==3.8.0
 python-dateutil==2.9.0.post0
-python-dotenv==1.1.1
+python-dotenv==1.2.2
 python-http-client==3.3.7
 python-multipart==0.0.20
 python-xlib==0.33
