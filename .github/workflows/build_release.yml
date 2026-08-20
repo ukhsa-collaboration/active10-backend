@@ -30,7 +30,7 @@ jobs:
       - name: Bump tag
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: bump
-        uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@52f31c5544ee5204dd0e169728c595b6a402205f
+        uses: ukhsa-collaboration/devops-github-actions/.github/actions/github-bump-tag@ea0aa2a80fccfb2a19e1c71443a0a60b85f618a8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
