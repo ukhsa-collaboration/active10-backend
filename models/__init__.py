@@ -6,3 +6,4 @@ from .daily_target import *  # noqa
 from .email_notification import *  # noqa
 from .motivation import *  # noqa
 from .activity_level import *  # noqa
+from .background_job import *  # noqa
