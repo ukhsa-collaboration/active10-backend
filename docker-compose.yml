@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
     environment:
       POSTGRES_DB: ${DB_NAME:-active10}
       POSTGRES_USER: ${DB_USER:-active10}
@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:8.0-alpine
+    image: redis:8.0-alpine@sha256:5f61955be8ab2ccee9372b84ae4d4da2e2b156f87281e3f218544055e7ee04d4
     command: redis-server --appendonly yes
     networks:
       - proxy
@@ -69,7 +69,7 @@ services:
       - redis
 
   traefik:
-    image: "traefik:v3.5"
+    image: "traefik:v3.5@sha256:16acb89c6db341182970d6fdafece31303b0a380a8ed7aa51682e225229bf1d2"
     container_name: "traefik"
     restart: unless-stopped
     command:
@@ -89,7 +89,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   adot-collector:
-    image: public.ecr.aws/aws-observability/aws-otel-collector:v0.49.0
+    image: public.ecr.aws/aws-observability/aws-otel-collector:v0.49.0@sha256:d2bdfff2c377c3d71d78bd5d9ce9862fd535b12134a5739d87a07801297cf9fd
     container_name: adot-collector
     command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
