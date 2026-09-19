@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS base
+FROM python:3.10-slim@sha256:e2b2fff481bcd22a4b0159870402a8afb1de53e2c4bfcd62a78dea2abb4e3666 AS base
 
 ARG APP_VERSION
 ARG APP_CODE_COMMIT_HASH
