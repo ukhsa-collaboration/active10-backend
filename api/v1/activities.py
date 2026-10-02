@@ -9,6 +9,7 @@ from auth.auth_bearer import get_authenticated_user_data
 from crud.activities_crud import get_activities_by_filters
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activities_data_in_sns
+from service.open_telemetry_service import ACTIVITIES_FLOW, STEP_ACTIVITY_QUERY, step_span
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
@@ -68,7 +69,10 @@ def list_activities(
         if v is not None
     }
 
-    activities = get_activities_by_filters(user_id=user_data["user_id"], filters=filters)
+    with step_span(STEP_ACTIVITY_QUERY, ACTIVITIES_FLOW) as span:
+        span.set_attribute("activity.filters", sorted(filters))
+        activities = get_activities_by_filters(user_id=user_data["user_id"], filters=filters)
+        span.set_attribute("activity.result_count", len(activities))
 
     if not activities:
         raise HTTPException(status_code=404, detail="Data not found")

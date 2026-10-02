@@ -47,7 +47,7 @@ A FastAPI-based backend service for the Active10 mobile app, providing activity 
 
 ## OpenTelemetry Tracing (AWS X-Ray)
 
-The app traces the NHS Login flow with OpenTelemetry and ships spans over OTLP to an ADOT collector, which forwards them on to AWS X-Ray. The collector runs as its own service, `adot-collector`, in `docker-compose.yml`, so it starts automatically with the rest of the stack.
+The app uses OpenTelemetry to trace incoming requests, database and Redis calls, outbound HTTP, and AWS messages. Spans are sent over OTLP to an ADOT collector, which forwards them to AWS X-Ray. The collector runs as its own service, `adot-collector`, in `docker-compose.yml`, so it starts automatically with the rest of the stack.
 
 ### Prerequisites
 
@@ -75,7 +75,9 @@ export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 
 then start the stack with `docker compose up --build`.
 
-Run the NHS Login flow, or any authenticated request, to generate a trace, then open X-Ray traces in CloudWatch and look for the `active10-auth` service. To filter by auth step use `annotation.auth_step = "nhs-login-token-exchange"`. X-Ray annotation keys can't contain dots, so the `auth.step` attribute on the span becomes `auth_step` once it's indexed.
+Run any authenticated request to generate a trace, then open X-Ray traces in CloudWatch and look for the `active10-auth` service. The shared application flow and step attributes are indexed, so traces can be filtered in X-Ray with `annotation[app.flow]` and `annotation[app.step]`.
+
+Trace context is included in SNS and SQS message attributes. Consumers should extract that context before creating their processing span so the producer and consumer appear in the same trace.
 
 If no traces show up, check that the collector container is running and on the `proxy` network, and that the region and IAM permissions are right. The export errors logged while running `make unit-tests` are expected, there's no collector in that environment and the tests don't need one.
 
