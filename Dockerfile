@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS base
+FROM python:3.15.2-slim AS base
 
 ARG APP_VERSION
 ARG APP_CODE_COMMIT_HASH
