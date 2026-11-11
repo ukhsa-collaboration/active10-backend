@@ -19,7 +19,7 @@ from service.open_telemetry_service import (
     STEP_USERINFO,
     auth_step_span,
 )
-from utils.base_config import config
+from utils.base_config import config, logger
 
 auth_nhs = Authenticator(
     config.nhs_login_client_id,
@@ -83,6 +83,11 @@ class NHSLoginService:
 
         if not user_info:
             raise ValueError("Failed to retrieve user information from NHS Login.")
+
+        # A user who has signed in through Keycloak must not get a legacy token again.
+        if self.userCRUD.is_keycloak_linked(user_info["sub"], user_info["nhs_number"]):
+            logger.info("Legacy NHS Login refused for a user already linked to Keycloak")
+            return f"{config.app_uri}nhs_keycloak_migrated"
 
         user = User(
             unique_id=user_info["sub"],
