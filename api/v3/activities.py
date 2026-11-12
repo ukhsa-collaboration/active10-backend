@@ -4,7 +4,6 @@ from typing import Annotated
 from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from fastapi.responses import JSONResponse
-from utils.date_filters import validate_date_filters
 
 from auth.v3.dependencies import get_current_user
 from crud.activities_crud import get_activities_by_filters
@@ -12,6 +11,7 @@ from models.user import User
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activities_data_in_sns
 from utils.custom_exceptions import CustomHTTPException, ErrorCode
+from utils.date_filters import validate_date_filters
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
