@@ -59,9 +59,7 @@ class KeycloakUserCRUD(UserCRUD):
         try:
             with self.db.begin_nested():
                 self.db.delete(user)
-                self.db.add(
-                    DeleteAudit(user_id=user_id, delete_reason=reason)
-                )
+                self.db.add(DeleteAudit(user_id=user_id, delete_reason=reason))
             self.db.commit()
         except SQLAlchemyError as e:
             logger.error(f"Failed to delete user {user_id}: {type(e).__name__}")
