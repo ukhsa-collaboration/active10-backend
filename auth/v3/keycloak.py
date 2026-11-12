@@ -16,6 +16,7 @@ STEP_JWKS_FETCH = "keycloak-jwks-fetch"
 STEP_TOKEN_VALIDATION = "keycloak-token-validation"
 STEP_USERINFO = "keycloak-userinfo"
 STEP_REVOKE = "keycloak-revoke"
+REVOKE_FAILED_MESSAGE = "Unable to revoke refresh token"
 
 
 class TokenValidationError(Exception):
@@ -184,7 +185,7 @@ def revoke_refresh_token(refresh_token: str) -> None:
             )
         except httpx.HTTPError as e:
             logger.error(f"Unable to reach Keycloak revoke endpoint: {e}")
-            raise KeycloakUnavailableError("Unable to revoke refresh token") from e
+            raise KeycloakUnavailableError(REVOKE_FAILED_MESSAGE) from e
 
         error = _reported_error(response)
         if error == "invalid_token":
@@ -193,13 +194,13 @@ def revoke_refresh_token(refresh_token: str) -> None:
             logger.error(
                 f"Keycloak revoke endpoint reported {error} with status {response.status_code}"
             )
-            raise KeycloakUnavailableError("Unable to revoke refresh token")
+            raise KeycloakUnavailableError(REVOKE_FAILED_MESSAGE)
 
         try:
             response.raise_for_status()
         except httpx.HTTPError as e:
             logger.error(f"Unexpected response from Keycloak revoke endpoint: {e}")
-            raise KeycloakUnavailableError("Unable to revoke refresh token") from e
+            raise KeycloakUnavailableError(REVOKE_FAILED_MESSAGE) from e
 
 
 def _reported_error(response: httpx.Response) -> str | None:
@@ -221,7 +222,8 @@ def read_refresh_token_sid(refresh_token: str) -> str:
     verifies the token when it is revoked, so a forged session id is caught there.
     """
     try:
-        claims = jwt.decode(refresh_token, options={"verify_signature": False})
+        # Refresh tokens use a realm key we cannot see, so Keycloak verifies this one on revoke.
+        claims = jwt.decode(refresh_token, options={"verify_signature": False})  # NOSONAR
     except PyJWTError as e:
         raise TokenValidationError("Malformed refresh token") from e
 

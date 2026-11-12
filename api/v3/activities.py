@@ -11,10 +11,9 @@ from models.user import User
 from schemas.activity import ActivityResponseSchema, UserActivityRequestSchema
 from service.activity_service import load_activities_data_in_sns
 from utils.custom_exceptions import CustomHTTPException, ErrorCode
+from utils.date_filters import validate_date_filters
 
 router = APIRouter(prefix="/activities", tags=["activities"])
-
-ONE_YEAR_IN_SECONDS = 31536000
 
 
 def _invalid_request(message: str) -> CustomHTTPException:
@@ -38,21 +37,20 @@ async def save_activity(
 @router.get("", response_model=list[ActivityResponseSchema], status_code=200)
 def list_activities(
     current_user: Annotated[User, Depends(get_current_user)],
-    date: int | None = Query(None, gt=0, description="Filter by exact date (UNIX timestamp)"),
-    start_date: int | None = Query(None, gt=0, description="Filter by start date (UNIX timestamp)"),
-    end_date: int | None = Query(None, gt=0, description="Filter by end date (UNIX timestamp)"),
+    date: Annotated[
+        int | None, Query(gt=0, description="Filter by exact date (UNIX timestamp)")
+    ] = None,
+    start_date: Annotated[
+        int | None, Query(gt=0, description="Filter by start date (UNIX timestamp)")
+    ] = None,
+    end_date: Annotated[
+        int | None, Query(gt=0, description="Filter by end date (UNIX timestamp)")
+    ] = None,
 ):
-    if date and (start_date or end_date):
-        raise _invalid_request("Cannot use date filter with start_date or end_date filters")
-
-    if (start_date and not end_date) or (end_date and not start_date):
-        raise _invalid_request("Both start_date and end_date filters must be used together")
-
-    if start_date and end_date:
-        if start_date > end_date:
-            raise _invalid_request("Start date cannot be greater than end date")
-        if end_date - start_date > ONE_YEAR_IN_SECONDS:
-            raise _invalid_request("Date range cannot be greater than 1 year")
+    try:
+        validate_date_filters(date, start_date, end_date)
+    except ValueError as e:
+        raise _invalid_request(str(e)) from e
 
     if not date and not start_date and not end_date:
         start_date = int(
