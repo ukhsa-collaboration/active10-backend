@@ -42,6 +42,10 @@ services:
       AWS_SNS_ACTIVITY_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-sns-activity-topic"
       AWS_SNS_ACTIVITIES_MIGRATION_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:aw-active10-local-activities-migrations"
       REDIS_HOST: "redis"
+      KEYCLOAK_REALM_URL: ${KEYCLOAK_REALM_URL:-}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+      KEYCLOAK_APP_CLIENT_ID: ${KEYCLOAK_APP_CLIENT_ID:-}
+      SESSION_TTL_MINUTES: ${SESSION_TTL_MINUTES:-60}
       # Only required locally
       AWS_DEFAULT_REGION: "eu-west-2"
       AWS_REGION: "eu-west-2"

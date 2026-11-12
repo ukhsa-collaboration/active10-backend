@@ -10,8 +10,10 @@ from api.nhs_login import router as nhs_login
 from api.unsubscribe import router as unsubscribe
 from api.v1 import router as api_v1
 from api.v2 import router as api_v2
+from api.v3 import router as api_v3
 from service.open_telemetry_service import setup_telemetry
 from utils.base_config import config
+from utils.custom_exceptions import CustomHTTPException, custom_http_exception_handler
 
 setup_telemetry()
 
@@ -68,6 +70,9 @@ NO_CACHE_PATHS = {
     "/nhs_login/callback",
     "/nhs_login/logout",
     "/nhs_login/disconnect",
+    "/v3/users/sync",
+    "/v3/auth/logout",
+    "/v3/auth/disconnect",
 }
 
 
@@ -83,6 +88,9 @@ async def apply_security_headers(request: Request, call_next):
     return response
 
 
+app.add_exception_handler(CustomHTTPException, custom_http_exception_handler)
+
+
 @lru_cache
 def get_config():
     return config()
@@ -94,6 +102,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(api_v1.router)
 app.include_router(api_v2.router)
+app.include_router(api_v3.router)
 app.include_router(nhs_login)
 app.include_router(healthcheck)
 app.include_router(unsubscribe)

@@ -22,7 +22,7 @@ class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
     unique_id = Column(String(length=50), unique=True, index=True, nullable=False)
-    nhs_number = Column(String(length=10), nullable=False)
+    nhs_number = Column(String(length=10), nullable=False, index=True)
     first_name = Column(String(length=50), nullable=False)
     email = Column(String(length=254))
     date_of_birth = Column(Date)
@@ -31,6 +31,7 @@ class User(Base):
     identity_level = Column(String(length=2), nullable=False)
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
     status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
+    keycloak_sub = Column(String(length=64), unique=True, index=True, nullable=True)
 
     token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship(

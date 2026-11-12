@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
@@ -40,6 +41,29 @@ class UserResponse(BaseModel):
     email_preferences: list[EmailPreferenceResponse] | None = []
     latest_motivation: UserMotivationResponse | None = None
     latest_activity_level: ActivityLevelResponseSchema | None = None
+
+
+class SessionUser(BaseModel):
+    user_id: UUID
+    keycloak_sub: str
+    user_email: str | None = None
+
+
+class KeycloakUserInfo(BaseModel):
+    sub: str
+    idp_sub: str
+    nhs_number: str
+    given_name: str
+    identity_proofing_level: str
+    birthdate: date
+    email: EmailStr
+    gender: str = "na"
+    postcode: str = "na"
+
+    @field_validator("nhs_number", mode="before")
+    @classmethod
+    def nhs_number_as_string(cls, value: object) -> object:
+        return str(value) if isinstance(value, int) else value
 
 
 class NHSUser(BaseModel):

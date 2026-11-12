@@ -31,7 +31,7 @@ BEGIN
     DELETE FROM users WHERE id = user_id RETURNING 1 INTO delete_count;
 
     IF delete_count = 1 THEN
-        INSERT INTO delete_audit (id, user_id, delete_reason, deleted_at) 
+        INSERT INTO delete_audit (id, user_id, delete_reason, deleted_at)
         VALUES (gen_random_uuid(), user_id, 'Logout deleted after 365 days', NOW())
         RETURNING 1 INTO insert_count;
     END IF;

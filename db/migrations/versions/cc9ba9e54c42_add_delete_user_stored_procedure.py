@@ -24,7 +24,7 @@ BEGIN
     SET TIME ZONE 'UTC';
     DELETE FROM users WHERE id = user_id;
 
-    INSERT INTO delete_audit (id, user_id, delete_reason, deleted_at) 
+    INSERT INTO delete_audit (id, user_id, delete_reason, deleted_at)
     VALUES (gen_random_uuid(), user_id, 'Logout deleted after 365 days', NOW());
 END;
 $$ LANGUAGE plpgsql;
