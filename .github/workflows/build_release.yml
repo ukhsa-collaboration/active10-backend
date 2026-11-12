@@ -62,6 +62,7 @@ jobs:
       deploy_environments: >-
         [
           { "name": "dev", "base_url": "https://dev.active10.betterhealthapps.com", "smoke_test_url": "https://dev.active10.betterhealthapps.com/healthcheck" },
+          { "name": "qat", "base_url": "https://qat.active10.betterhealthapps.com", "smoke_test_url": "https://qat.active10.betterhealthapps.com/healthcheck" },
           { "name": "uat", "base_url": "https://uat.active10.betterhealthapps.com", "smoke_test_url": "https://uat.active10.betterhealthapps.com/healthcheck" },
           { "name": "prd", "base_url": "https://prd.active10.betterhealthapps.com", "smoke_test_url": "https://prd.active10.betterhealthapps.com/healthcheck" }
         ]
