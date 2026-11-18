@@ -3,7 +3,7 @@ import time
 from typing import Any
 
 import fakeredis
-import httpx
+import httpx2
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -67,7 +67,7 @@ class FakeResponse:
 
     def raise_for_status(self) -> None:
         if self.status_code >= 400:  # noqa: PLR2004
-            raise httpx.HTTPStatusError("error", request=None, response=None)
+            raise httpx2.HTTPStatusError("error", request=None, response=None)
 
 
 @pytest.fixture(name="span_exporter", autouse=True)
@@ -110,7 +110,7 @@ def test_cached_jwks_is_used_without_calling_keycloak(cached_jwks, signing_key, 
 def test_jwks_is_fetched_and_cached_on_a_miss(redis_client, signing_key, monkeypatch):
     private_key, public_jwk = signing_key
     jwks_response = FakeResponse(body={"keys": [public_jwk]})
-    monkeypatch.setattr(keycloak.httpx, "get", lambda *_a, **_k: jwks_response)
+    monkeypatch.setattr(keycloak.httpx2, "get", lambda *_a, **_k: jwks_response)
 
     decode_access_token(build_token(private_key, "primary-kid"), redis_client)
 
@@ -125,7 +125,7 @@ def test_fetch_calls_the_realm_jwks_url(redis_client, signing_key, monkeypatch):
         fake_get.called = {"url": url, "timeout": timeout}
         return FakeResponse(body={"keys": [public_jwk]})
 
-    monkeypatch.setattr(keycloak.httpx, "get", fake_get)
+    monkeypatch.setattr(keycloak.httpx2, "get", fake_get)
 
     decode_access_token(build_token(private_key, "primary-kid"), redis_client)
 
@@ -293,9 +293,9 @@ def test_unreachable_keycloak_is_reported_as_unavailable(redis_client, signing_k
     private_key, _ = signing_key
 
     def fake_get(*_args, **_kwargs):
-        raise httpx.ConnectError("connection refused")
+        raise httpx2.ConnectError("connection refused")
 
-    monkeypatch.setattr(keycloak.httpx, "get", fake_get)
+    monkeypatch.setattr(keycloak.httpx2, "get", fake_get)
 
     with pytest.raises(KeycloakUnavailableError):
         decode_access_token(build_token(private_key, "primary-kid"), redis_client)
@@ -303,7 +303,7 @@ def test_unreachable_keycloak_is_reported_as_unavailable(redis_client, signing_k
 
 def test_keycloak_error_response_is_reported_as_unavailable(redis_client, signing_key, monkeypatch):
     private_key, _ = signing_key
-    monkeypatch.setattr(keycloak.httpx, "get", lambda *_a, **_k: FakeResponse(status_code=500))
+    monkeypatch.setattr(keycloak.httpx2, "get", lambda *_a, **_k: FakeResponse(status_code=500))
 
     with pytest.raises(KeycloakUnavailableError):
         decode_access_token(build_token(private_key, "primary-kid"), redis_client)
@@ -314,7 +314,7 @@ def test_validation_and_fetch_are_traced_under_the_keycloak_flow(
 ):
     private_key, public_jwk = signing_key
     jwks_response = FakeResponse(body={"keys": [public_jwk]})
-    monkeypatch.setattr(keycloak.httpx, "get", lambda *_a, **_k: jwks_response)
+    monkeypatch.setattr(keycloak.httpx2, "get", lambda *_a, **_k: jwks_response)
 
     decode_access_token(build_token(private_key, "primary-kid"), redis_client)
 
@@ -346,7 +346,7 @@ def test_userinfo_is_requested_with_the_access_token(monkeypatch, span_exporter)
         fake_get.called = {"url": url, "headers": headers, "timeout": timeout}
         return FakeResponse(body={"sub": "abc"})
 
-    monkeypatch.setattr(keycloak.httpx, "get", fake_get)
+    monkeypatch.setattr(keycloak.httpx2, "get", fake_get)
 
     assert keycloak.fetch_userinfo("access-token") == {"sub": "abc"}
     assert fake_get.called == {
@@ -362,7 +362,7 @@ def test_userinfo_is_requested_with_the_access_token(monkeypatch, span_exporter)
 @pytest.mark.parametrize("status_code", [401, 403])
 def test_userinfo_rejection_is_a_validation_error(monkeypatch, status_code):
     monkeypatch.setattr(
-        keycloak.httpx, "get", lambda *_a, **_k: FakeResponse(status_code=status_code)
+        keycloak.httpx2, "get", lambda *_a, **_k: FakeResponse(status_code=status_code)
     )
 
     with pytest.raises(TokenValidationError, match="rejected"):
@@ -371,16 +371,16 @@ def test_userinfo_rejection_is_a_validation_error(monkeypatch, status_code):
 
 def test_unreachable_userinfo_is_reported_as_unavailable(monkeypatch):
     def fake_get(*_args, **_kwargs):
-        raise httpx.ConnectError("connection refused")
+        raise httpx2.ConnectError("connection refused")
 
-    monkeypatch.setattr(keycloak.httpx, "get", fake_get)
+    monkeypatch.setattr(keycloak.httpx2, "get", fake_get)
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.fetch_userinfo("access-token")
 
 
 def test_userinfo_error_status_is_reported_as_unavailable(monkeypatch):
-    monkeypatch.setattr(keycloak.httpx, "get", lambda *_a, **_k: FakeResponse(status_code=500))
+    monkeypatch.setattr(keycloak.httpx2, "get", lambda *_a, **_k: FakeResponse(status_code=500))
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.fetch_userinfo("access-token")
@@ -391,7 +391,7 @@ def test_userinfo_body_that_is_not_json_is_reported_as_unavailable(monkeypatch):
         def json(self):
             raise ValueError("not json")
 
-    monkeypatch.setattr(keycloak.httpx, "get", lambda *_a, **_k: NotJson())
+    monkeypatch.setattr(keycloak.httpx2, "get", lambda *_a, **_k: NotJson())
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.fetch_userinfo("access-token")
@@ -407,7 +407,7 @@ class FakeRevokeResponse:
 
     def raise_for_status(self) -> None:
         if self.status_code >= 400:  # noqa: PLR2004
-            raise httpx.HTTPStatusError("error", request=None, response=None)
+            raise httpx2.HTTPStatusError("error", request=None, response=None)
 
 
 def fake_post_returning(response: FakeRevokeResponse):
@@ -420,7 +420,7 @@ def fake_post_returning(response: FakeRevokeResponse):
 
 def test_revoke_posts_the_refresh_token_as_the_app_client(monkeypatch, span_exporter):
     post = fake_post_returning(FakeRevokeResponse())
-    monkeypatch.setattr(keycloak.httpx, "post", post)
+    monkeypatch.setattr(keycloak.httpx2, "post", post)
 
     keycloak.revoke_refresh_token("refresh-token")
 
@@ -441,7 +441,7 @@ def test_revoke_posts_the_refresh_token_as_the_app_client(monkeypatch, span_expo
 @pytest.mark.parametrize("status_code", [200, 400])
 def test_revoke_rejects_a_token_keycloak_reports_as_invalid(monkeypatch, status_code):
     response = FakeRevokeResponse(status_code=status_code, content=b'{"error": "invalid_token"}')
-    monkeypatch.setattr(keycloak.httpx, "post", fake_post_returning(response))
+    monkeypatch.setattr(keycloak.httpx2, "post", fake_post_returning(response))
 
     with pytest.raises(TokenValidationError, match="rejected"):
         keycloak.revoke_refresh_token("refresh-token")
@@ -449,7 +449,7 @@ def test_revoke_rejects_a_token_keycloak_reports_as_invalid(monkeypatch, status_
 
 def test_revoke_reports_a_client_misconfiguration_as_unavailable(monkeypatch):
     response = FakeRevokeResponse(status_code=401, content=b'{"error": "invalid_client"}')
-    monkeypatch.setattr(keycloak.httpx, "post", fake_post_returning(response))
+    monkeypatch.setattr(keycloak.httpx2, "post", fake_post_returning(response))
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.revoke_refresh_token("refresh-token")
@@ -457,16 +457,16 @@ def test_revoke_reports_a_client_misconfiguration_as_unavailable(monkeypatch):
 
 def test_revoke_reports_an_unreachable_keycloak(monkeypatch):
     def fake_post(*_args, **_kwargs):
-        raise httpx.ConnectError("connection refused")
+        raise httpx2.ConnectError("connection refused")
 
-    monkeypatch.setattr(keycloak.httpx, "post", fake_post)
+    monkeypatch.setattr(keycloak.httpx2, "post", fake_post)
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.revoke_refresh_token("refresh-token")
 
 
 def test_revoke_reports_an_unexpected_status_as_unavailable(monkeypatch):
-    monkeypatch.setattr(keycloak.httpx, "post", fake_post_returning(FakeRevokeResponse(500)))
+    monkeypatch.setattr(keycloak.httpx2, "post", fake_post_returning(FakeRevokeResponse(500)))
 
     with pytest.raises(KeycloakUnavailableError):
         keycloak.revoke_refresh_token("refresh-token")
@@ -475,7 +475,7 @@ def test_revoke_reports_an_unexpected_status_as_unavailable(monkeypatch):
 @pytest.mark.parametrize("content", [b"[]", b"not json"])
 def test_revoke_body_that_is_not_an_error_object_is_a_success(monkeypatch, content):
     response = FakeRevokeResponse(content=content)
-    monkeypatch.setattr(keycloak.httpx, "post", fake_post_returning(response))
+    monkeypatch.setattr(keycloak.httpx2, "post", fake_post_returning(response))
 
     keycloak.revoke_refresh_token("refresh-token")
 

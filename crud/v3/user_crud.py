@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import status
@@ -11,7 +11,7 @@ from utils.custom_exceptions import CustomHTTPException, ErrorCode
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)  # noqa: UP017 Not supported in Python 3.10
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class KeycloakUserCRUD(UserCRUD):

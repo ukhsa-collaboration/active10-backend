@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "active10-backend"
 version = "0.0.0"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -26,7 +26,7 @@ packages = []
 py-modules = []
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 line-length = 100
 exclude = [
   ".git",

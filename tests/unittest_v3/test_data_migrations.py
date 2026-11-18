@@ -51,7 +51,7 @@ def test_empty_activities_is_a_validation_error(client, authenticated_user):
         headers=bearer(authenticated_user),
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_missing_month_is_a_validation_error(client, authenticated_user):
@@ -61,7 +61,7 @@ def test_missing_month_is_a_validation_error(client, authenticated_user):
         headers=bearer(authenticated_user),
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_bulk_activities_without_a_session(client, unauthenticated_user):

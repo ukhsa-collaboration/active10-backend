@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -41,7 +41,7 @@ def logout(
         raise HTTPException(status_code=404, detail="User not found")
 
     user.status = UserStatus.LOGOUT.value
-    user.status_updated_at = datetime.utcnow()
+    user.status_updated_at = datetime.now(UTC)
     user_token = user.token
     db.delete(user_token)
     db.commit()

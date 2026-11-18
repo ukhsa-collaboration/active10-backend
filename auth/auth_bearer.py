@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException
@@ -11,11 +11,11 @@ from utils.base_config import logger
 
 from .jwt_handler import decode_jwt
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_authenticated_user_data(
-    token: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    token: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     user_crud: Annotated[UserCRUD, Depends()],
     redis_service: RedisService = Depends(get_redis_service),  # noqa: B008
 ) -> dict[str, Any]:
@@ -33,6 +33,9 @@ def get_authenticated_user_data(
     Raises:
         HTTPException: If the token is invalid, expired, or the user is not found.
     """
+    if token is None:
+        raise HTTPException(status_code=403, detail="Not authenticated")
+
     with auth_step_span(STEP_JWT_VALIDATION) as span:
         token_hash = redis_service.hash_token(token.credentials)
         cached_auth_data = redis_service.get_auth_cache(token_hash)
@@ -59,7 +62,7 @@ def get_authenticated_user_data(
             if user_token:
                 user_token_hash = redis_service.hash_token(user_token.token)
                 expires_in = decoded_data.get("exp")
-                cache_ttl = max(0, int(expires_in - datetime.now(timezone.utc).timestamp()))  # noqa: UP017 Not supported in Python 3.10
+                cache_ttl = max(0, int(expires_in - datetime.now(UTC).timestamp()))
 
                 # Ensure token match
                 if token_hash != user_token_hash:

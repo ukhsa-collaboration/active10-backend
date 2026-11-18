@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import Depends, status
@@ -190,7 +190,7 @@ class AuthService:
         if not profile.get("nhs_number"):
             logger.error("Keycloak userinfo profile has no NHS number")
             raise _error(
-                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
                 ErrorCode.NHS_NUMBER_MISSING,
                 "NHS number missing from the identity provider profile",
             )
@@ -256,7 +256,7 @@ class AuthService:
             "postcode": user_info.postcode,
             "identity_level": user_info.identity_proofing_level,
             "status": UserStatus.LOGIN.value,
-            "status_updated_at": datetime.now(timezone.utc).replace(tzinfo=None),  # noqa: UP017 Not supported in Python 3.10
+            "status_updated_at": datetime.now(UTC).replace(tzinfo=None),
         }
         saved = self.user_crud.save_synced_user(user, profile, legacy_tokens)
         if replaced_unique_id:

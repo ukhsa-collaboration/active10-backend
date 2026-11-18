@@ -29,7 +29,7 @@ def test_create_user_motivation(client, authenticated_user):
 def test_create_user_motivation_with_missing_body(client, authenticated_user):
     response = client.post("/v3/motivations/", headers=bearer(authenticated_user))
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_user_motivation_without_a_session(client, unauthenticated_user):
