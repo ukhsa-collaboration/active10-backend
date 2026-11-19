@@ -36,7 +36,7 @@ def test_create_duplicate_daily_target_already_exists(client, authenticated_user
 def test_create_daily_target_with_missing_body(client, authenticated_user):
     response = client.post("/v3/daily_targets", headers=bearer(authenticated_user))
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_daily_target_without_a_session(client, unauthenticated_user):

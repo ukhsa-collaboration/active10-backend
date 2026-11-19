@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import Depends
@@ -29,8 +29,8 @@ class UserMotivationCRUD:
     ) -> UserMotivation:
         new_motivation = UserMotivation(
             user_id=user_id,
-            created_at=int(datetime.now(timezone.utc).timestamp()),  # noqa: UP017 Not supported in Python 3.10
-            updated_at=int(datetime.now(timezone.utc).timestamp()),  # noqa: UP017 Not supported in Python 3.10
+            created_at=int(datetime.now(UTC).timestamp()),
+            updated_at=int(datetime.now(UTC).timestamp()),
             goals=[goal.model_dump() for goal in payload.goals],
         )
         self.db.add(new_motivation)
@@ -41,7 +41,7 @@ class UserMotivationCRUD:
     def update_motivation(
         self, motivation: UserMotivation, payload: CreateUpdateUserMotivationRequest
     ) -> UserMotivation:
-        motivation.updated_at = int(datetime.now(timezone.utc).timestamp())  # noqa: UP017 Not supported in Python 3.10
+        motivation.updated_at = int(datetime.now(UTC).timestamp())
         motivation.goals = [goal.model_dump() for goal in payload.goals]
         self.db.commit()
         self.db.refresh(motivation)

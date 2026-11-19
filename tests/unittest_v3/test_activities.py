@@ -58,7 +58,7 @@ def test_create_activity_is_published_in_the_background(client, authenticated_us
 def test_create_activity_with_an_invalid_body(client, authenticated_user, payload):
     response = client.post("/v3/activities", json=payload, headers=bearer(authenticated_user))
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_activity_without_a_session(client, unauthenticated_user):

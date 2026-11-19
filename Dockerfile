@@ -1,4 +1,4 @@
-FROM python:3.10-slim AS base
+FROM python:3.13-slim AS base
 
 ARG APP_VERSION
 ARG APP_CODE_COMMIT_HASH
@@ -31,11 +31,9 @@ RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
 COPY requirements.txt .
 
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
-
-RUN useradd --user-group --system --create-home app \
+RUN pip install --no-cache-dir --only-binary :all: pip==26.3 \
+ && pip install --no-cache-dir --only-binary :all: -r requirements.txt \
+ && useradd --user-group --system --create-home app \
  && chown -R app:app /app
 
 COPY --chown=app:app . .

@@ -1,6 +1,6 @@
 import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from uuid import uuid4
 
@@ -108,9 +108,7 @@ def test_logout_revokes_and_closes_the_session(client, db_session, signed_in, re
     db_session.expire_all()
     user = db_session.get(User, signed_in.user.id)
     assert user.status == UserStatus.LOGOUT.value
-    assert datetime.now(timezone.utc).replace(tzinfo=None) - user.status_updated_at < timedelta(  # noqa: UP017
-        minutes=1
-    )
+    assert datetime.now(UTC).replace(tzinfo=None) - user.status_updated_at < timedelta(minutes=1)
 
 
 def test_logout_keeps_status_while_another_session_is_live(client, db_session, signed_in, revoked):
@@ -185,7 +183,7 @@ def test_disconnect_deletes_the_user_their_data_and_sessions(
     assert db_session.query(UserWalkingPlan).filter(UserWalkingPlan.user_id == user_id).count() == 0
     audit = db_session.query(DeleteAudit).filter(DeleteAudit.user_id == user_id).one()
     assert audit.delete_reason == UserDeleteReason.DISCONNECTED.value
-    now = datetime.now(timezone.utc).replace(tzinfo=None)  # noqa: UP017
+    now = datetime.now(UTC).replace(tzinfo=None)
     assert now - audit.deleted_at < timedelta(minutes=1)
     assert get_session(fake_redis, signed_in.sid) is None
     assert get_session(fake_redis, other_sid) is None

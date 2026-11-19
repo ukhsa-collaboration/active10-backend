@@ -1,5 +1,6 @@
+from datetime import UTC, datetime
+
 from fastapi import Depends, HTTPException
-from future.backports.datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -35,7 +36,7 @@ class TokenCRUD:
                     logger.warning(f"Failed to invalidate old token cache for user {user_id}: {e}")
 
                 user_token.token = token
-                user_token.created_at = datetime.utcnow()
+                user_token.created_at = datetime.now(UTC)
             else:
                 user_token = UserToken(user_id=user_id, token=token)
                 self.db.add(user_token)

@@ -66,7 +66,7 @@ def test_email_preference_with_an_unknown_list_is_a_validation_error(client, aut
         headers=bearer(authenticated_user),
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_email_preferences_without_a_session(client, unauthenticated_user):

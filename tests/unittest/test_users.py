@@ -13,6 +13,13 @@ def test_read_user_with_token(client, authenticated_user):
 def test_read_user_without_token(client):
     response = client.get("/v1/users")
     assert response.status_code == 403  # noqa: PLR2004
+    assert response.json() == {"detail": "Not authenticated"}
+
+
+def test_read_user_with_a_basic_header(client):
+    response = client.get("/v1/users", headers={"Authorization": "Basic dXNlcjpwYXNz"})
+    assert response.status_code == 403  # noqa: PLR2004
+    assert response.json() == {"detail": "Not authenticated"}
 
 
 def test_read_user_unauthenticated_token(client, unauthenticated_user):

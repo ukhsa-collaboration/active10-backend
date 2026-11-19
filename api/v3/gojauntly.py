@@ -21,7 +21,7 @@ client = GoJauntlyApi(
     issuer_id=config.gojauntly_issuer_id,
 )
 
-BAD_INPUT_STATUSES = {status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_ENTITY}
+BAD_INPUT_STATUSES = {status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_CONTENT}
 
 
 def _call_gojauntly(request: Callable[..., Any], **kwargs) -> Any:
