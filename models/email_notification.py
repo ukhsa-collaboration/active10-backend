@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum as PyEnum
 from uuid import uuid4
 
@@ -51,13 +51,13 @@ class LogoutUserEmailLogs(Base):
     created_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        default=lambda: datetime.now(UTC),
     )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
-        onupdate=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )
 
 
@@ -81,11 +81,11 @@ class MonthlyReportEmailLogs(Base):
     created_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        default=lambda: datetime.now(UTC),
     )
     updated_at = Column(
         DateTime(timezone=False),
         nullable=False,
-        default=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
-        onupdate=datetime.now(timezone.utc),  # noqa: UP017 Not supported in Python 3.10
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
     )

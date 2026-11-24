@@ -23,7 +23,7 @@ def test_create_user_activity_level_invalid_level(client, authenticated_user):
         "/v3/activity_level/", json={"level": "Super Active"}, headers=bearer(authenticated_user)
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_user_activity_level_without_a_session(client, unauthenticated_user):
@@ -80,7 +80,7 @@ def test_update_activity_level_invalid_level(client, authenticated_user):
         headers=bearer(authenticated_user),
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_update_nonexistent_activity_level(client, authenticated_user):

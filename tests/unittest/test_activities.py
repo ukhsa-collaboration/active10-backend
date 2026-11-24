@@ -152,3 +152,127 @@ def test_list_activities_by_unauthenticated_user(client, unauthenticated_user):
     )
 
     assert response.status_code == 404  # noqa: PLR2004
+
+
+def test_create_activities_with_effort_and_feeling(client, authenticated_user):
+    activity_payload = {
+        "date": current_timestamp,
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "activity": {
+            "brisk_minutes": 20,
+            "walking_minutes": 30,
+            "steps": 0,
+            "effort": 7,
+            "feeling": 2,
+        },
+    }
+
+    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+        response = client.post(
+            "/v1/activities",
+            json=activity_payload,
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        )
+
+    assert response.status_code == 201  # noqa: PLR2004
+    args, _kwargs = mock_add_task.call_args
+    assert args[1].activity.effort == 7  # noqa: PLR2004
+    assert args[1].activity.feeling == 2  # noqa: PLR2004
+
+
+def test_create_activities_without_effort_and_feeling_publishes_nulls(client, authenticated_user):
+    activity_payload = {
+        "date": current_timestamp,
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "activity": {"brisk_minutes": 109, "walking_minutes": 30, "steps": 1867},
+    }
+
+    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+        response = client.post(
+            "/v1/activities",
+            json=activity_payload,
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        )
+
+    assert response.status_code == 201  # noqa: PLR2004
+    args, _kwargs = mock_add_task.call_args
+    published = args[1].model_dump()["activity"]
+    assert published["effort"] is None
+    assert published["feeling"] is None
+
+
+@pytest.mark.parametrize("scores", [{"feeling": 2}, {"effort": None, "feeling": 1}])
+def test_create_activities_with_feeling_but_no_effort_clears_feeling(
+    client, authenticated_user, scores
+):
+    activity_payload = {
+        "date": current_timestamp,
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "activity": {"brisk_minutes": 10, "walking_minutes": 20, "steps": 3000, **scores},
+    }
+
+    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
+        response = client.post(
+            "/v1/activities",
+            json=activity_payload,
+            headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+        )
+
+    assert response.status_code == 201  # noqa: PLR2004
+    args, _kwargs = mock_add_task.call_args
+    published = args[1].model_dump()["activity"]
+    assert published["effort"] is None
+    assert published["feeling"] is None
+
+
+@pytest.mark.parametrize(
+    "scores",
+    [{"effort": 0}, {"effort": 11}, {"feeling": -1}, {"feeling": 3}, {"effort": "high"}],
+)
+def test_create_activities_with_out_of_range_effort_or_feeling(client, authenticated_user, scores):
+    activity_payload = {
+        "date": current_timestamp,
+        "user_postcode": "HD81",
+        "user_age_range": "23-39",
+        "activity": {"brisk_minutes": 20, "walking_minutes": 30, "steps": 0, **scores},
+    }
+
+    response = client.post(
+        "/v1/activities",
+        json=activity_payload,
+        headers={"Authorization": f"Bearer {authenticated_user.token.token}"},
+    )
+
+    assert response.status_code == 422  # noqa: PLR2004
+
+
+def test_list_activities_returns_effort_and_feeling(client, authenticated_user, db_session):
+    walking_date = current_timestamp - 200
+    wheeling_date = current_timestamp - 100
+
+    with patch(
+        "crud.activities_crud.get_db_context_session",
+        lambda: override_get_db_context_session(db_session),
+    ):
+        for date, scores in [(walking_date, {}), (wheeling_date, {"effort": 4, "feeling": 0})]:
+            create_activity(
+                activity_payload=UserActivityRequestSchema(
+                    date=date,
+                    user_postcode="HD81",
+                    user_age_range="23-39",
+                    activity={"brisk_minutes": 5, "walking_minutes": 10, "steps": 0, **scores},
+                ),
+                user_id=authenticated_user.id,
+            )
+
+        headers = {"Authorization": f"Bearer {authenticated_user.token.token}"}
+        walking = client.get(f"/v1/activities?date={walking_date}", headers=headers).json()
+        wheeling = client.get(f"/v1/activities?date={wheeling_date}", headers=headers).json()
+
+    assert walking[0]["effort"] is None
+    assert walking[0]["feeling"] is None
+    assert wheeling[0]["effort"] == 4  # noqa: PLR2004
+    assert wheeling[0]["feeling"] == 0

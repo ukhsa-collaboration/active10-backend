@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import uuid4
 
@@ -18,6 +18,11 @@ class UserDeleteReason(str, Enum):
     LOGOUT_DELETED_AFTER_365_DAYS = "Logout deleted after 365 days"
 
 
+class UserActivityType(str, Enum):
+    WALKING = "walking"
+    WHEELING = "wheeling"
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True, index=True)
@@ -30,8 +35,14 @@ class User(Base):
     postcode = Column(String(length=10), nullable=True, default="")
     identity_level = Column(String(length=2), nullable=False)
     status = Column(String(length=10), nullable=True, default=UserStatus.LOGIN.value)
-    status_updated_at = Column(DateTime, nullable=True, default=datetime.utcnow())
+    status_updated_at = Column(DateTime, nullable=True, default=lambda: datetime.now(UTC))
     keycloak_sub = Column(String(length=64), unique=True, index=True, nullable=True)
+    activity_type = Column(
+        String(length=10),
+        nullable=True,
+        default=UserActivityType.WALKING.value,
+        server_default=UserActivityType.WALKING.value,
+    )
 
     token = relationship("UserToken", back_populates="user", uselist=False, cascade="all, delete")
     email_preferences = relationship(
@@ -78,7 +89,7 @@ class UserToken(Base):
 
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     token = Column(String(length=500), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
     user_id = Column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
@@ -95,7 +106,7 @@ class DeleteAudit(Base):
     id = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
     user_id = Column(UUID(as_uuid=True), nullable=False)
     delete_reason = Column(String(length=50), nullable=False)
-    deleted_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    deleted_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
 
 class EmailPreference(Base):
@@ -111,5 +122,10 @@ class EmailPreference(Base):
     name = Column(String(length=200), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
 
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))

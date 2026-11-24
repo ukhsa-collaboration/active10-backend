@@ -58,7 +58,7 @@ def test_create_activity_is_published_in_the_background(client, authenticated_us
 def test_create_activity_with_an_invalid_body(client, authenticated_user, payload):
     response = client.post("/v3/activities", json=payload, headers=bearer(authenticated_user))
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_activity_without_a_session(client, unauthenticated_user):
@@ -120,3 +120,62 @@ def test_list_activities_without_a_session(client, unauthenticated_user):
     response = client.get("/v3/activities", headers=bearer(unauthenticated_user))
 
     assert_error(response, HTTPStatus.UNAUTHORIZED, "SESSION_NOT_FOUND")
+
+
+def wheeling(**scores) -> dict:
+    return {
+        **activity_payload,
+        "activity": {"brisk_minutes": 20, "walking_minutes": 30, "steps": 0, **scores},
+    }
+
+
+@pytest.mark.parametrize(
+    ("scores", "published"),
+    [
+        ({"effort": 7, "feeling": 2}, (7, 2)),
+        ({}, (None, None)),
+        ({"feeling": 2}, (None, None)),
+    ],
+    ids=["wheeling", "walking", "feeling-without-effort"],
+)
+def test_create_activity_publishes_effort_and_feeling(
+    client, authenticated_user, scores, published
+):
+    with patch("fastapi.BackgroundTasks.add_task") as add_task:
+        response = client.post(
+            "/v3/activities", json=wheeling(**scores), headers=bearer(authenticated_user)
+        )
+
+    assert response.status_code == HTTPStatus.CREATED
+    args, _ = add_task.call_args
+    assert (args[1].activity.effort, args[1].activity.feeling) == published
+
+
+@pytest.mark.parametrize(
+    "scores", [{"effort": 0}, {"effort": 11}, {"feeling": -1}, {"effort": 5, "feeling": 3}]
+)
+def test_create_activity_with_out_of_range_effort_or_feeling(client, authenticated_user, scores):
+    response = client.post(
+        "/v3/activities", json=wheeling(**scores), headers=bearer(authenticated_user)
+    )
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_list_activities_returns_effort_and_feeling(client, authenticated_user, db_session):
+    walking_date, wheeling_date = current_timestamp - 200, current_timestamp - 100
+
+    with patch("crud.activities_crud.get_db_context_session", lambda: same_session(db_session)):
+        for date, scores in [(walking_date, {}), (wheeling_date, {"effort": 4, "feeling": 0})]:
+            payload = UserActivityRequestSchema(**{**wheeling(**scores), "date": date})
+            create_activity(activity_payload=payload, user_id=authenticated_user.id)
+
+        walking = client.get(
+            "/v3/activities", params={"date": walking_date}, headers=bearer(authenticated_user)
+        )
+        wheeled = client.get(
+            "/v3/activities", params={"date": wheeling_date}, headers=bearer(authenticated_user)
+        )
+
+    assert (walking.json()[0]["effort"], walking.json()[0]["feeling"]) == (None, None)
+    assert (wheeled.json()[0]["effort"], wheeled.json()[0]["feeling"]) == (4, 0)

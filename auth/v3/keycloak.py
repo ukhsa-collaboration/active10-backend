@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-import httpx
+import httpx2
 import jwt
 from jwt import ExpiredSignatureError, PyJWK, PyJWTError
 from redis import Redis, RedisError
@@ -35,12 +35,12 @@ def _fetch_jwks() -> dict[str, Any]:
     """Fetches the JWKS document from Keycloak."""
     with auth_step_span(STEP_JWKS_FETCH, flow=KEYCLOAK_FLOW):
         try:
-            response = httpx.get(
+            response = httpx2.get(
                 config.keycloak_jwks_url, timeout=config.keycloak_http_timeout_seconds
             )
             response.raise_for_status()
             return response.json()
-        except (httpx.HTTPError, ValueError) as e:
+        except (httpx2.HTTPError, ValueError) as e:
             logger.error(f"Unable to retrieve JWKS from Keycloak: {e}")
             raise KeycloakUnavailableError("Unable to retrieve signing keys") from e
 
@@ -147,12 +147,12 @@ def fetch_userinfo(token: str) -> dict[str, Any]:
     """Returns the Keycloak userinfo profile for an access token."""
     with auth_step_span(STEP_USERINFO, flow=KEYCLOAK_FLOW):
         try:
-            response = httpx.get(
+            response = httpx2.get(
                 config.keycloak_userinfo_url,
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=config.keycloak_http_timeout_seconds,
             )
-        except httpx.HTTPError as e:
+        except httpx2.HTTPError as e:
             logger.error(f"Unable to reach Keycloak userinfo endpoint: {e}")
             raise KeycloakUnavailableError("Unable to retrieve user profile") from e
 
@@ -162,7 +162,7 @@ def fetch_userinfo(token: str) -> dict[str, Any]:
         try:
             response.raise_for_status()
             return response.json()
-        except (httpx.HTTPError, ValueError) as e:
+        except (httpx2.HTTPError, ValueError) as e:
             logger.error(f"Unexpected response from Keycloak userinfo endpoint: {e}")
             raise KeycloakUnavailableError("Unable to retrieve user profile") from e
 
@@ -174,7 +174,7 @@ def revoke_refresh_token(refresh_token: str) -> None:
     """
     with auth_step_span(STEP_REVOKE, flow=KEYCLOAK_FLOW):
         try:
-            response = httpx.post(
+            response = httpx2.post(
                 config.keycloak_revoke_url,
                 data={
                     "client_id": config.keycloak_app_client_id,
@@ -183,7 +183,7 @@ def revoke_refresh_token(refresh_token: str) -> None:
                 },
                 timeout=config.keycloak_http_timeout_seconds,
             )
-        except httpx.HTTPError as e:
+        except httpx2.HTTPError as e:
             logger.error(f"Unable to reach Keycloak revoke endpoint: {e}")
             raise KeycloakUnavailableError(REVOKE_FAILED_MESSAGE) from e
 
@@ -198,12 +198,12 @@ def revoke_refresh_token(refresh_token: str) -> None:
 
         try:
             response.raise_for_status()
-        except httpx.HTTPError as e:
+        except httpx2.HTTPError as e:
             logger.error(f"Unexpected response from Keycloak revoke endpoint: {e}")
             raise KeycloakUnavailableError(REVOKE_FAILED_MESSAGE) from e
 
 
-def _reported_error(response: httpx.Response) -> str | None:
+def _reported_error(response: httpx2.Response) -> str | None:
     """Returns the OAuth error Keycloak put in the body, if any."""
     if not response.content:
         return None

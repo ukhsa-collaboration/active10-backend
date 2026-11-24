@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends
 from auth.v3.auth_service import AuthService
 from auth.v3.dependencies import get_auth_token, get_current_user, get_token_claims
 from crud.v3.subscription_crud import SubscriptionCRUD
+from crud.v3.user_crud import KeycloakUserCRUD
 from models.user import User
-from schemas.user import EmailPreferenceRequest, UserResponse
+from schemas.user import EmailPreferenceRequest, UserActivityTypeRequest, UserResponse
 from service.user_service import UserService
 from utils.base_config import logger
 
@@ -19,6 +20,17 @@ def get_user(
     user_service: Annotated[UserService, Depends()],
 ):
     return user_service.get_user_profile(current_user)
+
+
+@router.patch("/", response_model=UserResponse)
+def update_activity_type(
+    current_user: Annotated[User, Depends(get_current_user)],
+    user_crud: Annotated[KeycloakUserCRUD, Depends()],
+    user_service: Annotated[UserService, Depends()],
+    payload: UserActivityTypeRequest,
+):
+    user = user_crud.update_activity_type(current_user, payload.activity_type)
+    return user_service.get_user_profile(user)
 
 
 @router.post("/sync", response_model=UserResponse, status_code=200)
