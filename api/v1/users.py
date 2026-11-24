@@ -6,7 +6,11 @@ from starlette.responses import JSONResponse
 from auth.auth_bearer import get_authenticated_user_data
 from crud.subscription_crud import SubscriptionCRUD
 from crud.user_crud import UserCRUD
-from schemas.user import EmailPreferenceRequest, EmailPreferenceRequestPublic
+from schemas.user import (
+    EmailPreferenceRequest,
+    EmailPreferenceRequestPublic,
+    UserActivityTypeRequest,
+)
 from service.user_service import UserService
 from utils.base_config import logger
 
@@ -22,6 +26,18 @@ def get_user(
     user = user_crud.get_user_by_id(user_data["user_id"])
     user_details = user_service.get_user_profile(user)
     return user_details
+
+
+@router.patch("/", response_class=JSONResponse)
+def update_activity_type(
+    user_data: Annotated[dict, Depends(get_authenticated_user_data)],
+    user_service: Annotated[UserService, Depends()],
+    user_crud: Annotated[UserCRUD, Depends()],
+    payload: UserActivityTypeRequest,
+):
+    user = user_crud.get_user_by_id(user_data["user_id"])
+    user = user_crud.update_activity_type(user, payload.activity_type)
+    return user_service.get_user_profile(user)
 
 
 @router.post("/email_preferences/subscribe", response_class=JSONResponse)

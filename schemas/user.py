@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import AnyHttpUrl, BaseModel, EmailStr, Field, field_validator
 
+from models.user import UserActivityType
 from schemas.activity_level import ActivityLevelResponseSchema
 from schemas.motivation import UserMotivationResponse
 
@@ -38,6 +39,7 @@ class UserResponse(BaseModel):
     age_range: str
     postcode: str | None
     identity_level: str | None
+    activity_type: str | None
     email_preferences: list[EmailPreferenceResponse] | None = []
     latest_motivation: UserMotivationResponse | None = None
     latest_activity_level: ActivityLevelResponseSchema | None = None
@@ -79,3 +81,14 @@ class NHSUser(BaseModel):
     given_name: str
     gender: str
     postcode: str
+
+
+class UserActivityTypeRequest(BaseModel):
+    activity_type: str = Field(..., examples=["walking"])
+
+    @field_validator("activity_type")
+    @classmethod
+    def validate_name(cls, name: str) -> str:
+        if name not in {activity.value for activity in UserActivityType}:
+            raise ValueError("Invalid activity type")
+        return name

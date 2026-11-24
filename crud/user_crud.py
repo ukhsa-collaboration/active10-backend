@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from db.session import get_db_session
-from models.user import User
+from models.user import User, UserActivityType
 
 
 class UserCRUD:
@@ -42,6 +42,12 @@ class UserCRUD:
             return existing_user
         else:
             return None
+
+    def update_activity_type(self, user: User, activity_type: UserActivityType) -> User:
+        user.activity_type = activity_type
+        self.db.commit()
+        self.db.refresh(user)
+        return user
 
     def delete_user(self, uuid: str) -> User | None:
         user_to_delete = self.db.query(User).filter(User.id == uuid).first()

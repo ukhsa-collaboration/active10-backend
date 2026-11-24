@@ -12,9 +12,7 @@ def create_activity(activity_payload: UserActivityRequestSchema, user_id: str) -
         rewards=activity_payload.rewards,
         user_postcode=activity_payload.user_postcode,
         user_age_range=activity_payload.user_age_range,
-        brisk_minutes=activity_payload.activity.brisk_minutes,
-        walking_minutes=activity_payload.activity.walking_minutes,
-        steps=activity_payload.activity.steps,
+        **activity_payload.activity.model_dump(),
         user_id=user_id,
     )
 
@@ -40,9 +38,7 @@ def create_bulk_activities(activities: list[UserActivityRequestSchema], user_id:
             rewards=activity_payload.rewards,
             user_postcode=activity_payload.user_postcode,
             user_age_range=activity_payload.user_age_range,
-            brisk_minutes=activity_payload.activity.brisk_minutes,
-            walking_minutes=activity_payload.activity.walking_minutes,
-            steps=activity_payload.activity.steps,
+            **activity_payload.activity.model_dump(),
             user_id=user_id,
         )
         activities_list.append(activity)

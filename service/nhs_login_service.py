@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from fastapi import Depends
 from pydantic import HttpUrl
@@ -114,7 +114,7 @@ class NHSLoginService:
                 existing_user.postcode = user.postcode
                 existing_user.identity_level = user.identity_level
                 existing_user.status = UserStatus.LOGIN.value
-                existing_user.status_updated_at = datetime.utcnow()
+                existing_user.status_updated_at = datetime.now(UTC)
                 result = self.userCRUD.update_user(existing_user)
             else:
                 # Insert the new user

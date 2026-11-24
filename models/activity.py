@@ -25,6 +25,8 @@ class Activity(Base):
     brisk_minutes = Column(Integer, nullable=False)
     walking_minutes = Column(Integer, nullable=False)
     steps = Column(Integer, nullable=False)
+    effort = Column(Integer, nullable=True)
+    feeling = Column(Integer, nullable=True)
     rewards = Column(ARRAY(JSON), nullable=True)
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True)

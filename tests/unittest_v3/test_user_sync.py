@@ -265,7 +265,7 @@ def test_duplicate_nhs_number_is_a_conflict_and_changes_nothing(
 def test_missing_nhs_number_is_rejected(client, keycloak, nhs_number):
     keycloak["profile"]["nhs_number"] = nhs_number
 
-    assert_error(sync(client), HTTPStatus.UNPROCESSABLE_ENTITY, "NHS_NUMBER_MISSING")
+    assert_error(sync(client), HTTPStatus.UNPROCESSABLE_CONTENT, "NHS_NUMBER_MISSING")
 
 
 @pytest.mark.parametrize(

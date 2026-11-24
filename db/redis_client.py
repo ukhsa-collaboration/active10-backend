@@ -18,7 +18,7 @@ pool = ConnectionPool(
 )
 
 
-def get_redis() -> Generator[Redis, None, None]:
+def get_redis() -> Generator[Redis]:
     """Dependency that provides a Redis client for the v3 API."""
     with Redis(connection_pool=pool) as client:
         yield client

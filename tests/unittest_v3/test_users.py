@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+import pytest
+
 from auth.jwt_handler import sign_jwt
 
 
@@ -66,13 +68,53 @@ def test_email_preference_with_an_unknown_list_is_a_validation_error(client, aut
         headers=bearer(authenticated_user),
     )
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_email_preferences_without_a_session(client, unauthenticated_user):
     response = client.post(
         "/v3/users/email_preferences/subscribe",
         json={"name": "active10_mailing_list"},
+        headers=bearer(unauthenticated_user),
+    )
+
+    assert_error(response, HTTPStatus.UNAUTHORIZED, "SESSION_NOT_FOUND")
+
+
+def test_update_activity_type_returns_the_profile(client, authenticated_user):
+    url = "/v3/users/"
+
+    response = client.patch(
+        url, json={"activity_type": "wheeling"}, headers=bearer(authenticated_user)
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()["activity_type"] == "wheeling"
+    assert response.json() == client.get("/v3/users/", headers=bearer(authenticated_user)).json()
+
+    response = client.patch(
+        url, json={"activity_type": "walking"}, headers=bearer(authenticated_user)
+    )
+    assert response.json()["activity_type"] == "walking"
+
+
+@pytest.mark.parametrize("body", [{"activity_type": "running"}, {}], ids=["unknown", "missing"])
+def test_update_activity_type_with_an_invalid_body(client, authenticated_user, body):
+    response = client.patch("/v3/users/", json=body, headers=bearer(authenticated_user))
+
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
+
+def test_update_activity_type_without_token(client):
+    response = client.patch("/v3/users/", json={"activity_type": "wheeling"})
+
+    assert_error(response, HTTPStatus.UNAUTHORIZED, "NOT_AUTHENTICATED")
+
+
+def test_update_activity_type_without_a_session(client, unauthenticated_user):
+    response = client.patch(
+        "/v3/users/",
+        json={"activity_type": "wheeling"},
         headers=bearer(unauthenticated_user),
     )
 

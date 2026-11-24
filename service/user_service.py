@@ -40,6 +40,7 @@ class UserService:
             gender=user.gender,
             postcode=user.postcode,
             identity_level=user.identity_level,
+            activity_type=user.activity_type,
             age_range=age_range,
             age=age,
             email_preferences=[

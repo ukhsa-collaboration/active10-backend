@@ -1,3 +1,6 @@
 fakeredis==2.38.0
 testcontainers==4.8.2
 psycopg2-binary==2.9.10
+python-xlib==0.33
+selenium==4.52.0
+seleniumbase==4.57.1

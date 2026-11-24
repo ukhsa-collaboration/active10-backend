@@ -40,7 +40,7 @@ def test_create_second_walking_plan_already_exists(client, authenticated_user):
 def test_create_walking_plan_with_missing_body(client, authenticated_user):
     response = client.post("/v3/walking_plans", headers=bearer(authenticated_user))
 
-    assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+    assert response.status_code == HTTPStatus.UNPROCESSABLE_CONTENT
 
 
 def test_create_walking_plan_without_a_session(client, unauthenticated_user):
